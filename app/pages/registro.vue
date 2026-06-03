@@ -4,24 +4,23 @@ definePageMeta({
   middleware: 'guest',
 })
 
-const authStore = useAuthStore()
+const registerMutation = useStoreRegisterMutation()
+const isSubmitting = computed(() => registerMutation.isPending.value)
 
 const email = ref('')
 const password = ref('')
 const firstName = ref('')
 const lastName = ref('')
-const loading = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
 const devToken = ref('')
 
 async function onSubmit() {
-  loading.value = true
   errorMessage.value = ''
   successMessage.value = ''
   devToken.value = ''
   try {
-    const result = await authStore.register({
+    const result = await registerMutation.mutateAsync({
       email: email.value,
       password: password.value,
       firstName: firstName.value || undefined,
@@ -33,8 +32,6 @@ async function onSubmit() {
     }
   } catch (error) {
     errorMessage.value = useApiErrorMessage(error)
-  } finally {
-    loading.value = false
   }
 }
 </script>
@@ -79,7 +76,7 @@ async function onSubmit() {
         required
       />
 
-      <UiButton type="submit" class="w-full" :loading="loading">
+      <UiButton type="submit" class="w-full" :loading="isSubmitting">
         Registrarme
       </UiButton>
     </form>

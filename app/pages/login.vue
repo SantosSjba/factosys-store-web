@@ -7,18 +7,20 @@ definePageMeta({
 })
 
 const route = useRoute()
-const authStore = useAuthStore()
+const loginMutation = useStoreLoginMutation()
+const isSubmitting = computed(() => loginMutation.isPending.value)
 
 const email = ref('')
 const password = ref('')
-const loading = ref(false)
 const errorMessage = ref('')
 
 async function onSubmit() {
-  loading.value = true
   errorMessage.value = ''
   try {
-    await authStore.login({ email: email.value, password: password.value })
+    await loginMutation.mutateAsync({
+      email: email.value,
+      password: password.value,
+    })
     const redirect =
       typeof route.query.redirect === 'string' ? route.query.redirect : '/cuenta'
     await navigateTo(redirect)
@@ -31,10 +33,10 @@ async function onSubmit() {
       errorMessage.value +=
         ' Las cuentas super@ / admin@ son del panel admin, no de la tienda.'
     }
-  } finally {
-    loading.value = false
   }
 }
+
+const authStore = useAuthStore()
 </script>
 
 <template>
@@ -60,7 +62,7 @@ async function onSubmit() {
         required
       />
 
-      <UiButton type="submit" class="w-full" :loading="loading">
+      <UiButton type="submit" class="w-full" :loading="isSubmitting">
         Entrar
       </UiButton>
     </form>
@@ -80,6 +82,12 @@ async function onSubmit() {
         ¿No tienes cuenta?
         <NuxtLink to="/registro" class="font-semibold text-indigo-600 hover:underline">
           Regístrate
+        </NuxtLink>
+      </p>
+      <p class="text-slate-500">
+        ¿Personal de Factosys?
+        <NuxtLink to="/intranet/login" class="font-semibold text-violet-700 hover:underline">
+          Acceso intranet
         </NuxtLink>
       </p>
     </div>

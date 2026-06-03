@@ -1,10 +1,14 @@
 <script setup lang="ts">
-withDefaults(
+import type { MaybeRef } from 'vue'
+import { computed, toValue } from 'vue'
+
+const props = withDefaults(
   defineProps<{
     type?: 'button' | 'submit'
     variant?: 'primary' | 'secondary' | 'ghost'
     disabled?: boolean
-    loading?: boolean
+    /** Acepta boolean o Ref (p. ej. mutation.isPending de TanStack Query). */
+    loading?: MaybeRef<boolean>
   }>(),
   {
     type: 'button',
@@ -13,6 +17,8 @@ withDefaults(
     loading: false,
   },
 )
+
+const isLoading = computed(() => toValue(props.loading))
 </script>
 
 <template>
@@ -26,10 +32,10 @@ withDefaults(
         variant === 'secondary',
       'text-slate-700 hover:bg-slate-100 focus:ring-slate-400': variant === 'ghost',
     }"
-    :disabled="disabled || loading"
+    :disabled="disabled || isLoading"
   >
     <span
-      v-if="loading"
+      v-if="isLoading"
       class="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent"
     />
     <slot />

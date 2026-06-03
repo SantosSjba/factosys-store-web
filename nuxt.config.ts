@@ -5,6 +5,11 @@ export default defineNuxtConfig({
 
   modules: ['@pinia/nuxt', '@nuxtjs/tailwindcss'],
 
+  // mutations/ y queries/ no se escanean por defecto (solo composables raíz)
+  imports: {
+    dirs: ['composables/mutations', 'composables/queries'],
+  },
+
   css: ['~/assets/css/main.css'],
 
   // AuthCard, UiButton, AppHeader… sin prefijo Layout*/Ui*

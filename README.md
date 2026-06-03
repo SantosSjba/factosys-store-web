@@ -7,6 +7,9 @@ Frontend de la tienda (Nuxt 4 + Vue 3 + Tailwind) integrado con [factosys-store-
 | Capa | Tecnología |
 |------|------------|
 | Frontend tienda | Nuxt 4, Vue 3, TypeScript, Tailwind |
+| HTTP | **Axios** (`useApi` / `useAdminApi`) |
+| Datos remotos | **TanStack Query** (queries + mutations) |
+| Estado sesión | Pinia |
 | API | NestJS — prefijo `/api` |
 | Auth cliente | `/api/store/auth/*`, perfil `/api/store/me` |
 
@@ -40,7 +43,8 @@ FRONTEND_URL=http://localhost:3001
 En este proyecto (`.env`):
 
 ```env
-NUXT_PUBLIC_API_BASE_URL=http://localhost:3000/api
+NUXT_PUBLIC_API_BASE_URL=/api
+NUXT_API_PROXY_TARGET=https://127.0.0.1:3000
 ```
 
 ## Desarrollo
@@ -56,32 +60,36 @@ Abre `http://localhost:3001`.
 | Ruta web | API / flujo |
 |----------|-------------|
 | `/registro` | `POST /api/store/auth/register` |
-| `/verify-email?token=` | `POST /api/store/auth/verify-email` (enlace del correo) |
+| `/verify-email?token=` | `POST /api/store/auth/verify-email` |
 | `/login` | `POST /api/store/auth/login` |
 | `/auth/google/callback` | Redirect OAuth con `accessToken` y `refreshToken` |
 | `/cuenta` | `GET /api/store/me` |
+| `/intranet/login` | `POST /api/admin/auth/login` |
 
 Google: enlace directo a `{API}/api/store/auth/google`.
 
-## Cliente HTTP
+## Cliente HTTP y datos
 
-Las peticiones a la API usan **`$fetch.create()`** (ofetch, integrado en Nuxt), centralizado en `useApi`: Bearer, refresh en 401 y errores `ApiError`.
+- **Axios** en `useApi` (tienda) y `useAdminApi` (intranet): Bearer, refresh automático en 401, errores como `ApiError`.
+- **Servicios** en `app/api/*.api.ts` — una función por endpoint.
+- **TanStack Query**: mutaciones de auth (`useStoreLoginMutation`, etc.) y queries de perfil (`useStoreProfileQuery`).
+- **Pinia** guarda tokens y sesión; las queries sincronizan perfil al cachear.
 
 ## Estructura modular
 
 ```text
 app/
-├── assets/          # Estilos globales
+├── api/             # Llamadas HTTP por dominio (store-auth, store-profile…)
+├── composables/
+│   ├── mutations/   # TanStack mutations (auth)
+│   ├── queries/     # TanStack queries (perfil)
+│   ├── useApi.ts    # Cliente Axios tienda
+│   └── useAdminApi.ts
+├── constants/       # query-keys
 ├── components/
-│   ├── layout/      # Header, AuthCard
-│   └── ui/          # Button, Input, Alert
-├── composables/     # useApi ($fetch/ofetch), useApiErrorMessage
-├── layouts/         # default, auth
-├── middleware/      # auth, guest
-├── pages/           # Rutas de la tienda
-├── plugins/         # Hidratación de sesión
-├── stores/          # Pinia auth
-└── types/           # Tipos API y auth
+├── plugins/         # vue-query, hidratación auth
+├── stores/          # Pinia (sesión)
+└── utils/           # create-axios-client, parse-api-error
 ```
 
 ## Scripts

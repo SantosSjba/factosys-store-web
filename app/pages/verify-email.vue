@@ -4,23 +4,19 @@ definePageMeta({
 })
 
 const route = useRoute()
-const authStore = useAuthStore()
+const verifyMutation = useStoreVerifyEmailMutation()
 
-const loading = ref(false)
 const errorMessage = ref('')
 const verified = ref(false)
 
 async function verify(token: string) {
-  loading.value = true
   errorMessage.value = ''
   try {
-    await authStore.verifyEmail(token)
+    await verifyMutation.mutateAsync(token)
     verified.value = true
     setTimeout(() => navigateTo('/cuenta'), 1500)
   } catch (error) {
     errorMessage.value = useApiErrorMessage(error)
-  } finally {
-    loading.value = false
   }
 }
 
@@ -40,7 +36,7 @@ onMounted(async () => {
     title="Verificar correo"
     subtitle="Activando tu cuenta de cliente"
   >
-    <div v-if="loading" class="text-center text-sm text-slate-600">
+    <div v-if="verifyMutation.isPending" class="text-center text-sm text-slate-600">
       Verificando tu cuenta…
     </div>
 

@@ -1,14 +1,11 @@
 import { ApiError } from '~/types/api'
+import { parseApiError } from '~/utils/parse-api-error'
 
 export function useApiErrorMessage(error: unknown): string {
-  if (error instanceof ApiError) {
-    if (Array.isArray(error.details) && error.details.length > 0) {
-      return `${error.message}: ${error.details.join(', ')}`
-    }
-    return error.message
+  const apiError = error instanceof ApiError ? error : parseApiError(error)
+
+  if (Array.isArray(apiError.details) && apiError.details.length > 0) {
+    return `${apiError.message}: ${apiError.details.join(', ')}`
   }
-  if (error instanceof Error) {
-    return error.message
-  }
-  return 'Ocurrió un error inesperado. Intenta de nuevo.'
+  return apiError.message
 }
