@@ -1,75 +1,98 @@
-# Nuxt Minimal Starter
+# Factosys Store Web
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Frontend de la tienda (Nuxt 4 + Vue 3 + Tailwind) integrado con [factosys-store-api](https://github.com/SantosSjba/factosys-store-api).
 
-## Setup
+## Arquitectura
 
-Make sure to install dependencies:
+| Capa | Tecnología |
+|------|------------|
+| Frontend tienda | Nuxt 4, Vue 3, TypeScript, Tailwind |
+| API | NestJS — prefijo `/api` |
+| Auth cliente | `/api/store/auth/*`, perfil `/api/store/me` |
+
+## Requisitos
+
+- Node 20+
+- pnpm
+- API en ejecución (`pnpm start:dev` en `factosys-store-api`)
+- PostgreSQL y variables de la API configuradas
+
+## Configuración
 
 ```bash
-# npm
-npm install
-
-# pnpm
+cp .env.example .env
 pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
 ```
 
-## Development Server
+**Puertos (evitar conflicto con la API):**
 
-Start the development server on `http://localhost:3000`:
+| Servicio | URL |
+|----------|-----|
+| API NestJS | `http://localhost:3000` |
+| Este frontend | `http://localhost:3001` |
+
+En la API (`.env.development`):
+
+```env
+FRONTEND_URL=http://localhost:3001
+```
+
+En este proyecto (`.env`):
+
+```env
+NUXT_PUBLIC_API_BASE_URL=http://localhost:3000/api
+```
+
+## Desarrollo
 
 ```bash
-# npm
-npm run dev
-
-# pnpm
 pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
 ```
 
-## Production
+Abre `http://localhost:3001`.
 
-Build the application for production:
+## Rutas alineadas con la API
+
+| Ruta web | API / flujo |
+|----------|-------------|
+| `/registro` | `POST /api/store/auth/register` |
+| `/verify-email?token=` | `POST /api/store/auth/verify-email` (enlace del correo) |
+| `/login` | `POST /api/store/auth/login` |
+| `/auth/google/callback` | Redirect OAuth con `accessToken` y `refreshToken` |
+| `/cuenta` | `GET /api/store/me` |
+
+Google: enlace directo a `{API}/api/store/auth/google`.
+
+## Estructura modular
+
+```text
+app/
+├── assets/          # Estilos globales
+├── components/
+│   ├── layout/      # Header, AuthCard
+│   └── ui/          # Button, Input, Alert
+├── composables/     # useApi, useApiErrorMessage
+├── layouts/         # default, auth
+├── middleware/      # auth, guest
+├── pages/           # Rutas de la tienda
+├── plugins/         # Hidratación de sesión
+├── stores/          # Pinia auth
+└── types/           # Tipos API y auth
+```
+
+## Scripts
 
 ```bash
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
+pnpm dev       # Desarrollo (puerto 3001)
+pnpm build     # Build producción
+pnpm preview   # Vista previa del build
 ```
 
-Locally preview production build:
+## Prueba rápida de auth
 
-```bash
-# npm
-npm run preview
+1. API: `pnpm db:migrate && pnpm db:seed && pnpm start:dev`
+2. Web: `pnpm dev`
+3. Registro en `/registro` → verificar en `/verify-email?token=...`
+4. Login en `/login` o Google (si `GOOGLE_CLIENT_*` está en la API)
 
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+Swagger API: `http://localhost:3000/docs`

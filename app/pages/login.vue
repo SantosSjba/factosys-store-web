@@ -1,0 +1,79 @@
+<script setup lang="ts">
+import { ApiError } from '~/types/api'
+
+definePageMeta({
+  layout: 'auth',
+  middleware: 'guest',
+})
+
+const route = useRoute()
+const authStore = useAuthStore()
+
+const email = ref('')
+const password = ref('')
+const loading = ref(false)
+const errorMessage = ref('')
+
+async function onSubmit() {
+  loading.value = true
+  errorMessage.value = ''
+  try {
+    await authStore.login({ email: email.value, password: password.value })
+    const redirect =
+      typeof route.query.redirect === 'string' ? route.query.redirect : '/cuenta'
+    await navigateTo(redirect)
+  } catch (error) {
+    errorMessage.value = useApiErrorMessage(error)
+    if (error instanceof ApiError && error.code === 'EMAIL_NOT_VERIFIED') {
+      errorMessage.value += ' Revisa tu correo o vuelve a registrarte.'
+    }
+  } finally {
+    loading.value = false
+  }
+}
+</script>
+
+<template>
+  <AuthCard
+    title="Iniciar sesión"
+    subtitle="Accede a tu cuenta de cliente en la tienda"
+  >
+    <form class="space-y-4" @submit.prevent="onSubmit">
+      <UiAlert v-if="errorMessage" variant="error">{{ errorMessage }}</UiAlert>
+
+      <UiInput
+        v-model="email"
+        label="Correo electrónico"
+        type="email"
+        autocomplete="email"
+        required
+      />
+      <UiInput
+        v-model="password"
+        label="Contraseña"
+        type="password"
+        autocomplete="current-password"
+        required
+      />
+
+      <UiButton type="submit" class="w-full" :loading="loading">
+        Entrar
+      </UiButton>
+    </form>
+
+    <div class="mt-6 space-y-3 border-t border-slate-100 pt-6 text-center text-sm">
+      <a
+        :href="authStore.googleAuthUrl"
+        class="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 font-medium text-slate-800 hover:bg-slate-50"
+      >
+        Continuar con Google
+      </a>
+      <p class="text-slate-600">
+        ¿No tienes cuenta?
+        <NuxtLink to="/registro" class="font-semibold text-indigo-600 hover:underline">
+          Regístrate
+        </NuxtLink>
+      </p>
+    </div>
+  </AuthCard>
+</template>
