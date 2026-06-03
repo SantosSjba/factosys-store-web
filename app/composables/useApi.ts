@@ -1,95 +1,122 @@
-import type { FetchOptions } from 'ofetch'
+import type { NitroFetchOptions, NitroFetchRequest } from 'nitropack'
+import { FetchError } from 'ofetch'
 import { ApiError, isApiErrorBody } from '~/types/api'
 
-type ApiFetchOptions = FetchOptions<'json'> & {
+type NitroFetchOpts = NitroFetchOptions<NitroFetchRequest>
+
+export type ApiFetchOptions = NitroFetchOpts & {
   /** Si es false, no envía Bearer (endpoints públicos). Por defecto true. */
   auth?: boolean
 }
 
 let refreshPromise: Promise<void> | null = null
 
+function normalizeApiError(error: unknown): never {
+  if (error instanceof ApiError) {
+    throw error
+  }
+
+  if (error instanceof FetchError) {
+    if (isApiErrorBody(error.data)) {
+      throw new ApiError(error.data)
+    }
+
+    throw new ApiError({
+      statusCode: error.response?.status ?? 500,
+      code: 'UNKNOWN_ERROR',
+      message: error.message || 'Error de conexión con el servidor',
+      details: null,
+      timestamp: new Date().toISOString(),
+      path: error.request?.toString() ?? '',
+    })
+  }
+
+  if (error instanceof Error) {
+    throw new ApiError({
+      statusCode: 500,
+      code: 'UNKNOWN_ERROR',
+      message: error.message,
+      details: null,
+      timestamp: new Date().toISOString(),
+      path: '',
+    })
+  }
+
+  throw new ApiError({
+    statusCode: 500,
+    code: 'UNKNOWN_ERROR',
+    message: 'Error de conexión con el servidor',
+    details: null,
+    timestamp: new Date().toISOString(),
+    path: '',
+  })
+}
+
+/**
+ * Cliente HTTP con $fetch (ofetch), recomendado por Nuxt.
+ * @see https://nuxt.com/docs/api/utils/dollarfetch
+ */
 export function useApi() {
   const config = useRuntimeConfig()
   const authStore = useAuthStore()
 
-  async function parseError(response: Response): Promise<never> {
-    let body: unknown = null
-    try {
-      body = await response.json()
-    } catch {
-      body = null
+  const client = $fetch.create({
+    baseURL: config.public.apiBaseUrl.replace(/\/$/, ''),
+    headers: {
+      Accept: 'application/json',
+    },
+  })
+
+  function buildNitroOptions(options: ApiFetchOptions): NitroFetchOpts {
+    const { auth = true, headers, ...fetchOptions } = options
+    const mergedHeaders = new Headers(headers as HeadersInit | undefined)
+
+    if (auth && authStore.accessToken) {
+      mergedHeaders.set('Authorization', `Bearer ${authStore.accessToken}`)
     }
-    if (isApiErrorBody(body)) {
-      throw new ApiError(body)
+
+    return {
+      ...fetchOptions,
+      headers: mergedHeaders,
     }
-    throw new ApiError({
-      statusCode: response.status,
-      code: 'UNKNOWN_ERROR',
-      message: response.statusText || 'Error de conexión con el servidor',
-      details: null,
-      timestamp: new Date().toISOString(),
-      path: response.url,
-    })
   }
 
   async function request<T>(
     path: string,
     options: ApiFetchOptions = {},
   ): Promise<T> {
-    const { auth = true, ...fetchOptions } = options
-    const headers = new Headers(
-      (fetchOptions.headers as HeadersInit | undefined) ?? {},
-    )
-    headers.set('Accept', 'application/json')
-    if (!(fetchOptions.body instanceof FormData)) {
-      headers.set('Content-Type', 'application/json')
-    }
-    if (auth && authStore.accessToken) {
-      headers.set('Authorization', `Bearer ${authStore.accessToken}`)
-    }
+    const { auth = true } = options
+    const nitroOptions = buildNitroOptions(options)
 
-    const url = path.startsWith('http')
-      ? path
-      : `${config.public.apiBaseUrl}${path.startsWith('/') ? path : `/${path}`}`
+    try {
+      return await client<T>(path, nitroOptions)
+    } catch (error) {
+      if (
+        error instanceof FetchError &&
+        error.response?.status === 401 &&
+        auth &&
+        authStore.refreshToken
+      ) {
+        if (!refreshPromise) {
+          refreshPromise = authStore
+            .refreshSession()
+            .then(() => undefined)
+            .finally(() => {
+              refreshPromise = null
+            })
+        }
 
-    const response = await fetch(url, {
-      ...fetchOptions,
-      headers,
-      body:
-        fetchOptions.body !== undefined &&
-        typeof fetchOptions.body === 'object' &&
-        !(fetchOptions.body instanceof FormData)
-          ? JSON.stringify(fetchOptions.body)
-          : (fetchOptions.body as BodyInit | undefined),
-    })
-
-    if (response.status === 401 && auth && authStore.refreshToken) {
-      if (!refreshPromise) {
-        refreshPromise = authStore
-          .refreshSession()
-          .then(() => undefined)
-          .finally(() => {
-            refreshPromise = null
-          })
+        try {
+          await refreshPromise
+          return await client<T>(path, buildNitroOptions(options))
+        } catch (retryError) {
+          authStore.clearSession()
+          normalizeApiError(retryError)
+        }
       }
-      try {
-        await refreshPromise
-        return request<T>(path, options)
-      } catch {
-        authStore.clearSession()
-        await parseError(response)
-      }
-    }
 
-    if (!response.ok) {
-      await parseError(response)
+      normalizeApiError(error)
     }
-
-    if (response.status === 204) {
-      return undefined as T
-    }
-
-    return (await response.json()) as T
   }
 
   return request

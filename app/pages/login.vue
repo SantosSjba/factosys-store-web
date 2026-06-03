@@ -27,6 +27,10 @@ async function onSubmit() {
     if (error instanceof ApiError && error.code === 'EMAIL_NOT_VERIFIED') {
       errorMessage.value += ' Revisa tu correo o vuelve a registrarte.'
     }
+    if (error instanceof ApiError && error.code === 'AUTH_CONTEXT_MISMATCH') {
+      errorMessage.value +=
+        ' Las cuentas super@ / admin@ son del panel admin, no de la tienda.'
+    }
   } finally {
     loading.value = false
   }
@@ -60,6 +64,10 @@ async function onSubmit() {
         Entrar
       </UiButton>
     </form>
+
+    <p class="mt-4 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-600">
+      Tienda (dev): <strong>cliente@factosys.store</strong> / Cliente123!
+    </p>
 
     <div class="mt-6 space-y-3 border-t border-slate-100 pt-6 text-center text-sm">
       <a

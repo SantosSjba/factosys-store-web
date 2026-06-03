@@ -144,7 +144,13 @@ export const useAuthStore = defineStore('auth', () => {
 
   const googleAuthUrl = computed(() => {
     const config = useRuntimeConfig()
-    return `${config.public.apiBaseUrl}/store/auth/google`
+    const base = config.public.apiBaseUrl.replace(/\/$/, '')
+    // OAuth debe ir al backend real (no al proxy del navegador en todos los casos)
+    if (base.startsWith('http')) {
+      return `${base}/store/auth/google`
+    }
+    const origin = config.public.apiOrigin.replace(/\/$/, '')
+    return `${origin}/api/store/auth/google`
   })
 
   return {

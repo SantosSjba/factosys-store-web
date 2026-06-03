@@ -63,6 +63,10 @@ Abre `http://localhost:3001`.
 
 Google: enlace directo a `{API}/api/store/auth/google`.
 
+## Cliente HTTP
+
+Las peticiones a la API usan **`$fetch.create()`** (ofetch, integrado en Nuxt), centralizado en `useApi`: Bearer, refresh en 401 y errores `ApiError`.
+
 ## Estructura modular
 
 ```text
@@ -71,7 +75,7 @@ app/
 ├── components/
 │   ├── layout/      # Header, AuthCard
 │   └── ui/          # Button, Input, Alert
-├── composables/     # useApi, useApiErrorMessage
+├── composables/     # useApi ($fetch/ofetch), useApiErrorMessage
 ├── layouts/         # default, auth
 ├── middleware/      # auth, guest
 ├── pages/           # Rutas de la tienda

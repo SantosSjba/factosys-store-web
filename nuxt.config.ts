@@ -7,11 +7,34 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
 
-  // Valores por defecto; Nuxt los sobreescribe con NUXT_PUBLIC_* del .env
+  // AuthCard, UiButton, AppHeader… sin prefijo Layout*/Ui*
+  components: {
+    dirs: [
+      {
+        path: '~/components',
+        pathPrefix: false,
+      },
+    ],
+  },
+
+  // Dev: /api/* → backend conservando el prefijo /api (Nest global prefix)
+  vite: {
+    server: {
+      proxy: {
+        '/api': {
+          target: process.env.NUXT_API_PROXY_TARGET || 'http://127.0.0.1:3000',
+          changeOrigin: true,
+          secure: false,
+        },
+      },
+    },
+  },
+
   runtimeConfig: {
     public: {
-      apiBaseUrl: 'http://localhost:3000/api',
-      appName: 'Factosys Store',
+      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || '/api',
+      apiOrigin: process.env.NUXT_API_PROXY_TARGET || 'http://127.0.0.1:3000',
+      appName: process.env.NUXT_PUBLIC_APP_NAME || 'Factosys Store',
     },
   },
 
