@@ -27,16 +27,18 @@ const isCollapsed = computed(() => props.variant === 'desktop' && collapsed.valu
     <AdminSidebarBrand :collapsed="isCollapsed" />
     <AdminSidebarNav :collapsed="isCollapsed" @navigate="emit('navigate')" />
 
-    <div class="border-admin-line overflow-visible border-t p-3">
+    <div class="border-admin-line overflow-visible border-t p-4">
       <UiTooltip label="Volver a la tienda" :show="isCollapsed">
         <NuxtLink
           to="/"
-          class="admin-nav-link flex items-center rounded-lg text-sm transition hover:opacity-80"
-          :class="isCollapsed ? 'justify-center px-2 py-2' : 'gap-2 px-3 py-2'"
+          class="admin-nav-link flex w-full items-center rounded-lg text-sm font-medium transition"
+          :class="
+            isCollapsed ? 'justify-center px-2 py-2.5' : 'gap-3 px-3 py-2.5'
+          "
           @click="emit('navigate')"
         >
-          <UiIcon name="lucide:store" :size="18" />
-          <span v-if="!isCollapsed">Volver a la tienda</span>
+          <UiIcon name="lucide:store" :size="20" />
+          <span v-if="!isCollapsed" class="flex-1">Volver a la tienda</span>
         </NuxtLink>
       </UiTooltip>
     </div>

@@ -33,7 +33,6 @@ function closePanels() {
 }
 
 function onSearchSubmit() {
-  // Shell: conectar con catálogo cuando exista el módulo
   if (!searchQuery.value.trim()) return
 }
 
@@ -58,14 +57,9 @@ watch(
       <div class="mx-auto max-w-7xl px-4 py-2">
         <p class="truncate">
           Envío gratis en compras seleccionadas ·
-          <NuxtLink to="/" class="underline hover:no-underline">
-            Ver ofertas
-          </NuxtLink>
+          <NuxtLink to="/" class="underline hover:no-underline">Ver ofertas</NuxtLink>
           <span class="mx-2 hidden sm:inline">|</span>
-          <NuxtLink
-            to="/intranet"
-            class="hidden underline hover:no-underline sm:inline"
-          >
+          <NuxtLink to="/intranet" class="hidden underline hover:no-underline sm:inline">
             Acceso intranet
           </NuxtLink>
         </p>
@@ -77,99 +71,42 @@ watch(
       <div
         class="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:gap-4 sm:py-4 lg:gap-6"
       >
-        <!-- Logo (texto provisional) -->
-        <NuxtLink
-          to="/"
-          class="flex shrink-0 items-baseline gap-1.5 font-bold tracking-tight sm:gap-2"
-        >
-          <span class="text-brand-facto text-lg sm:text-xl">FACTO</span>
-          <span class="text-brand-sys text-lg sm:text-xl">SYS</span>
-          <span
-            class="text-brand-accent rounded-md border border-[color-mix(in_srgb,var(--brand-cyan)_35%,white)] bg-brand-accent-soft px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider sm:text-xs"
-          >
-            Store
-          </span>
-        </NuxtLink>
+        <BrandLogo />
 
-        <!-- Menú -->
         <button
           type="button"
-          class="hidden shrink-0 items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-slate-800 hover:bg-slate-100 lg:flex"
+          class="text-theme hover:bg-theme-muted hidden shrink-0 items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium lg:flex"
           :aria-expanded="isMenuOpen"
           @click="isMenuOpen = !isMenuOpen"
         >
-          <svg
-            class="h-5 w-5"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.75"
-            aria-hidden="true"
-          >
-            <path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16" />
-          </svg>
+          <UiIcon name="lucide:menu" :size="20" />
           Menú
         </button>
 
-        <!-- Buscador -->
         <form
           class="flex min-w-0 flex-1 items-center"
           role="search"
           @submit.prevent="onSearchSubmit"
         >
-          <div
-            class="border-brand-cyan-focus border-store-line flex w-full items-center overflow-hidden rounded-full border bg-white shadow-sm"
-          >
-            <input
-              v-model="searchQuery"
-              type="search"
-              class="min-w-0 flex-1 border-0 bg-transparent px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-0"
-              :placeholder="`Buscar en ${config.public.appName}`"
-              autocomplete="off"
-            />
-            <button
-              type="submit"
-              class="bg-brand-ink-btn flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white transition sm:mr-1"
-              aria-label="Buscar"
-            >
-              <svg
-                class="h-4 w-4"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                aria-hidden="true"
-              >
-                <circle cx="11" cy="11" r="7" />
-                <path stroke-linecap="round" d="m20 20-3.5-3.5" />
-              </svg>
-            </button>
-          </div>
+          <UiSearchInput
+            v-model="searchQuery"
+            :placeholder="`Buscar en ${config.public.appName}`"
+            @submit="onSearchSubmit"
+          />
         </form>
 
-        <!-- Acciones -->
         <div class="flex shrink-0 items-center gap-1 sm:gap-2">
           <ThemeToggle />
 
-          <!-- Cuenta -->
           <div class="relative hidden sm:block">
             <button
               type="button"
-              class="flex items-center gap-1 rounded-lg px-2 py-1.5 text-left text-sm text-slate-800 hover:bg-slate-100"
+              class="text-theme hover:bg-theme-muted flex items-center gap-1 rounded-lg px-2 py-1.5 text-left text-sm"
               :aria-expanded="isAccountOpen"
               @click="isAccountOpen = !isAccountOpen"
             >
               <span class="max-w-[9rem] truncate font-medium">{{ accountLabel }}</span>
-              <svg
-                class="h-4 w-4 shrink-0 text-slate-500"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                aria-hidden="true"
-              >
-                <path stroke-linecap="round" d="m6 9 6 6 6-6" />
-              </svg>
+              <UiIcon name="lucide:chevron-down" :size="16" class="text-theme-muted shrink-0" />
             </button>
 
             <div
@@ -179,14 +116,14 @@ watch(
               <template v-if="authStore.isAuthenticated">
                 <NuxtLink
                   to="/cuenta"
-                  class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                  class="text-theme hover:bg-theme-muted block px-4 py-2 text-sm"
                   @click="isAccountOpen = false"
                 >
                   Mi cuenta
                 </NuxtLink>
                 <button
                   type="button"
-                  class="block w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
+                  class="text-theme hover:bg-theme-muted block w-full px-4 py-2 text-left text-sm"
                   @click="handleLogout"
                 >
                   Cerrar sesión
@@ -195,14 +132,14 @@ watch(
               <template v-else>
                 <NuxtLink
                   to="/login"
-                  class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                  class="text-theme hover:bg-theme-muted block px-4 py-2 text-sm"
                   @click="isAccountOpen = false"
                 >
                   Iniciar sesión
                 </NuxtLink>
                 <NuxtLink
                   to="/registro"
-                  class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                  class="text-theme hover:bg-theme-muted block px-4 py-2 text-sm"
                   @click="isAccountOpen = false"
                 >
                   Crear cuenta
@@ -213,80 +150,27 @@ watch(
 
           <NuxtLink
             to="/cuenta"
-            class="hidden rounded-lg px-2 py-1.5 text-sm font-medium text-slate-800 hover:bg-slate-100 md:inline"
+            class="text-theme hover:bg-theme-muted hidden rounded-lg px-2 py-1.5 text-sm font-medium md:inline"
           >
             Mi cuenta
           </NuxtLink>
 
-          <!-- Favoritos (shell) -->
-          <button
-            type="button"
-            class="rounded-lg p-2 text-slate-700 hover:bg-slate-100"
-            aria-label="Favoritos"
-          >
-            <svg
-              class="h-6 w-6"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.75"
-              aria-hidden="true"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M12 21s-7-4.35-7-10a4 4 0 0 1 7-2 4 4 0 0 1 7 2c0 5.65-7 10-7 10Z"
-              />
-            </svg>
-          </button>
+          <UiIconButton icon="lucide:heart" ariaLabel="Favoritos" size="lg" />
 
-          <!-- Carrito (shell) -->
-          <button
-            type="button"
-            class="relative rounded-lg p-2 text-slate-700 hover:bg-slate-100"
-            aria-label="Carrito de compras"
-          >
-            <svg
-              class="h-6 w-6"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.75"
-              aria-hidden="true"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M6 6h15l-1.5 9H8L6 6ZM6 6 5 3H2"
-              />
-              <circle cx="9" cy="20" r="1" />
-              <circle cx="18" cy="20" r="1" />
-            </svg>
-            <span
-              class="bg-brand-accent absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold text-white"
-            >
-              {{ cartCount }}
-            </span>
-          </button>
+          <UiIconButton
+            icon="lucide:shopping-cart"
+            ariaLabel="Carrito de compras"
+            size="lg"
+            :badge="cartCount"
+          />
 
-          <!-- Menú móvil -->
-          <button
-            type="button"
-            class="rounded-lg p-2 text-slate-700 hover:bg-slate-100 lg:hidden"
-            aria-label="Abrir menú"
+          <UiIconButton
+            icon="lucide:menu"
+            ariaLabel="Abrir menú"
+            size="lg"
+            class="lg:hidden"
             @click="isMenuOpen = !isMenuOpen"
-          >
-            <svg
-              class="h-6 w-6"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.75"
-              aria-hidden="true"
-            >
-              <path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16" />
-            </svg>
-          </button>
+          />
         </div>
       </div>
     </div>
@@ -294,27 +178,13 @@ watch(
     <!-- Subnavegación -->
     <div class="bg-store-subnav border-store-line hidden border-b sm:block">
       <div
-        class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-2 text-sm text-slate-700"
+        class="text-theme mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-2 text-sm"
       >
         <button
           type="button"
           class="hover:text-brand-accent flex items-center gap-1.5 font-medium"
         >
-          <svg
-            class="h-4 w-4"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.75"
-            aria-hidden="true"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M12 21s-6-4.5-6-10a6 6 0 1 1 12 0c0 5.5-6 10-6 10Z"
-            />
-            <circle cx="12" cy="11" r="2.5" />
-          </svg>
+          <UiIcon name="lucide:map-pin" :size="16" />
           Ingresa tu ubicación
         </button>
 
@@ -349,29 +219,16 @@ watch(
         <aside
           class="bg-theme-surface absolute left-0 top-0 flex h-full w-[min(20rem,85vw)] flex-col shadow-xl"
         >
-          <div
-            class="flex items-center justify-between border-b border-slate-200 px-4 py-4"
-          >
-            <span class="font-semibold text-slate-900">Categorías</span>
-            <button
-              type="button"
-              class="rounded-lg p-1 hover:bg-slate-100"
-              aria-label="Cerrar"
+          <div class="border-theme flex items-center justify-between border-b px-4 py-4">
+            <span class="text-theme font-semibold">Categorías</span>
+            <UiIconButton
+              icon="lucide:x"
+              ariaLabel="Cerrar"
               @click="isMenuOpen = false"
-            >
-              <svg
-                class="h-5 w-5"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path stroke-linecap="round" d="M6 6l12 12M18 6 6 18" />
-              </svg>
-            </button>
+            />
           </div>
-          <nav class="flex-1 overflow-y-auto p-4 text-sm text-slate-700">
-            <p class="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+          <nav class="text-theme flex-1 overflow-y-auto p-4 text-sm">
+            <p class="text-theme-muted mb-3 text-xs font-semibold uppercase tracking-wide">
               Próximamente
             </p>
             <ul class="space-y-1">
@@ -381,17 +238,17 @@ watch(
               >
                 <button
                   type="button"
-                  class="w-full rounded-lg px-3 py-2.5 text-left hover:bg-slate-100"
+                  class="hover:bg-theme-muted w-full rounded-lg px-3 py-2.5 text-left"
                 >
                   {{ category }}
                 </button>
               </li>
             </ul>
-            <div class="mt-6 border-t border-slate-100 pt-4 sm:hidden">
+            <div class="border-theme mt-6 border-t pt-4 sm:hidden">
               <NuxtLink
                 v-if="!authStore.isAuthenticated"
                 to="/login"
-                class="block rounded-lg px-3 py-2 hover:bg-slate-100"
+                class="hover:bg-theme-muted block rounded-lg px-3 py-2"
                 @click="isMenuOpen = false"
               >
                 Iniciar sesión
@@ -399,7 +256,7 @@ watch(
               <NuxtLink
                 v-else
                 to="/cuenta"
-                class="block rounded-lg px-3 py-2 hover:bg-slate-100"
+                class="hover:bg-theme-muted block rounded-lg px-3 py-2"
                 @click="isMenuOpen = false"
               >
                 Mi cuenta
@@ -410,7 +267,6 @@ watch(
       </div>
     </Teleport>
 
-    <!-- Cerrar dropdown cuenta al clic fuera -->
     <div
       v-if="isAccountOpen"
       class="fixed inset-0 z-30 hidden sm:block"

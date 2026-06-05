@@ -22,7 +22,7 @@ function onSubmit() {
         v-model="query"
         type="search"
         placeholder="Buscar en el panel…"
-        class="border-admin-line bg-admin-surface text-admin w-full rounded-lg border py-2 pl-10 pr-16 text-sm placeholder:text-admin-muted focus:border-[var(--admin-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--admin-primary)]"
+        class="border-admin-line bg-admin-surface text-admin placeholder:text-admin-muted w-full rounded-lg border py-2 pl-10 pr-16 text-sm focus:border-[var(--admin-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--admin-primary)]"
       />
       <kbd
         class="border-admin-line bg-admin-card text-admin-muted pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded border px-1.5 py-0.5 text-[10px] sm:inline"

@@ -7,7 +7,6 @@ const props = withDefaults(
     type?: 'button' | 'submit'
     variant?: 'primary' | 'secondary' | 'ghost'
     disabled?: boolean
-    /** Acepta boolean o Ref (p. ej. mutation.isPending de TanStack Query). */
     loading?: MaybeRef<boolean>
   }>(),
   {
@@ -28,9 +27,9 @@ const isLoading = computed(() => toValue(props.loading))
     :class="{
       'bg-brand-accent text-white hover:opacity-90 focus:ring-[var(--brand-cyan)]':
         variant === 'primary',
-      'border border-slate-300 bg-white text-slate-800 hover:bg-slate-50 focus:ring-slate-400':
+      'border-theme bg-theme-surface text-theme hover:bg-theme-muted border focus:ring-[var(--brand-cyan)]':
         variant === 'secondary',
-      'text-slate-700 hover:bg-slate-100 focus:ring-slate-400': variant === 'ghost',
+      'text-theme hover:bg-theme-muted focus:ring-[var(--brand-cyan)]': variant === 'ghost',
     }"
     :disabled="disabled || isLoading"
   >

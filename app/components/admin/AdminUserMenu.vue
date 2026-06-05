@@ -22,7 +22,7 @@ async function handleLogout() {
   <div class="relative">
     <button
       type="button"
-      class="border-admin-line bg-admin-card flex items-center gap-2 rounded-lg border py-1.5 pl-1.5 pr-2.5 transition hover:bg-admin-surface"
+      class="flex items-center gap-2 rounded-lg py-1.5 pl-1.5 pr-2.5 transition hover:bg-admin-surface"
       :aria-expanded="menuOpen"
       @click="menuOpen = !menuOpen"
     >
