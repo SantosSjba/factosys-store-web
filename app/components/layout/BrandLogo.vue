@@ -1,5 +1,5 @@
 <script setup lang="ts">
-withDefaults(
+const props = withDefaults(
   defineProps<{
     to?: string
     size?: 'sm' | 'md'
@@ -8,17 +8,17 @@ withDefaults(
 )
 
 const textSize = computed(() =>
-  size === 'sm' ? 'text-base sm:text-lg' : 'text-lg sm:text-xl',
+  props.size === 'sm' ? 'text-base sm:text-lg' : 'text-lg sm:text-xl',
 )
 
 const storeSize = computed(() =>
-  size === 'sm' ? 'text-xs sm:text-sm' : 'text-sm sm:text-base',
+  props.size === 'sm' ? 'text-xs sm:text-sm' : 'text-sm sm:text-base',
 )
 </script>
 
 <template>
   <NuxtLink
-    :to="to"
+    :to="props.to"
     class="flex shrink-0 items-baseline font-bold tracking-tight"
   >
     <span :class="textSize">

@@ -27,8 +27,9 @@ const emit = defineEmits<{
       type="submit"
       icon="lucide:search"
       ariaLabel="Buscar"
-      variant="round-dark"
+      variant="ghost"
       size="sm"
+      class="text-brand-accent mr-1 shrink-0"
     />
   </div>
 </template>
