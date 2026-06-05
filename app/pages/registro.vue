@@ -83,7 +83,7 @@ async function onSubmit() {
 
     <p class="mt-6 text-center text-sm text-slate-600">
       ¿Ya tienes cuenta?
-      <NuxtLink to="/login" class="font-semibold text-indigo-600 hover:underline">
+      <NuxtLink to="/login" class="font-semibold text-brand-cyan-darker hover:underline">
         Inicia sesión
       </NuxtLink>
     </p>

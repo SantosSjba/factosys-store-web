@@ -2,8 +2,50 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Factosys Store — tokens de marca
+ * Origen: logo Factosys (FACTO plata · SYS cian · fondo negro)
+ *
+ * Uso en tienda:
+ *   --brand-cyan*     → CTAs, links, focus, acentos
+ *   --brand-silver*   → textos secundarios, bordes suaves
+ *   --brand-ink*      → botones oscuros, contraste (eco del negro del logo)
+ *   --store-*         → superficies y texto de la tienda (fondo claro retail)
+ */
 @layer base {
+  :root {
+    /* Primarios — cian del logo (SYS / haz UFO) */
+    --brand-cyan: #00c8e8;
+    --brand-cyan-bright: #00e5ff;
+    --brand-cyan-dark: #0096b4;
+    --brand-cyan-darker: #007a94;
+
+    /* Neutros — plata FACTO + negro logo */
+    --brand-silver: #b8c8d4;
+    --brand-silver-light: #d8e2ea;
+    --brand-ink: #0a0f14;
+    --brand-ink-soft: #1a2332;
+
+    /* Superficies tienda (retail claro) */
+    --store-surface: #ffffff;
+    --store-muted: #f4f7f9;
+    --store-border: #dde4ea;
+    --store-promo: #e8f9fd;
+    --store-promo-text: #006b82;
+    --store-text: #0f172a;
+    --store-text-muted: #64748b;
+
+    /* Alias legacy usados en componentes */
+    --store-brand: var(--brand-cyan-dark);
+    --store-brand-dark: var(--brand-cyan-darker);
+    --store-search-btn: var(--brand-ink-soft);
+  }
+
   body {
-    @apply min-h-screen bg-slate-50 text-slate-900 antialiased;
+    min-height: 100vh;
+    background-color: var(--store-surface);
+    color: var(--store-text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }

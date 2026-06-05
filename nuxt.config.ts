@@ -5,6 +5,10 @@ export default defineNuxtConfig({
 
   modules: ['@pinia/nuxt', '@nuxtjs/tailwindcss'],
 
+  tailwindcss: {
+    configPath: 'tailwind.config.ts',
+  },
+
   // mutations/ y queries/ no se escanean por defecto (solo composables raíz)
   imports: {
     dirs: ['composables/mutations', 'composables/queries'],

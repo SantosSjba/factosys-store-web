@@ -4,8 +4,8 @@
     <main class="flex-1">
       <slot />
     </main>
-    <footer class="border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-500">
-      Factosys Store — integrado con FACTOSYS STORE API
+    <footer class="border-t border-slate-200 bg-slate-50 py-8 text-center text-xs text-slate-500">
+      © {{ new Date().getFullYear() }} Factosys Store · Todos los derechos reservados
     </footer>
   </div>
 </template>
