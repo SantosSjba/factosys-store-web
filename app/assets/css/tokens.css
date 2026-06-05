@@ -1,11 +1,5 @@
 /**
  * Factosys Store — paleta global (única fuente de verdad).
- * Derivada del logo: FACTO (plata) · SYS (cian) · fondo negro.
- *
- * Uso en componentes:
- *   - Clases utilitarias en main.css (.text-brand-sys, .bg-brand-accent…)
- *   - Arbitrario Tailwind: text-[var(--brand-cyan)]
- *   - JS/TS: import { cssVar } from '~/constants/brand'
  */
 :root {
   /* ── Marca Factosys ── */
@@ -13,14 +7,13 @@
   --brand-cyan-bright: #00e5ff;
   --brand-cyan-dark: #0096b4;
   --brand-cyan-darker: #007a94;
-
   --brand-facto-text: #4a6270;
   --brand-silver: #b8c8d4;
   --brand-silver-light: #d8e2ea;
   --brand-ink: #0a0f14;
   --brand-ink-soft: #1a2332;
 
-  /* ── Tienda (superficies retail) ── */
+  /* ── Tienda ── */
   --store-surface: #ffffff;
   --store-muted: #f4f7f9;
   --store-border: #dde4ea;
@@ -28,12 +21,30 @@
   --store-promo-text: #005a6e;
   --store-text: #0f172a;
   --store-text-muted: #64748b;
-
-  /* ── Alias semánticos ── */
   --color-primary: var(--brand-cyan-dark);
   --color-primary-hover: var(--brand-cyan);
   --color-link: var(--brand-cyan-darker);
   --color-surface: var(--store-surface);
   --color-border: var(--store-border);
   --shadow-brand-glow: 0 0 20px rgb(0 200 232 / 0.35);
+
+  /* ── Admin (estilo TailAdmin — sidebar claro) ── */
+  --admin-primary: var(--brand-cyan-dark);
+  --admin-primary-soft: #e0f7fa;
+  --admin-primary-muted: #b2ebf2;
+  --admin-sidebar-bg: #ffffff;
+  --admin-sidebar-border: #e2e8f0;
+  --admin-sidebar-text: #475569;
+  --admin-sidebar-muted: #94a3b8;
+  --admin-sidebar-hover: #f1f5f9;
+  --admin-sidebar-active-bg: var(--admin-primary-soft);
+  --admin-sidebar-active-text: var(--admin-primary);
+  --admin-surface: #f1f5f9;
+  --admin-card: #ffffff;
+  --admin-border: #e2e8f0;
+  --admin-text: #1e293b;
+  --admin-text-muted: #64748b;
+  --admin-shadow-card: 0 1px 3px rgb(15 23 42 / 0.06), 0 1px 2px rgb(15 23 42 / 0.04);
+  --admin-success: #10b981;
+  --admin-danger: #ef4444;
 }

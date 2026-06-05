@@ -19,5 +19,10 @@ export default {
     'hover:text-brand-accent',
     'border-brand-cyan-focus',
     'shadow-brand-glow',
+    'bg-admin-sidebar',
+    'bg-admin-surface',
+    'bg-admin-card',
+    'text-admin-accent',
+    'border-admin-line',
   ],
 }

@@ -2,53 +2,75 @@
 definePageMeta({
   layout: 'intranet',
   middleware: 'admin-auth',
+  adminTitle: 'Dashboard',
 })
 
 const adminAuth = useAdminAuthStore()
 const { data: profile, isPending } = useAdminProfileQuery()
+
+const permissionsCount = computed(() => profile.value?.permissions.length ?? '—')
 </script>
 
 <template>
-  <section class="mx-auto max-w-4xl px-4 py-12">
-    <div class="rounded-2xl border border-violet-200 bg-white p-8 shadow-sm">
-      <p class="text-sm font-medium uppercase tracking-wide text-violet-700">
-        Intranet
-      </p>
-      <h1 class="mt-2 text-2xl font-bold text-slate-900">
-        Bienvenido, {{ adminAuth.displayName || 'usuario staff' }}
-      </h1>
-      <p class="mt-2 text-slate-600">
-        Panel base conectado a la API administrativa. Aquí irán catálogo,
-        pedidos, usuarios y reportes.
-      </p>
+  <div>
+    <AdminPageTitle
+      title="Dashboard"
+      :description="`Bienvenido, ${adminAuth.displayName || 'usuario staff'}. Vista general del panel admin.`"
+    />
 
-      <div v-if="isPending" class="mt-8 text-sm text-slate-500">
-        Cargando perfil…
-      </div>
+    <div class="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <AdminStatCard
+        label="Pedidos hoy"
+        value="—"
+        hint="Módulo pedidos"
+        icon="orders"
+        trend="+ 0%"
+        :trend-up="true"
+      />
+      <AdminStatCard
+        label="Productos"
+        value="—"
+        hint="Módulo catálogo"
+        icon="catalog"
+      />
+      <AdminStatCard
+        label="Usuarios staff"
+        value="—"
+        hint="Módulo usuarios"
+        icon="users"
+      />
+      <AdminStatCard
+        label="Permisos activos"
+        :value="permissionsCount"
+        hint="Tu sesión"
+        icon="settings"
+      />
+    </div>
 
-      <div
-        v-else-if="profile"
-        class="mt-8 grid gap-4 sm:grid-cols-2"
-      >
-        <div class="rounded-lg bg-slate-50 p-4">
+    <AdminCard
+      title="Tu perfil (API admin)"
+      description="Datos desde GET /api/admin/users/me"
+    >
+      <div v-if="isPending" class="text-sm text-slate-500">Cargando perfil…</div>
+
+      <div v-else-if="profile" class="grid gap-4 sm:grid-cols-2">
+        <div class="rounded-xl bg-slate-50 p-4">
           <p class="text-xs font-medium uppercase text-slate-500">Correo</p>
-          <p class="mt-1 font-medium">{{ profile.email }}</p>
+          <p class="mt-1 font-medium text-slate-900">{{ profile.email }}</p>
         </div>
-        <div class="rounded-lg bg-slate-50 p-4">
+        <div class="rounded-xl bg-slate-50 p-4">
           <p class="text-xs font-medium uppercase text-slate-500">Roles</p>
-          <p class="mt-1 font-medium">
+          <p class="mt-1 font-medium text-slate-900">
             {{ profile.roles.join(', ') || '—' }}
           </p>
         </div>
-        <div class="rounded-lg bg-slate-50 p-4 sm:col-span-2">
-          <p class="text-xs font-medium uppercase text-slate-500">
-            Permisos
-          </p>
+        <div class="rounded-xl bg-slate-50 p-4 sm:col-span-2">
+          <p class="text-xs font-medium uppercase text-slate-500">Permisos</p>
           <p class="mt-1 text-sm text-slate-700">
-            {{ profile.permissions.length }} permisos asignados
+            {{ profile.permissions.length }} asignados
           </p>
         </div>
       </div>
-    </div>
-  </section>
+    </AdminCard>
+  </div>
 </template>

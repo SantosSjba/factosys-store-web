@@ -5,6 +5,12 @@
 @tailwind utilities;
 
 @layer base {
+  html,
+  body,
+  #__nuxt {
+    min-height: 100%;
+  }
+
   body {
     min-height: 100vh;
     background-color: var(--store-surface);
@@ -79,5 +85,30 @@
 
   .shadow-brand-glow {
     box-shadow: var(--shadow-brand-glow);
+  }
+
+  /* Admin / intranet */
+  .bg-admin-sidebar {
+    background-color: var(--admin-sidebar-bg);
+  }
+
+  .bg-admin-surface {
+    background-color: var(--admin-surface);
+  }
+
+  .bg-admin-card {
+    background-color: var(--admin-card);
+  }
+
+  .text-admin-accent {
+    color: var(--admin-primary);
+  }
+
+  .shadow-admin-card {
+    box-shadow: var(--admin-shadow-card);
+  }
+
+  .border-admin-line {
+    border-color: var(--admin-border);
   }
 }
