@@ -13,7 +13,7 @@
 
   body {
     min-height: 100vh;
-    background-color: var(--store-surface);
+    background-color: var(--color-surface);
     color: var(--store-text);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -110,5 +110,50 @@
 
   .border-admin-line {
     border-color: var(--admin-border);
+  }
+
+  /* Tema global (tienda + admin) */
+  .bg-theme-surface {
+    background-color: var(--color-surface);
+  }
+
+  .bg-theme-muted {
+    background-color: var(--store-muted);
+  }
+
+  .bg-theme-header {
+    background-color: var(--theme-header-bg);
+  }
+
+  .bg-theme-dropdown {
+    background-color: var(--theme-dropdown-bg);
+  }
+
+  .text-theme {
+    color: var(--store-text);
+  }
+
+  .text-theme-muted {
+    color: var(--store-text-muted);
+  }
+
+  .border-theme {
+    border-color: var(--color-border);
+  }
+
+  .hover\:bg-theme-muted:hover {
+    background-color: var(--store-muted);
+  }
+
+  .hover\:text-theme:hover {
+    color: var(--store-text);
+  }
+
+  .text-admin {
+    color: var(--admin-text);
+  }
+
+  .text-admin-muted {
+    color: var(--admin-text-muted);
   }
 }

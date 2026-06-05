@@ -57,6 +57,15 @@ export default defineNuxtConfig({
       meta: [
         { name: 'description', content: 'Tienda en línea Factosys' },
       ],
+      script: [
+        {
+          key: 'theme-init',
+          innerHTML:
+            "(function(){try{var t=localStorage.getItem('fs-theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.setAttribute('data-theme','dark')}catch(e){}})();",
+          type: 'text/javascript',
+          tagPosition: 'head',
+        },
+      ],
     },
   },
 })

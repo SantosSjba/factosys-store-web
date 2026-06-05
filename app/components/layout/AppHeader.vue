@@ -50,7 +50,7 @@ watch(
 </script>
 
 <template>
-  <header class="sticky top-0 z-40 bg-white shadow-sm">
+  <header class="bg-theme-header sticky top-0 z-40 shadow-sm">
     <!-- Franja promocional -->
     <div
       class="border-store-promo-bar bg-store-promo-bar text-store-promo-bar border-b text-center text-xs font-medium sm:text-sm"
@@ -73,7 +73,7 @@ watch(
     </div>
 
     <!-- Fila principal -->
-    <div class="border-b border-slate-200">
+    <div class="border-theme border-b">
       <div
         class="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:gap-4 sm:py-4 lg:gap-6"
       >
@@ -149,6 +149,8 @@ watch(
 
         <!-- Acciones -->
         <div class="flex shrink-0 items-center gap-1 sm:gap-2">
+          <ThemeToggle />
+
           <!-- Cuenta -->
           <div class="relative hidden sm:block">
             <button
@@ -172,7 +174,7 @@ watch(
 
             <div
               v-if="isAccountOpen"
-              class="absolute right-0 top-full z-50 mt-1 w-48 rounded-lg border border-slate-200 bg-white py-1 shadow-lg"
+              class="border-theme bg-theme-dropdown absolute right-0 top-full z-50 mt-1 w-48 rounded-lg border py-1 shadow-lg"
             >
               <template v-if="authStore.isAuthenticated">
                 <NuxtLink
@@ -345,7 +347,7 @@ watch(
           @click="isMenuOpen = false"
         />
         <aside
-          class="absolute left-0 top-0 flex h-full w-[min(20rem,85vw)] flex-col bg-white shadow-xl"
+          class="bg-theme-surface absolute left-0 top-0 flex h-full w-[min(20rem,85vw)] flex-col shadow-xl"
         >
           <div
             class="flex items-center justify-between border-b border-slate-200 px-4 py-4"

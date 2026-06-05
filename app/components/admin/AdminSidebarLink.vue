@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import type { AdminNavIconName } from '~/constants/admin-nav'
+import { adminNavIcons, type AdminNavIconName } from '~/constants/admin-nav'
 
 const props = defineProps<{
   to: string
   label: string
   icon: AdminNavIconName
   soon?: boolean
+  collapsed?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -21,16 +22,22 @@ const isActive = computed(() => {
 </script>
 
 <template>
-  <NuxtLink
-    :to="to"
-    class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition"
-    :class="isActive ? 'admin-nav-link--active' : 'admin-nav-link'"
-    @click="emit('navigate')"
-  >
-    <AdminNavIcon :name="icon" />
-    <span class="flex-1">{{ label }}</span>
-    <AdminBadge v-if="soon">Próx.</AdminBadge>
-  </NuxtLink>
+  <UiTooltip :label="label" :show="collapsed">
+    <NuxtLink
+      :to="to"
+      class="group flex items-center rounded-lg text-sm font-medium transition"
+      :class="[
+        collapsed ? 'justify-center px-2 py-2.5' : 'gap-3 px-3 py-2.5',
+        isActive ? 'admin-nav-link--active' : 'admin-nav-link',
+      ]"
+      :title="collapsed ? undefined : label"
+      @click="emit('navigate')"
+    >
+      <UiIcon :name="adminNavIcons[icon]" :size="20" />
+      <span v-if="!collapsed" class="flex-1">{{ label }}</span>
+      <AdminBadge v-if="soon && !collapsed">Próx.</AdminBadge>
+    </NuxtLink>
+  </UiTooltip>
 </template>
 
 <style scoped>

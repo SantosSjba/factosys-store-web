@@ -22,7 +22,7 @@ async function handleLogout() {
   <div class="relative">
     <button
       type="button"
-      class="border-admin-line flex items-center gap-2 rounded-lg border bg-white py-1.5 pl-1.5 pr-2.5 transition hover:bg-slate-50"
+      class="border-admin-line bg-admin-card flex items-center gap-2 rounded-lg border py-1.5 pl-1.5 pr-2.5 transition hover:bg-admin-surface"
       :aria-expanded="menuOpen"
       @click="menuOpen = !menuOpen"
     >
@@ -32,34 +32,32 @@ async function handleLogout() {
       >
         {{ initials }}
       </span>
-      <span class="hidden max-w-[8rem] truncate text-sm font-medium text-slate-700 sm:inline">
+      <span class="text-admin hidden max-w-[8rem] truncate text-sm font-medium sm:inline">
         {{ adminAuth.displayName || 'Staff' }}
       </span>
-      <svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" d="m6 9 6 6 6-6" />
-      </svg>
+      <UiIcon name="lucide:chevron-down" :size="16" class="text-admin-muted" />
     </button>
 
     <div
       v-if="menuOpen"
-      class="border-admin-line absolute right-0 top-full z-50 mt-2 w-48 rounded-lg border bg-white py-1 shadow-lg"
+      class="border-admin-line bg-admin-card absolute right-0 top-full z-50 mt-2 w-48 rounded-lg border py-1 shadow-lg"
     >
       <div class="border-admin-line border-b px-4 py-2">
-        <p class="truncate text-sm font-medium text-slate-800">
+        <p class="text-admin truncate text-sm font-medium">
           {{ adminAuth.displayName }}
         </p>
-        <p class="truncate text-xs text-slate-500">{{ adminAuth.user?.email }}</p>
+        <p class="text-admin-muted truncate text-xs">{{ adminAuth.user?.email }}</p>
       </div>
       <NuxtLink
         to="/intranet"
-        class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+        class="text-admin block px-4 py-2 text-sm hover:bg-admin-surface"
         @click="menuOpen = false"
       >
         Mi panel
       </NuxtLink>
       <button
         type="button"
-        class="block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+        class="block w-full px-4 py-2 text-left text-sm text-red-500 hover:bg-red-500/10"
         @click="handleLogout"
       >
         Cerrar sesión

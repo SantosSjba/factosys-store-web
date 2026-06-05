@@ -1,7 +1,8 @@
 /**
  * Factosys Store — paleta global (única fuente de verdad).
  */
-:root {
+:root,
+[data-theme='light'] {
   /* ── Marca Factosys ── */
   --brand-cyan: #00c8e8;
   --brand-cyan-bright: #00e5ff;
@@ -47,4 +48,46 @@
   --admin-shadow-card: 0 1px 3px rgb(15 23 42 / 0.06), 0 1px 2px rgb(15 23 42 / 0.04);
   --admin-success: #10b981;
   --admin-danger: #ef4444;
+
+  /* ── UI compartida ── */
+  --tooltip-bg: #0f172a;
+  --tooltip-text: #f8fafc;
+  --theme-header-bg: var(--store-surface);
+  --theme-dropdown-bg: var(--store-surface);
+}
+
+[data-theme='dark'] {
+  --brand-facto-text: #94a3b8;
+  --store-surface: #0f172a;
+  --store-muted: #1e293b;
+  --store-border: #334155;
+  --store-promo: #0c4a6e;
+  --store-promo-text: #7dd3fc;
+  --store-text: #f1f5f9;
+  --store-text-muted: #94a3b8;
+  --color-surface: var(--store-surface);
+  --color-border: var(--store-border);
+  --shadow-brand-glow: 0 0 20px rgb(0 200 232 / 0.2);
+
+  --admin-primary: var(--brand-cyan);
+  --admin-primary-soft: rgb(0 150 180 / 0.2);
+  --admin-primary-muted: rgb(0 150 180 / 0.35);
+  --admin-sidebar-bg: #1e293b;
+  --admin-sidebar-border: #334155;
+  --admin-sidebar-text: #cbd5e1;
+  --admin-sidebar-muted: #64748b;
+  --admin-sidebar-hover: #334155;
+  --admin-sidebar-active-bg: var(--admin-primary-soft);
+  --admin-sidebar-active-text: var(--brand-cyan-bright);
+  --admin-surface: #0f172a;
+  --admin-card: #1e293b;
+  --admin-border: #334155;
+  --admin-text: #f1f5f9;
+  --admin-text-muted: #94a3b8;
+  --admin-shadow-card: 0 1px 3px rgb(0 0 0 / 0.35), 0 1px 2px rgb(0 0 0 / 0.25);
+
+  --tooltip-bg: #f8fafc;
+  --tooltip-text: #0f172a;
+  --theme-header-bg: var(--store-surface);
+  --theme-dropdown-bg: var(--store-surface);
 }

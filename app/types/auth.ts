@@ -23,7 +23,7 @@ export interface StoreProfile {
   firstName: string | null
   lastName: string | null
   phone: string | null
-  roles: string[]
+  roles: Array<string | { name?: string; slug?: string }>
   permissions: string[]
   createdAt: string
 }

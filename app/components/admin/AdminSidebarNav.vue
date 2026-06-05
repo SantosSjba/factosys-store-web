@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { adminNavMenu } from '~/constants/admin-nav'
 
+defineProps<{
+  collapsed?: boolean
+}>()
+
 const emit = defineEmits<{
   navigate: []
 }>()
@@ -16,7 +20,11 @@ function toggleGroup(label: string) {
 </script>
 
 <template>
-  <nav class="flex-1 space-y-6 overflow-y-auto p-4" aria-label="Menú administración">
+  <nav
+    class="min-h-0 flex-1 overflow-y-auto overflow-x-visible p-4"
+    :class="collapsed ? 'space-y-1' : 'space-y-6'"
+    aria-label="Menú administración"
+  >
     <template v-for="entry in adminNavMenu" :key="entry.type === 'link' ? entry.to : entry.label">
       <AdminSidebarLink
         v-if="entry.type === 'link'"
@@ -24,29 +32,35 @@ function toggleGroup(label: string) {
         :label="entry.label"
         :icon="entry.icon"
         :soon="entry.soon"
+        :collapsed="collapsed"
         @navigate="emit('navigate')"
       />
 
       <div v-else>
         <button
+          v-if="!collapsed"
           type="button"
           class="mb-2 flex w-full items-center justify-between px-3 text-xs font-semibold uppercase tracking-wider"
           style="color: var(--admin-sidebar-muted)"
           @click="toggleGroup(entry.label)"
         >
           {{ entry.label }}
-          <svg
-            class="h-4 w-4 transition"
+          <UiIcon
+            name="lucide:chevron-down"
+            :size="16"
+            class="transition"
             :class="expandedGroups[entry.label] ? 'rotate-180' : ''"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path stroke-linecap="round" d="m6 9 6 6 6-6" />
-          </svg>
+          />
         </button>
-        <div v-show="expandedGroups[entry.label]" class="space-y-1">
+        <div
+          v-if="collapsed"
+          class="border-admin-line my-2 border-t"
+          aria-hidden="true"
+        />
+        <div
+          v-show="collapsed || expandedGroups[entry.label]"
+          class="space-y-1"
+        >
           <AdminSidebarLink
             v-for="child in entry.children"
             :key="child.to"
@@ -54,6 +68,7 @@ function toggleGroup(label: string) {
             :label="child.label"
             :icon="child.icon"
             :soon="child.soon"
+            :collapsed="collapsed"
             @navigate="emit('navigate')"
           />
         </div>

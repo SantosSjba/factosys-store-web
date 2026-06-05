@@ -5,6 +5,14 @@ export type AdminNavIconName =
   | 'users'
   | 'settings'
 
+export const adminNavIcons: Record<AdminNavIconName, string> = {
+  dashboard: 'lucide:layout-dashboard',
+  catalog: 'lucide:package',
+  orders: 'lucide:shopping-bag',
+  users: 'lucide:users',
+  settings: 'lucide:settings',
+}
+
 export type AdminNavLink = {
   type: 'link'
   label: string

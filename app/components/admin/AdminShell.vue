@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const route = useRoute()
-const { mobileOpen, close } = useAdminSidebar()
+const { mobileOpen, close, contentOffsetClass } = useAdminSidebar()
 
 watch(
   () => route.path,
@@ -32,9 +32,12 @@ watch(
       </div>
     </Teleport>
 
-    <div class="flex min-h-screen min-w-0 flex-col lg:pl-[17rem]">
+    <div
+      class="bg-admin-surface flex min-h-screen min-w-0 flex-col transition-[padding] duration-200"
+      :class="contentOffsetClass"
+    >
       <AdminHeader />
-      <main class="flex-1 p-4 md:p-6">
+      <main class="bg-admin-surface flex-1 p-4 md:p-6">
         <slot />
       </main>
     </div>
