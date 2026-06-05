@@ -15,7 +15,11 @@ const id = `radio-${useId()}`
 </script>
 
 <template>
-  <label class="flex cursor-pointer items-center gap-3" :for="id">
+  <label
+    class="flex items-center gap-3"
+    :class="disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'"
+    :for="id"
+  >
     <input
       :id="id"
       type="radio"

@@ -47,3 +47,19 @@ export type ConfirmState = ConfirmOptions & {
   loading: boolean
   resolve?: (value: boolean) => void
 }
+
+export type UiSelectOption = {
+  label: string
+  value: string
+  disabled?: boolean
+}
+
+export type UiChoiceOption = {
+  label: string
+  value: string
+  hint?: string
+  disabled?: boolean
+}
+
+export type UiCardTone = 'store' | 'admin'
+export type UiCardVariant = 'elevated' | 'flat' | 'outline'
