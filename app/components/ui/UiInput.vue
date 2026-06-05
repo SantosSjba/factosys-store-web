@@ -21,7 +21,7 @@ defineEmits<{
       :value="modelValue"
       :autocomplete="autocomplete"
       :required="required"
-      class="w-full rounded-lg border border-store-border bg-white px-3 py-2.5 text-sm shadow-sm transition focus:border-brand-cyan focus:outline-none focus:ring-2 focus:ring-brand-cyan/25"
+      class="border-store-line w-full rounded-lg border bg-white px-3 py-2.5 text-sm shadow-sm transition focus:border-[var(--brand-cyan)] focus:outline-none focus:ring-2 focus:ring-[color-mix(in_srgb,var(--brand-cyan)_25%,transparent)]"
       @input="
         $emit('update:modelValue', ($event.target as HTMLInputElement).value)
       "

@@ -1,28 +1,30 @@
 /**
- * Paleta Factosys Store — derivada del logo corporativo.
- * @see app/assets/css/main.css (CSS variables)
- * @see tailwind.config.ts (clases Tailwind)
+ * Referencia a variables CSS globales (tokens.css).
+ * No duplicar hex aquí — editar solo tokens.css.
  */
-export const brandColors = {
-  cyan: '#00C8E8',
-  cyanBright: '#00E5FF',
-  cyanDark: '#0096B4',
-  cyanDarker: '#007A94',
-  silver: '#B8C8D4',
-  silverLight: '#D8E2EA',
-  ink: '#0A0F14',
-  inkSoft: '#1A2332',
+export const cssVar = {
+  brandCyan: '--brand-cyan',
+  brandCyanBright: '--brand-cyan-bright',
+  brandCyanDark: '--brand-cyan-dark',
+  brandCyanDarker: '--brand-cyan-darker',
+  brandFactoText: '--brand-facto-text',
+  brandSilver: '--brand-silver',
+  brandInk: '--brand-ink',
+  brandInkSoft: '--brand-ink-soft',
+  storeSurface: '--store-surface',
+  storeMuted: '--store-muted',
+  storeBorder: '--store-border',
+  storePromo: '--store-promo',
+  storePromoText: '--store-promo-text',
+  storeText: '--store-text',
+  colorPrimary: '--color-primary',
+  colorLink: '--color-link',
 } as const
 
-export const storeColors = {
-  surface: '#FFFFFF',
-  muted: '#F4F7F9',
-  border: '#DDE4EA',
-  promo: '#E8F9FD',
-  promoText: '#006B82',
-  text: '#0F172A',
-  textMuted: '#64748B',
-} as const
+/** Devuelve `var(--nombre-variable)` para estilos inline o charts. */
+export function v(name: keyof typeof cssVar): string {
+  return `var(${cssVar[name]})`
+}
 
 export const brandAssets = {
   logo: '/brand/logo-factosys.png',

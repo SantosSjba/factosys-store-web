@@ -1,51 +1,83 @@
+@import './tokens.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/*
- * Factosys Store — tokens de marca
- * Origen: logo Factosys (FACTO plata · SYS cian · fondo negro)
- *
- * Uso en tienda:
- *   --brand-cyan*     → CTAs, links, focus, acentos
- *   --brand-silver*   → textos secundarios, bordes suaves
- *   --brand-ink*      → botones oscuros, contraste (eco del negro del logo)
- *   --store-*         → superficies y texto de la tienda (fondo claro retail)
- */
 @layer base {
-  :root {
-    /* Primarios — cian del logo (SYS / haz UFO) */
-    --brand-cyan: #00c8e8;
-    --brand-cyan-bright: #00e5ff;
-    --brand-cyan-dark: #0096b4;
-    --brand-cyan-darker: #007a94;
-
-    /* Neutros — plata FACTO + negro logo */
-    --brand-silver: #b8c8d4;
-    --brand-silver-light: #d8e2ea;
-    --brand-ink: #0a0f14;
-    --brand-ink-soft: #1a2332;
-
-    /* Superficies tienda (retail claro) */
-    --store-surface: #ffffff;
-    --store-muted: #f4f7f9;
-    --store-border: #dde4ea;
-    --store-promo: #e8f9fd;
-    --store-promo-text: #006b82;
-    --store-text: #0f172a;
-    --store-text-muted: #64748b;
-
-    /* Alias legacy usados en componentes */
-    --store-brand: var(--brand-cyan-dark);
-    --store-brand-dark: var(--brand-cyan-darker);
-    --store-search-btn: var(--brand-ink-soft);
-  }
-
   body {
     min-height: 100vh;
     background-color: var(--store-surface);
     color: var(--store-text);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Utilidades que consumen las variables globales de tokens.css */
+@layer utilities {
+  .text-brand-facto {
+    color: var(--brand-facto-text);
+  }
+
+  .text-brand-sys {
+    color: var(--brand-cyan);
+  }
+
+  .text-brand-accent {
+    color: var(--color-primary);
+  }
+
+  .text-brand-accent-deep {
+    color: var(--color-link);
+  }
+
+  .text-store-promo-bar {
+    color: var(--store-promo-text);
+  }
+
+  .bg-brand-accent {
+    background-color: var(--color-primary);
+  }
+
+  .bg-brand-accent-soft {
+    background-color: color-mix(in srgb, var(--brand-cyan) 18%, white);
+  }
+
+  .bg-brand-ink-btn {
+    background-color: var(--brand-ink-soft);
+  }
+
+  .bg-brand-ink-btn:hover {
+    background-color: var(--brand-ink);
+  }
+
+  .bg-store-promo-bar {
+    background-color: var(--store-promo);
+  }
+
+  .bg-store-subnav {
+    background-color: var(--store-muted);
+  }
+
+  .border-store-promo-bar {
+    border-color: color-mix(in srgb, var(--brand-cyan) 40%, white);
+  }
+
+  .border-store-line {
+    border-color: var(--color-border);
+  }
+
+  .border-brand-cyan-focus:focus-within {
+    border-color: var(--brand-cyan);
+    box-shadow: 0 0 0 1px var(--brand-cyan);
+  }
+
+  .hover\:text-brand-accent:hover {
+    color: var(--color-primary);
+  }
+
+  .shadow-brand-glow {
+    box-shadow: var(--shadow-brand-glow);
   }
 }

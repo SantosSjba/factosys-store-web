@@ -80,7 +80,7 @@ const authStore = useAuthStore()
       </a>
       <p class="text-slate-600">
         ¿No tienes cuenta?
-        <NuxtLink to="/registro" class="font-semibold text-brand-cyan-darker hover:underline">
+        <NuxtLink to="/registro" class="text-brand-accent-deep font-semibold hover:underline">
           Regístrate
         </NuxtLink>
       </p>

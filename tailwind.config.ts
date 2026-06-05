@@ -1,36 +1,23 @@
-import type { Config } from 'tailwindcss'
-
 /**
- * Paleta Factosys Store — derivada del logo corporativo.
- * Cian eléctrico (SYS / UFO) + plata fría (FACTO) + negro profundo (fondo logo).
+ * Tailwind — layout y utilidades estándar.
+ * La paleta de colores vive en app/assets/css/tokens.css (variables CSS globales).
  */
 export default {
-  theme: {
-    extend: {
-      colors: {
-        brand: {
-          cyan: '#00C8E8',
-          'cyan-bright': '#00E5FF',
-          'cyan-dark': '#0096B4',
-          'cyan-darker': '#007A94',
-          silver: '#B8C8D4',
-          'silver-light': '#D8E2EA',
-          ink: '#0A0F14',
-          'ink-soft': '#1A2332',
-        },
-        store: {
-          surface: '#FFFFFF',
-          muted: '#F4F7F9',
-          border: '#DDE4EA',
-          promo: '#E8F9FD',
-          'promo-text': '#006B82',
-          text: '#0F172A',
-          'text-muted': '#64748B',
-        },
-      },
-      boxShadow: {
-        'brand-glow': '0 0 20px rgb(0 200 232 / 0.35)',
-      },
-    },
-  },
-} satisfies Config
+  safelist: [
+    'text-brand-facto',
+    'text-brand-sys',
+    'text-brand-accent',
+    'text-brand-accent-deep',
+    'bg-brand-accent',
+    'bg-brand-accent-soft',
+    'bg-brand-ink-btn',
+    'bg-store-promo-bar',
+    'text-store-promo-bar',
+    'border-store-promo-bar',
+    'border-store-line',
+    'bg-store-subnav',
+    'hover:text-brand-accent',
+    'border-brand-cyan-focus',
+    'shadow-brand-glow',
+  ],
+}

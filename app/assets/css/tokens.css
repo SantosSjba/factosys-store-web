@@ -1,0 +1,39 @@
+/**
+ * Factosys Store — paleta global (única fuente de verdad).
+ * Derivada del logo: FACTO (plata) · SYS (cian) · fondo negro.
+ *
+ * Uso en componentes:
+ *   - Clases utilitarias en main.css (.text-brand-sys, .bg-brand-accent…)
+ *   - Arbitrario Tailwind: text-[var(--brand-cyan)]
+ *   - JS/TS: import { cssVar } from '~/constants/brand'
+ */
+:root {
+  /* ── Marca Factosys ── */
+  --brand-cyan: #00c8e8;
+  --brand-cyan-bright: #00e5ff;
+  --brand-cyan-dark: #0096b4;
+  --brand-cyan-darker: #007a94;
+
+  --brand-facto-text: #4a6270;
+  --brand-silver: #b8c8d4;
+  --brand-silver-light: #d8e2ea;
+  --brand-ink: #0a0f14;
+  --brand-ink-soft: #1a2332;
+
+  /* ── Tienda (superficies retail) ── */
+  --store-surface: #ffffff;
+  --store-muted: #f4f7f9;
+  --store-border: #dde4ea;
+  --store-promo: #b8eef8;
+  --store-promo-text: #005a6e;
+  --store-text: #0f172a;
+  --store-text-muted: #64748b;
+
+  /* ── Alias semánticos ── */
+  --color-primary: var(--brand-cyan-dark);
+  --color-primary-hover: var(--brand-cyan);
+  --color-link: var(--brand-cyan-darker);
+  --color-surface: var(--store-surface);
+  --color-border: var(--store-border);
+  --shadow-brand-glow: 0 0 20px rgb(0 200 232 / 0.35);
+}

@@ -53,7 +53,7 @@ watch(
   <header class="sticky top-0 z-40 bg-white shadow-sm">
     <!-- Franja promocional -->
     <div
-      class="border-b border-store-promo bg-store-promo text-center text-xs font-medium text-store-promo-text sm:text-sm"
+      class="border-store-promo-bar bg-store-promo-bar text-store-promo-bar border-b text-center text-xs font-medium sm:text-sm"
     >
       <div class="mx-auto max-w-7xl px-4 py-2">
         <p class="truncate">
@@ -82,10 +82,10 @@ watch(
           to="/"
           class="flex shrink-0 items-baseline gap-1.5 font-bold tracking-tight sm:gap-2"
         >
-          <span class="text-lg text-brand-silver sm:text-xl">FACTO</span>
-          <span class="text-lg text-brand-cyan sm:text-xl">SYS</span>
+          <span class="text-brand-facto text-lg sm:text-xl">FACTO</span>
+          <span class="text-brand-sys text-lg sm:text-xl">SYS</span>
           <span
-            class="rounded-md bg-brand-cyan/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brand-cyan-dark sm:text-xs"
+            class="text-brand-accent rounded-md border border-[color-mix(in_srgb,var(--brand-cyan)_35%,white)] bg-brand-accent-soft px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider sm:text-xs"
           >
             Store
           </span>
@@ -118,7 +118,7 @@ watch(
           @submit.prevent="onSearchSubmit"
         >
           <div
-            class="flex w-full items-center overflow-hidden rounded-full border border-store-border bg-white shadow-sm focus-within:border-brand-cyan focus-within:ring-1 focus-within:ring-brand-cyan"
+            class="border-brand-cyan-focus border-store-line flex w-full items-center overflow-hidden rounded-full border bg-white shadow-sm"
           >
             <input
               v-model="searchQuery"
@@ -129,7 +129,7 @@ watch(
             />
             <button
               type="submit"
-              class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-ink-soft text-white transition hover:bg-brand-ink sm:mr-1"
+              class="bg-brand-ink-btn flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white transition sm:mr-1"
               aria-label="Buscar"
             >
               <svg
@@ -261,7 +261,7 @@ watch(
               <circle cx="18" cy="20" r="1" />
             </svg>
             <span
-              class="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-cyan-dark px-1 text-[10px] font-bold text-white"
+              class="bg-brand-accent absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold text-white"
             >
               {{ cartCount }}
             </span>
@@ -290,13 +290,13 @@ watch(
     </div>
 
     <!-- Subnavegación -->
-    <div class="hidden border-b border-store-border bg-store-muted sm:block">
+    <div class="bg-store-subnav border-store-line hidden border-b sm:block">
       <div
         class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-2 text-sm text-slate-700"
       >
         <button
           type="button"
-          class="flex items-center gap-1.5 font-medium hover:text-brand-cyan-dark"
+          class="hover:text-brand-accent flex items-center gap-1.5 font-medium"
         >
           <svg
             class="h-4 w-4"
@@ -321,7 +321,7 @@ watch(
             v-for="link in subnavLinks"
             :key="link.label"
             :to="link.to"
-            class="whitespace-nowrap hover:text-brand-cyan-dark hover:underline"
+            class="hover:text-brand-accent whitespace-nowrap hover:underline"
           >
             {{ link.label }}
           </NuxtLink>
