@@ -1,5 +1,13 @@
 <script setup lang="ts">
-withDefaults(
+import type { UiBadgeVariant } from '~/types/ui'
+
+const variantMap: Record<'soon' | 'new' | 'primary', UiBadgeVariant> = {
+  soon: 'default',
+  new: 'success',
+  primary: 'primary',
+}
+
+const props = withDefaults(
   defineProps<{
     variant?: 'soon' | 'new' | 'primary'
   }>(),
@@ -8,14 +16,7 @@ withDefaults(
 </script>
 
 <template>
-  <span
-    class="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
-    :class="{
-      'bg-admin-surface text-admin-muted': variant === 'soon',
-      'bg-emerald-100 text-emerald-700': variant === 'new',
-      'bg-[var(--admin-primary-soft)] text-[var(--admin-primary)]': variant === 'primary',
-    }"
-  >
+  <UiBadge :variant="variantMap[variant]">
     <slot />
-  </span>
+  </UiBadge>
 </template>

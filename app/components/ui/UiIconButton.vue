@@ -7,11 +7,13 @@ const props = withDefaults(
     size?: 'sm' | 'md' | 'lg'
     variant?: 'ghost' | 'round-dark'
     badge?: string | number
+    disabled?: boolean
   }>(),
   {
     type: 'button',
     size: 'md',
     variant: 'ghost',
+    disabled: false,
   },
 )
 
@@ -31,7 +33,7 @@ const iconSize = computed(() => {
 <template>
   <button
     :type="props.type"
-    class="relative inline-flex shrink-0 items-center justify-center rounded-lg transition focus:outline-none focus:ring-2 focus:ring-[var(--brand-cyan)] focus:ring-offset-1"
+    class="relative inline-flex shrink-0 items-center justify-center rounded-lg transition focus:outline-none focus:ring-2 focus:ring-[var(--brand-cyan)] focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-40"
     :class="[
       sizeClass,
       props.variant === 'ghost'
@@ -39,6 +41,7 @@ const iconSize = computed(() => {
         : 'bg-brand-ink-btn h-10 w-10 rounded-full text-white sm:mr-1',
     ]"
     :aria-label="props.ariaLabel"
+    :disabled="props.disabled"
   >
     <UiIcon :name="props.icon" :size="iconSize" />
     <span

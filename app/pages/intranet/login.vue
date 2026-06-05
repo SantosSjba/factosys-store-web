@@ -21,6 +21,7 @@ async function onSubmit() {
       email: email.value,
       password: password.value,
     })
+    useToast().success('Sesión iniciada correctamente')
     const redirect =
       typeof route.query.redirect === 'string'
         ? route.query.redirect

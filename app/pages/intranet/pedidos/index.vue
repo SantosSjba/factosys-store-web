@@ -3,6 +3,11 @@ definePageMeta({
   layout: 'intranet',
   middleware: 'admin-auth',
   adminTitle: 'Pedidos',
+  adminBreadcrumb: [
+    { label: 'Panel', to: '/intranet' },
+    { label: 'Gestión' },
+    { label: 'Pedidos' },
+  ],
 })
 </script>
 
