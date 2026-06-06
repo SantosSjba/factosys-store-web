@@ -43,5 +43,17 @@ export interface RegisterPayload {
 
 export interface RegisterResponse {
   message: string
-  verificationToken?: string
+  email: string
+  verificationCode?: string
+}
+
+export interface VerifyEmailPayload {
+  token?: string
+  email?: string
+  code?: string
+}
+
+export interface ResendVerificationResponse {
+  message: string
+  verificationCode?: string
 }

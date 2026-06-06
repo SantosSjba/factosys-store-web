@@ -2,6 +2,7 @@ export type AdminNavIconName =
   | 'dashboard'
   | 'catalog'
   | 'orders'
+  | 'customers'
   | 'users'
   | 'settings'
 
@@ -9,6 +10,7 @@ export const adminNavIcons: Record<AdminNavIconName, string> = {
   dashboard: 'lucide:layout-dashboard',
   catalog: 'lucide:package',
   orders: 'lucide:shopping-bag',
+  customers: 'lucide:shopping-cart',
   users: 'lucide:users',
   settings: 'lucide:settings',
 }
@@ -40,6 +42,7 @@ export const adminNavMenu: AdminNavEntry[] = [
     type: 'group',
     label: 'Gestión',
     children: [
+      { label: 'Clientes', to: '/intranet/clientes', icon: 'customers' },
       { label: 'Catálogo', to: '/intranet/catalogo', icon: 'catalog', soon: true },
       { label: 'Pedidos', to: '/intranet/pedidos', icon: 'orders', soon: true },
     ],

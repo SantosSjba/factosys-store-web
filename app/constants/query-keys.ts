@@ -10,4 +10,6 @@ export const adminQueryKeys = {
   user: (id: string) => [...adminQueryKeys.all, 'users', id] as const,
   roles: () => [...adminQueryKeys.all, 'roles'] as const,
   permissions: () => [...adminQueryKeys.all, 'permissions'] as const,
+  customers: () => [...adminQueryKeys.all, 'customers'] as const,
+  customer: (id: string) => [...adminQueryKeys.all, 'customers', id] as const,
 }

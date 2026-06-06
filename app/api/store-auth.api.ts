@@ -3,6 +3,8 @@ import type {
   LoginPayload,
   RegisterPayload,
   RegisterResponse,
+  ResendVerificationResponse,
+  VerifyEmailPayload,
 } from '~/types/auth'
 
 export async function registerStoreUser(payload: RegisterPayload) {
@@ -14,10 +16,19 @@ export async function registerStoreUser(payload: RegisterPayload) {
   return data
 }
 
-export async function verifyStoreEmail(token: string) {
+export async function verifyStoreEmail(payload: VerifyEmailPayload) {
   const { data } = await useApi().post<AuthTokensResponse>(
     '/store/auth/verify-email',
-    { token },
+    payload,
+    { auth: false },
+  )
+  return data
+}
+
+export async function resendStoreVerification(email: string) {
+  const { data } = await useApi().post<ResendVerificationResponse>(
+    '/store/auth/resend-verification',
+    { email },
     { auth: false },
   )
   return data

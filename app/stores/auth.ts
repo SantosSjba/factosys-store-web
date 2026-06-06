@@ -14,6 +14,7 @@ import type {
   RegisterPayload,
   RegisterResponse,
   StoreProfile,
+  VerifyEmailPayload,
 } from '~/types/auth'
 
 const ACCESS_COOKIE = 'fs_access_token'
@@ -64,8 +65,8 @@ export const useAuthStore = defineStore('auth', () => {
     return registerStoreUser(payload)
   }
 
-  async function verifyEmail(token: string) {
-    const tokens = await verifyStoreEmail(token)
+  async function verifyEmail(payload: VerifyEmailPayload) {
+    const tokens = await verifyStoreEmail(payload)
     setSession(tokens)
     return tokens
   }
