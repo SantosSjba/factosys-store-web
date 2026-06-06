@@ -4,7 +4,7 @@ import type { StaffUser } from '~/types/admin-users'
 
 const { can } = useAdminPermissions()
 const { data: profile } = useAdminProfileQuery()
-const confirm = useConfirm()
+const { confirm } = useConfirm()
 const deleteMutation = useAdminDeleteUserMutation()
 const updateMutation = useAdminUpdateUserMutation()
 
