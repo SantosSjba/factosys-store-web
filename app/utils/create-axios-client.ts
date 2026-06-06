@@ -15,6 +15,7 @@ export function createAxiosClient(tokenAccessor: TokenAccessor): AxiosInstance {
 
   const client = axios.create({
     baseURL: config.public.apiBaseUrl.replace(/\/$/, ''),
+    timeout: 30_000,
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',

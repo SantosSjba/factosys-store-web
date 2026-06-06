@@ -28,6 +28,7 @@ const onSubmit = createSubmitHandler(
       path: '/verify-email',
       query: {
         email: result.email,
+        pendingVerification: '1',
         ...(result.verificationCode ? { code: result.verificationCode } : {}),
       },
     })

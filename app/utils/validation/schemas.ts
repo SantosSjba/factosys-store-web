@@ -53,6 +53,7 @@ export const updateCustomerSchema = z.object({
   phone: optionalText,
   status: z.enum(['PENDING_VERIFICATION', 'ACTIVE', 'SUSPENDED']),
   password: optionalPassword,
+  clearEmailVerification: z.boolean().optional(),
 })
 
 export const updateStaffUserSchema = z.object({

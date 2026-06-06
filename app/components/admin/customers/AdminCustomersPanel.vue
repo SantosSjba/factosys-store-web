@@ -24,6 +24,7 @@ const columns: UiTableColumn<StoreCustomer>[] = [
   { key: 'email', label: 'Correo' },
   { key: 'firstName', label: 'Nombre' },
   { key: 'authProvider', label: 'Acceso', width: '9rem' },
+  { key: 'emailVerifiedAt', label: 'Verificado', width: '8rem' },
   { key: 'status', label: 'Estado', width: '8rem' },
   { key: 'createdAt', label: 'Alta', width: '9rem' },
 ]
@@ -97,6 +98,15 @@ function suspendCustomer(customer: StoreCustomer) {
             />
             <span class="text-sm">{{ formatAuthProvider(row.authProvider) }}</span>
           </div>
+        </template>
+
+        <template #cell-emailVerifiedAt="{ row }">
+          <UiBadge
+            :variant="emailVerifiedVariant(row.emailVerifiedAt)"
+            class="normal-case"
+          >
+            {{ formatEmailVerified(row.emailVerifiedAt) }}
+          </UiBadge>
         </template>
 
         <template #cell-status="{ row }">

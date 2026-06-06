@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useField } from 'vee-validate'
 import type { StoreCustomer, UpdateCustomerPayload } from '~/types/admin-customers'
 import { updateCustomerSchema } from '~/utils/validation/schemas'
 
@@ -18,13 +19,21 @@ const { resetForm, setValues, createSubmitHandler, withMutationPending } = useAp
     phone: '',
     status: 'ACTIVE' as StoreCustomer['status'],
     password: '',
+    clearEmailVerification: false,
   },
 })
+
+const { value: clearEmailVerification, errorMessage: clearEmailVerificationError } =
+  useField<boolean>('clearEmailVerification')
 
 const isSubmitting = withMutationPending(updateMutation)
 
 const isLocalAuth = computed(
   () => props.customer?.authProvider === 'LOCAL',
+)
+
+const isEmailVerified = computed(
+  () => Boolean(props.customer?.emailVerifiedAt),
 )
 
 const statusOptions = [
@@ -40,6 +49,7 @@ function loadCustomer(customer: StoreCustomer) {
     phone: customer.phone ?? '',
     status: customer.status,
     password: '',
+    clearEmailVerification: false,
   })
 }
 
@@ -69,6 +79,10 @@ const onSubmit = createSubmitHandler(
 
     if (values.password && isLocalAuth.value) {
       payload.password = values.password
+    }
+
+    if (values.clearEmailVerification) {
+      payload.clearEmailVerification = true
     }
 
     await updateMutation.mutateAsync({
@@ -101,6 +115,15 @@ const onSubmit = createSubmitHandler(
           />
         </div>
         <UiFormSelect name="status" label="Estado" :options="statusOptions" />
+        <div v-if="isEmailVerified" class="sm:col-span-2">
+          <UiCheckbox
+            :model-value="clearEmailVerification ?? false"
+            label="Quitar verificación de correo"
+            hint="El cliente deberá verificar su correo de nuevo para acceder. Se cerrarán sus sesiones activas."
+            :error="clearEmailVerificationError"
+            @update:model-value="clearEmailVerification = $event"
+          />
+        </div>
         <UiFormField
           v-if="isLocalAuth"
           name="password"

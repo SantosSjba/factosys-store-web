@@ -13,9 +13,26 @@ const resendMutation = useStoreResendVerificationMutation()
 
 const verified = ref(false)
 const devCode = ref('')
+const isAutoVerifying = ref(false)
 
-const source = computed(() =>
-  typeof route.query.source === 'string' ? route.query.source : '',
+function getQueryString(value: unknown): string | undefined {
+  if (typeof value === 'string') {
+    return value
+  }
+
+  if (Array.isArray(value) && typeof value[0] === 'string') {
+    return value[0]
+  }
+
+  return undefined
+}
+
+const source = computed(() => getQueryString(route.query.source) ?? '')
+
+const isPendingRegistration = computed(
+  () =>
+    route.query.pendingVerification === '1' ||
+    route.query.pendingVerification === 'true',
 )
 
 const {
@@ -47,6 +64,8 @@ async function submitVerification(payload: {
     setTimeout(() => navigateTo('/cuenta'), 1500)
   } catch (error) {
     toast.error(useApiErrorMessage(error))
+  } finally {
+    isAutoVerifying.value = false
   }
 }
 
@@ -82,23 +101,25 @@ async function onResend() {
 }
 
 onMounted(async () => {
-  const queryEmail = route.query.email
-  const queryCode = route.query.code
-  const queryToken = route.query.token
+  verifyMutation.reset()
 
-  if (typeof queryEmail === 'string') {
+  const queryEmail = getQueryString(route.query.email)
+  const queryCode = getQueryString(route.query.code)
+  const queryToken = getQueryString(route.query.token)
+
+  if (queryEmail) {
     setValues({ email: queryEmail })
   }
 
-  if (typeof queryCode === 'string' && queryCode.length === 6) {
+  if (queryCode && /^\d{6}$/.test(queryCode) && queryEmail) {
     setValues({ code: queryCode })
-    if (typeof queryEmail === 'string') {
-      await submitVerification({ email: queryEmail, code: queryCode })
-    }
+    isAutoVerifying.value = true
+    await submitVerification({ email: queryEmail, code: queryCode })
     return
   }
 
-  if (typeof queryToken === 'string' && queryToken) {
+  if (queryToken) {
+    isAutoVerifying.value = true
     await submitVerification({ token: queryToken })
   }
 })
@@ -109,11 +130,14 @@ onMounted(async () => {
     title="Verificar correo"
     :subtitle="
       source === 'google'
-        ? 'Confirma tu correo para activar tu cuenta de Google'
+        ? 'Ingresa el código de 6 dígitos que enviamos a tu correo'
         : 'Ingresa el código que enviamos a tu correo'
     "
   >
-    <div v-if="verifyMutation.isPending && !verified" class="text-center text-sm text-slate-600">
+    <div
+      v-if="isAutoVerifying && verifyMutation.isPending && !verified"
+      class="text-center text-sm text-slate-600"
+    >
       Verificando tu cuenta…
     </div>
 
@@ -121,7 +145,26 @@ onMounted(async () => {
       ¡Cuenta verificada! Redirigiendo a tu perfil…
     </UiAlert>
 
-    <form v-else class="space-y-4" @submit.prevent="onSubmit">
+    <template v-else>
+      <UiAlert
+        v-if="source === 'google'"
+        variant="info"
+        class="mb-4"
+      >
+        Tu cuenta de Google está creada. Revisa tu bandeja de entrada (y spam) e
+        ingresa el código de verificación para activarla.
+      </UiAlert>
+
+      <UiAlert
+        v-if="isPendingRegistration"
+        variant="warning"
+        class="mb-4"
+      >
+        Tu cuenta está creada pero <strong>falta verificar el correo</strong> para poder
+        iniciar sesión en la tienda. Revisa tu bandeja (y spam) o reenvía el código.
+      </UiAlert>
+
+      <form class="space-y-4" @submit.prevent="onSubmit">
       <UiFormField
         name="email"
         label="Correo electrónico"
@@ -160,10 +203,20 @@ onMounted(async () => {
           {{ devCode }}
         </button>
       </p>
-    </form>
+      </form>
+    </template>
 
     <p class="mt-6 text-center text-sm text-slate-600">
-      <NuxtLink to="/login" class="text-brand-accent-deep font-semibold hover:underline">
+      <NuxtLink
+        :to="{
+          path: '/login',
+          query: {
+            ...(emailValue ? { email: emailValue } : {}),
+            pendingVerification: '1',
+          },
+        }"
+        class="text-brand-accent-deep font-semibold hover:underline"
+      >
         Volver al inicio de sesión
       </NuxtLink>
     </p>

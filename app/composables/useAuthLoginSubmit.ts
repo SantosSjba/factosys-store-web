@@ -10,14 +10,13 @@ export function useAuthLoginSubmit(options: {
   mutation: LoginMutation
   redirectDefault: string
   contextMismatchSuffix: string
-  emailNotVerifiedSuffix?: string
   successMessage?: string
   invalidMessage?: string
 }) {
   const route = useRoute()
   const toast = useToast()
 
-  const { createSubmitHandler, withMutationPending } = useApiForm({
+  const { createSubmitHandler, withMutationPending, setValues } = useApiForm({
     schema: loginSchema,
     initialValues: {
       email: '',
@@ -40,10 +39,18 @@ export function useAuthLoginSubmit(options: {
             : options.redirectDefault
         await navigateTo(redirect)
       } catch (error) {
-        let message = useApiErrorMessage(error)
         if (error instanceof ApiError && error.code === 'EMAIL_NOT_VERIFIED') {
-          message += options.emailNotVerifiedSuffix ?? ''
+          toast.warning(
+            'Tu cuenta aún no está verificada. Ingresa el código que enviamos a tu correo.',
+          )
+          await navigateTo({
+            path: '/verify-email',
+            query: { email: values.email },
+          })
+          return
         }
+
+        let message = useApiErrorMessage(error)
         if (error instanceof ApiError && error.code === 'AUTH_CONTEXT_MISMATCH') {
           message += options.contextMismatchSuffix
         }
@@ -56,5 +63,5 @@ export function useAuthLoginSubmit(options: {
     },
   )
 
-  return { onSubmit, isSubmitting }
+  return { onSubmit, isSubmitting, setValues }
 }

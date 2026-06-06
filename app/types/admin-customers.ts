@@ -29,4 +29,5 @@ export type UpdateCustomerPayload = {
   phone?: string
   status?: CustomerStatus
   password?: string
+  clearEmailVerification?: boolean
 }
