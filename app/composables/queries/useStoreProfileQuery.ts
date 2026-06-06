@@ -10,7 +10,7 @@ function profileToUser(profile: StoreProfile): AuthUser {
     userType: profile.userType,
     firstName: profile.firstName,
     lastName: profile.lastName,
-    roles: profile.roles,
+    roles: mapProfileRoleSlugs(profile.roles),
   }
 }
 

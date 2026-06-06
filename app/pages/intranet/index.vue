@@ -11,6 +11,10 @@ const { data: profile, isPending } = useAdminProfileQuery()
 const permissionsCount = computed(() => profile.value?.permissions.length ?? '—')
 
 const rolesLabel = computed(() => formatRoleNames(profile.value?.roles))
+
+const displayName = computed(() =>
+  profile.value ? formatUserName(profile.value) : '',
+)
 </script>
 
 <template>
@@ -50,28 +54,24 @@ const rolesLabel = computed(() => formatRoleNames(profile.value?.roles))
     </div>
 
     <AdminCard
-      title="Tu perfil (API admin)"
-      description="Datos desde GET /api/admin/users/me"
+      title="Tu perfil"
+      description="Resumen de tu sesión en el panel administrativo"
     >
       <div v-if="isPending" class="text-admin-muted text-sm">Cargando perfil…</div>
 
       <div v-else-if="profile" class="grid gap-4 sm:grid-cols-2">
-        <div class="bg-admin-surface rounded-xl p-4">
-          <p class="text-admin-muted text-xs font-medium uppercase">Correo</p>
-          <p class="text-admin mt-1 font-medium">{{ profile.email }}</p>
-        </div>
-        <div class="bg-admin-surface rounded-xl p-4">
-          <p class="text-admin-muted text-xs font-medium uppercase">Roles</p>
-          <p class="text-admin mt-1 font-medium">
-            {{ rolesLabel }}
-          </p>
-        </div>
-        <div class="bg-admin-surface rounded-xl p-4 sm:col-span-2">
-          <p class="text-admin-muted text-xs font-medium uppercase">Permisos</p>
-          <p class="text-admin mt-1 text-sm">
-            {{ profile.permissions.length }} asignados
-          </p>
-        </div>
+        <AdminDetailCell label="Nombre">
+          <p class="font-medium">{{ displayName }}</p>
+        </AdminDetailCell>
+        <AdminDetailCell label="Correo">
+          <p class="font-medium">{{ profile.email }}</p>
+        </AdminDetailCell>
+        <AdminDetailCell label="Roles">
+          <p class="font-medium">{{ rolesLabel }}</p>
+        </AdminDetailCell>
+        <AdminDetailCell label="Permisos">
+          <p class="text-sm">{{ profile.permissions.length }} asignados</p>
+        </AdminDetailCell>
       </div>
     </AdminCard>
   </div>
