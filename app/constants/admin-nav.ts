@@ -43,7 +43,7 @@ export const adminNavMenu: AdminNavEntry[] = [
     label: 'Gestión',
     children: [
       { label: 'Clientes', to: '/intranet/clientes', icon: 'customers' },
-      { label: 'Catálogo', to: '/intranet/catalogo', icon: 'catalog', soon: true },
+      { label: 'Catálogo', to: '/intranet/catalogo', icon: 'catalog' },
       { label: 'Pedidos', to: '/intranet/pedidos', icon: 'orders', soon: true },
     ],
   },

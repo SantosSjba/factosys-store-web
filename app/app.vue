@@ -3,7 +3,9 @@
   <NuxtLayout>
     <NuxtPage />
   </NuxtLayout>
-  <UiToastContainer />
-  <UiLoadingOverlay />
-  <UiConfirmHost />
+  <ClientOnly>
+    <UiToastContainer />
+    <UiLoadingOverlay />
+    <UiConfirmHost />
+  </ClientOnly>
 </template>

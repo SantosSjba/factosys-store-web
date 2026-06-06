@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const props = withDefaults(
   defineProps<{
-    modelValue: string
+    modelValue?: string | number
     label?: string
     type?: string
     placeholder?: string
@@ -38,7 +38,7 @@ const fieldClass = computed(() => [
     <input
       :id="inputId"
       :type="type"
-      :value="modelValue"
+      :value="modelValue ?? ''"
       :placeholder="placeholder"
       :autocomplete="autocomplete"
       :required="required"
@@ -55,7 +55,7 @@ const fieldClass = computed(() => [
     <input
       :id="inputId"
       :type="type"
-      :value="modelValue"
+      :value="modelValue ?? ''"
       :placeholder="placeholder"
       :autocomplete="autocomplete"
       :required="required"

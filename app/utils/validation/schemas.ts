@@ -83,6 +83,55 @@ export const resendVerificationSchema = z.object({
   email: emailField,
 })
 
+const catalogSlugField = optionalText
+
+const activeStatusField = z.enum(['true', 'false'])
+
+export const createCategorySchema = z.object({
+  name: z.string().trim().min(2, 'Ingresa el nombre de la categoría.'),
+  slug: catalogSlugField,
+  description: optionalText,
+  parentId: optionalText,
+  sortOrder: z.coerce.number().int().min(0),
+  isActive: activeStatusField,
+})
+
+export const createBrandSchema = z.object({
+  name: z.string().trim().min(2, 'Ingresa el nombre de la marca.'),
+  slug: catalogSlugField,
+  description: optionalText,
+  website: optionalText,
+  isActive: activeStatusField,
+})
+
+export const createAttributeSchema = z.object({
+  name: z.string().trim().min(2, 'Ingresa el nombre del atributo.'),
+  slug: catalogSlugField,
+  description: optionalText,
+  dataType: z.enum(['TEXT', 'NUMBER', 'BOOLEAN', 'SELECT', 'MULTI_SELECT']),
+  unit: optionalText,
+  scope: z.enum(['PRODUCT', 'VARIANT']),
+  optionsText: optionalText,
+  isFilterable: z.boolean().optional(),
+  isRequired: z.boolean().optional(),
+  sortOrder: z.coerce.number().int().min(0),
+})
+
+export const createProductSchema = z.object({
+  name: z.string().trim().min(2, 'Ingresa el nombre del producto.'),
+  slug: optionalText,
+  shortDescription: optionalText,
+  description: optionalText,
+  primaryCategoryId: z.string().uuid('Selecciona una categoría.'),
+  brandId: optionalText,
+  status: z.enum(['DRAFT', 'ACTIVE', 'ARCHIVED']),
+  sku: z.string().trim().min(2, 'Ingresa el SKU.'),
+  price: z.coerce.number().min(0, 'El precio debe ser mayor o igual a 0.'),
+  compareAtPrice: z.coerce.number().min(0).optional(),
+})
+
+export const updateProductSchema = createProductSchema
+
 export const rolePermissionsSchema = z.object({
   permissionSlugs: z
     .array(z.string())

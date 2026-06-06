@@ -7,6 +7,11 @@ definePageMeta({
 
 const adminAuth = useAdminAuthStore()
 const { data: profile, isPending } = useAdminProfileQuery()
+const isMounted = ref(false)
+
+onMounted(() => {
+  isMounted.value = true
+})
 
 const permissionsCount = computed(() => profile.value?.permissions.length ?? '—')
 
@@ -15,13 +20,17 @@ const rolesLabel = computed(() => formatRoleNames(profile.value?.roles))
 const displayName = computed(() =>
   profile.value ? formatUserName(profile.value) : '',
 )
+
+const welcomeName = computed(() =>
+  isMounted.value ? adminAuth.displayName || 'usuario staff' : 'usuario staff',
+)
 </script>
 
 <template>
   <div>
     <AdminPageTitle
       title="Dashboard"
-      :description="`Bienvenido, ${adminAuth.displayName || 'usuario staff'}. Vista general del panel admin.`"
+      :description="`Bienvenido, ${welcomeName}. Vista general del panel admin.`"
     />
 
     <div class="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
