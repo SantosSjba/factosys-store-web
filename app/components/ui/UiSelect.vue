@@ -14,6 +14,7 @@ const props = defineProps<{
 
 defineEmits<{
   'update:modelValue': [value: string]
+  blur: []
 }>()
 
 const selectClass = computed(() => [
@@ -36,6 +37,7 @@ const selectClass = computed(() => [
         :class="selectClass"
         :aria-invalid="Boolean(error)"
         @change="$emit('update:modelValue', ($event.target as HTMLSelectElement).value)"
+        @blur="$emit('blur')"
       >
         <option v-if="placeholder" disabled value="">{{ placeholder }}</option>
         <option
@@ -64,6 +66,7 @@ const selectClass = computed(() => [
         :class="selectClass"
         :aria-invalid="Boolean(error)"
         @change="$emit('update:modelValue', ($event.target as HTMLSelectElement).value)"
+        @blur="$emit('blur')"
       >
         <option v-if="placeholder" disabled value="">{{ placeholder }}</option>
         <option

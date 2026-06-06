@@ -5,9 +5,7 @@ definePageMeta({
 
 const { data: profile, isPending, isError, error } = useStoreProfileQuery()
 
-const errorMessage = computed(() =>
-  isError.value ? useApiErrorMessage(error.value) : '',
-)
+useQueryErrorToast(isError, error)
 
 const displayName = computed(() => {
   if (!profile.value) return ''
@@ -22,10 +20,6 @@ const displayName = computed(() => {
     <p class="mt-1 text-sm text-slate-600">Perfil sincronizado con GET /api/store/me</p>
 
     <div v-if="isPending" class="mt-8 text-sm text-slate-500">Cargando perfil…</div>
-
-    <UiAlert v-else-if="errorMessage" variant="error" class="mt-8">
-      {{ errorMessage }}
-    </UiAlert>
 
     <div
       v-else-if="profile"

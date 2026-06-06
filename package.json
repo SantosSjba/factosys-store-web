@@ -15,11 +15,14 @@
     "@nuxtjs/tailwindcss": "^6.14.0",
     "@pinia/nuxt": "^0.11.3",
     "@tanstack/vue-query": "^5.100.14",
+    "@vee-validate/zod": "^4.15.1",
     "axios": "^1.16.1",
     "nuxt": "^4.4.6",
     "pinia": "^3.0.4",
+    "vee-validate": "^4.15.1",
     "vue": "^3.5.34",
-    "vue-router": "^5.0.7"
+    "vue-router": "^5.0.7",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^25.9.1"

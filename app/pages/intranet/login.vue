@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ApiError } from '~/types/api'
+import { loginSchema } from '~/utils/validation/schemas'
 
 definePageMeta({
   layout: 'auth',
@@ -7,34 +8,42 @@ definePageMeta({
 })
 
 const route = useRoute()
+const toast = useToast()
 const loginMutation = useAdminLoginMutation()
-const isSubmitting = computed(() => loginMutation.isPending.value)
 
-const email = ref('')
-const password = ref('')
-const errorMessage = ref('')
+const { createSubmitHandler, meta } = useApiForm({
+  schema: loginSchema,
+  initialValues: {
+    email: '',
+    password: '',
+  },
+})
 
-async function onSubmit() {
-  errorMessage.value = ''
-  try {
-    await loginMutation.mutateAsync({
-      email: email.value,
-      password: password.value,
-    })
-    useToast().success('Sesión iniciada correctamente')
-    const redirect =
-      typeof route.query.redirect === 'string'
-        ? route.query.redirect
-        : '/intranet'
-    await navigateTo(redirect)
-  } catch (error) {
-    errorMessage.value = useApiErrorMessage(error)
-    if (error instanceof ApiError && error.code === 'AUTH_CONTEXT_MISMATCH') {
-      errorMessage.value +=
-        ' Usa una cuenta de personal (staff). Los clientes entran por la tienda.'
+const isSubmitting = computed(
+  () => loginMutation.isPending.value || meta.value.pending,
+)
+
+const onSubmit = createSubmitHandler(
+  async (values) => {
+    try {
+      await loginMutation.mutateAsync(values)
+      toast.success('Sesión iniciada correctamente')
+      const redirect =
+        typeof route.query.redirect === 'string'
+          ? route.query.redirect
+          : '/intranet'
+      await navigateTo(redirect)
+    } catch (error) {
+      let message = useApiErrorMessage(error)
+      if (error instanceof ApiError && error.code === 'AUTH_CONTEXT_MISMATCH') {
+        message +=
+          ' Usa una cuenta de personal (staff). Los clientes entran por la tienda.'
+      }
+      toast.error(message)
     }
-  }
-}
+  },
+  { invalidMessage: 'Ingresa un correo y contraseña válidos.' },
+)
 </script>
 
 <template>
@@ -43,21 +52,17 @@ async function onSubmit() {
     subtitle="Acceso para administración y personal autorizado"
   >
     <form class="space-y-4" @submit.prevent="onSubmit">
-      <UiAlert v-if="errorMessage" variant="error">{{ errorMessage }}</UiAlert>
-
-      <UiInput
-        v-model="email"
+      <UiFormField
+        name="email"
         label="Correo corporativo"
         type="email"
         autocomplete="username"
-        required
       />
-      <UiInput
-        v-model="password"
+      <UiFormField
+        name="password"
         label="Contraseña"
         type="password"
         autocomplete="current-password"
-        required
       />
 
       <UiButton type="submit" class="w-full" :loading="isSubmitting">

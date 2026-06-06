@@ -1,27 +1,31 @@
 <script setup lang="ts">
+import { registerSchema } from '~/utils/validation/schemas'
+
 definePageMeta({
   layout: 'auth',
   middleware: 'guest',
 })
 
 const registerMutation = useStoreRegisterMutation()
-const isSubmitting = computed(() => registerMutation.isPending.value)
 
-const email = ref('')
-const password = ref('')
-const firstName = ref('')
-const lastName = ref('')
-const errorMessage = ref('')
+const { createSubmitHandler, meta } = useApiForm({
+  schema: registerSchema,
+  initialValues: {
+    email: '',
+    password: '',
+    firstName: '',
+    lastName: '',
+  },
+})
 
-async function onSubmit() {
-  errorMessage.value = ''
-  try {
-    const result = await registerMutation.mutateAsync({
-      email: email.value,
-      password: password.value,
-      firstName: firstName.value || undefined,
-      lastName: lastName.value || undefined,
-    })
+const isSubmitting = computed(
+  () => registerMutation.isPending.value || meta.value.pending,
+)
+
+const onSubmit = createSubmitHandler(
+  async (values) => {
+    const result = await registerMutation.mutateAsync(values)
+    useToast().success('Cuenta creada. Revisa tu correo e ingresa el código.')
 
     await navigateTo({
       path: '/verify-email',
@@ -30,10 +34,9 @@ async function onSubmit() {
         ...(result.verificationCode ? { code: result.verificationCode } : {}),
       },
     })
-  } catch (error) {
-    errorMessage.value = useApiErrorMessage(error)
-  }
-}
+  },
+  { invalidMessage: 'Completa los campos obligatorios correctamente.' },
+)
 </script>
 
 <template>
@@ -42,26 +45,22 @@ async function onSubmit() {
     subtitle="Registro de cliente en la tienda Factosys"
   >
     <form class="space-y-4" @submit.prevent="onSubmit">
-      <UiAlert v-if="errorMessage" variant="error">{{ errorMessage }}</UiAlert>
-
       <div class="grid gap-4 sm:grid-cols-2">
-        <UiInput v-model="firstName" label="Nombre" autocomplete="given-name" />
-        <UiInput v-model="lastName" label="Apellido" autocomplete="family-name" />
+        <UiFormField name="firstName" label="Nombre" autocomplete="given-name" />
+        <UiFormField name="lastName" label="Apellido" autocomplete="family-name" />
       </div>
-      <UiInput
-        v-model="email"
+      <UiFormField
+        name="email"
         label="Correo electrónico"
         type="email"
         autocomplete="email"
-        required
       />
-      <UiInput
-        v-model="password"
+      <UiFormField
+        name="password"
         label="Contraseña"
         type="password"
         autocomplete="new-password"
         hint="Mínimo 8 caracteres"
-        required
       />
 
       <UiButton type="submit" class="w-full" :loading="isSubmitting">

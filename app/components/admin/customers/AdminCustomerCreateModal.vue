@@ -1,24 +1,18 @@
 <script setup lang="ts">
-import type { StaffRole } from '~/types/admin-users'
-import { createStaffUserSchema } from '~/utils/validation/schemas'
+import { createCustomerSchema } from '~/utils/validation/schemas'
 
 const open = defineModel<boolean>({ required: true })
 
-const props = defineProps<{
-  roles: StaffRole[]
-}>()
-
-const createMutation = useAdminCreateUserMutation()
+const createMutation = useAdminCreateCustomerMutation()
 
 const { resetForm, createSubmitHandler, meta } = useApiForm({
-  schema: createStaffUserSchema,
+  schema: createCustomerSchema,
   initialValues: {
     email: '',
     password: '',
     firstName: '',
     lastName: '',
     phone: '',
-    roleSlugs: [] as string[],
   },
 })
 
@@ -26,20 +20,12 @@ const isSubmitting = computed(
   () => createMutation.isPending.value || meta.value.pending,
 )
 
-const roleOptions = computed(() =>
-  props.roles.map((role) => ({
-    label: role.name,
-    value: role.slug,
-    hint: role.description ?? undefined,
-  })),
-)
-
 const onSubmit = createSubmitHandler(
   async (values) => {
     await createMutation.mutateAsync(values)
     open.value = false
   },
-  { successMessage: 'Usuario creado correctamente' },
+  { successMessage: 'Cliente creado correctamente' },
 )
 
 watch(open, (value) => {
@@ -50,8 +36,8 @@ watch(open, (value) => {
 <template>
   <UiModal
     v-model="open"
-    title="Nuevo usuario staff"
-    description="Registra personal con acceso al panel administrativo."
+    title="Nuevo cliente"
+    description="Crea una cuenta de cliente activa en la tienda. El usuario podrá iniciar sesión de inmediato."
     size="lg"
   >
     <form class="space-y-4" @submit.prevent="onSubmit">
@@ -80,13 +66,6 @@ watch(open, (value) => {
           />
         </div>
       </div>
-
-      <UiFormCheckboxGroup
-        name="roleSlugs"
-        label="Roles asignados"
-        :options="roleOptions"
-        hint="Los permisos efectivos serán la unión de todos los roles seleccionados."
-      />
     </form>
 
     <template #footer>
@@ -94,7 +73,7 @@ watch(open, (value) => {
         Cancelar
       </UiButton>
       <UiButton :loading="isSubmitting" @click="onSubmit">
-        Crear usuario
+        Crear cliente
       </UiButton>
     </template>
   </UiModal>

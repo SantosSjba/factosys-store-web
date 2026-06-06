@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { useField } from 'vee-validate'
 import { formatModuleLabel } from '~/constants/admin-permissions'
 import type { PermissionCatalogItem, StaffRole } from '~/types/admin-users'
+import { rolePermissionsSchema } from '~/utils/validation/schemas'
 
 const open = defineModel<boolean>({ required: true })
 
@@ -10,10 +12,20 @@ const props = defineProps<{
 }>()
 
 const updateMutation = useAdminUpdateRolePermissionsMutation()
-const isSubmitting = computed(() => updateMutation.isPending.value)
 
-const selectedSlugs = ref<string[]>([])
-const errorMessage = ref('')
+const { setValues, resetForm, createSubmitHandler, meta } = useApiForm({
+  schema: rolePermissionsSchema,
+  initialValues: {
+    permissionSlugs: [] as string[],
+  },
+})
+
+const { value: permissionSlugs, errorMessage, handleChange } =
+  useField<string[]>('permissionSlugs')
+
+const isSubmitting = computed(
+  () => updateMutation.isPending.value || meta.value.pending,
+)
 
 const isAdminRole = computed(() => props.role?.slug === 'admin')
 
@@ -36,8 +48,9 @@ const permissionsByModule = computed(() => {
 })
 
 function loadRole(role: StaffRole) {
-  selectedSlugs.value = role.permissions.map((permission) => permission.slug)
-  errorMessage.value = ''
+  setValues({
+    permissionSlugs: role.permissions.map((permission) => permission.slug),
+  })
 }
 
 watch(
@@ -50,28 +63,21 @@ watch(
 
 watch(open, (value) => {
   if (value && props.role) loadRole(props.role)
+  if (!value) resetForm()
 })
 
-async function onSubmit() {
-  errorMessage.value = ''
-  if (!props.role || isAdminRole.value) return
+const onSubmit = createSubmitHandler(
+  async (values) => {
+    if (!props.role || isAdminRole.value) return
 
-  if (!selectedSlugs.value.length) {
-    errorMessage.value = 'Selecciona al menos un permiso.'
-    return
-  }
-
-  try {
     await updateMutation.mutateAsync({
       slug: props.role.slug,
-      payload: { permissionSlugs: selectedSlugs.value },
+      payload: { permissionSlugs: values.permissionSlugs },
     })
     useToast().success(`Permisos de "${props.role.name}" actualizados`)
     open.value = false
-  } catch (error) {
-    errorMessage.value = useApiErrorMessage(error)
-  }
-}
+  },
+)
 </script>
 
 <template>
@@ -82,18 +88,18 @@ async function onSubmit() {
     size="lg"
   >
     <div v-if="role" class="space-y-4">
-      <UiAlert v-if="errorMessage" variant="error">{{ errorMessage }}</UiAlert>
-
       <UiAlert v-if="isAdminRole" variant="warning">
         El rol <strong>Administrador</strong> tiene todos los permisos del sistema
         y no se puede modificar.
       </UiAlert>
 
-      <template v-else>
+      <form v-else class="space-y-4" @submit.prevent="onSubmit">
         <p class="text-admin-muted text-sm">
           Selecciona los permisos que tendrán los usuarios con el rol
           <strong class="text-admin">{{ role.name }}</strong>.
         </p>
+
+        <UiFieldMessage :error="errorMessage" />
 
         <div class="space-y-4">
           <div
@@ -103,7 +109,7 @@ async function onSubmit() {
           >
             <p class="text-admin mb-3 text-sm font-semibold">{{ group.label }}</p>
             <UiCheckboxGroup
-              v-model="selectedSlugs"
+              :model-value="permissionSlugs ?? []"
               :options="
                 group.permissions.map((permission) => ({
                   label: permission.name,
@@ -111,10 +117,11 @@ async function onSubmit() {
                   hint: permission.slug,
                 }))
               "
+              @update:model-value="handleChange"
             />
           </div>
         </div>
-      </template>
+      </form>
     </div>
 
     <template #footer>

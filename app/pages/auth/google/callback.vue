@@ -4,10 +4,10 @@ definePageMeta({
 })
 
 const route = useRoute()
+const toast = useToast()
 const authStore = useAuthStore()
 
 const loading = ref(true)
-const errorMessage = ref('')
 
 onMounted(async () => {
   const access = route.query.accessToken
@@ -15,14 +15,13 @@ onMounted(async () => {
   const error = route.query.error
 
   if (typeof error === 'string') {
-    errorMessage.value = decodeURIComponent(error)
+    toast.error(decodeURIComponent(error))
     loading.value = false
     return
   }
 
   if (typeof access !== 'string' || typeof refresh !== 'string') {
-    errorMessage.value =
-      'No se recibieron los tokens de Google. Intenta iniciar sesión de nuevo.'
+    toast.error('No se recibieron los tokens de Google. Intenta iniciar sesión de nuevo.')
     loading.value = false
     return
   }
@@ -30,9 +29,10 @@ onMounted(async () => {
   try {
     authStore.setTokensFromCallback(access, refresh)
     await authStore.hydrateFromTokens()
+    toast.success('Sesión iniciada con Google')
     await navigateTo('/cuenta')
   } catch (e) {
-    errorMessage.value = useApiErrorMessage(e)
+    toast.error(useApiErrorMessage(e))
     authStore.clearSession()
   } finally {
     loading.value = false
@@ -45,13 +45,10 @@ onMounted(async () => {
     <div v-if="loading" class="text-center text-sm text-slate-600">
       Procesando autenticación con Google…
     </div>
-    <UiAlert v-else-if="errorMessage" variant="error">
-      {{ errorMessage }}
-      <p class="mt-3">
-        <NuxtLink to="/login" class="font-semibold underline">
-          Volver al login
-        </NuxtLink>
-      </p>
-    </UiAlert>
+    <p v-else class="text-center text-sm text-slate-600">
+      <NuxtLink to="/login" class="font-semibold underline">
+        Volver al login
+      </NuxtLink>
+    </p>
   </AuthCard>
 </template>

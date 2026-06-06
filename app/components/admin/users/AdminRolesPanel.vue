@@ -10,9 +10,7 @@ const { data: permissions } = useAdminPermissionsQuery()
 const permissionsOpen = ref(false)
 const selectedRole = ref<StaffRole | null>(null)
 
-const errorMessage = computed(() =>
-  isError.value ? useApiErrorMessage(error.value) : '',
-)
+useQueryErrorToast(isError, error)
 
 const permissionsByModule = computed(() => {
   const modules = new Map<string, { slug: string; name: string }[]>()
@@ -44,8 +42,6 @@ function openPermissions(role: StaffRole) {
 
 <template>
   <div class="space-y-4">
-    <UiAlert v-if="errorMessage" variant="error">{{ errorMessage }}</UiAlert>
-
     <div v-if="isPending" class="grid gap-4 md:grid-cols-2">
       <UiSkeleton v-for="i in 4" :key="i" height="12rem" />
     </div>
@@ -73,7 +69,7 @@ function openPermissions(role: StaffRole) {
             <UiIconButton
               v-if="can('roles.assign') && role.slug !== 'admin'"
               icon="lucide:settings-2"
-              aria-label="Gestionar permisos"
+              ariaLabel="Gestionar permisos"
               title="Gestionar permisos"
               size="sm"
               tone="admin"

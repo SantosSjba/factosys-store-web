@@ -1,68 +1,85 @@
 <script setup lang="ts">
+import { useField } from 'vee-validate'
+import { resendVerificationSchema, verifyEmailSchema } from '~/utils/validation/schemas'
+
 definePageMeta({
   layout: 'auth',
 })
 
 const route = useRoute()
+const toast = useToast()
 const verifyMutation = useStoreVerifyEmailMutation()
 const resendMutation = useStoreResendVerificationMutation()
 
-const email = ref('')
-const code = ref('')
-const errorMessage = ref('')
-const infoMessage = ref('')
 const verified = ref(false)
 const devCode = ref('')
+
 const source = computed(() =>
   typeof route.query.source === 'string' ? route.query.source : '',
 )
 
-const isSubmitting = computed(() => verifyMutation.isPending.value)
+const {
+  createSubmitHandler: createVerifySubmit,
+  setValues,
+  meta: verifyMeta,
+} = useApiForm({
+  schema: verifyEmailSchema,
+  initialValues: {
+    email: '',
+    code: '',
+  },
+})
+
+const { value: emailValue } = useField<string>('email')
+
+const isSubmitting = computed(
+  () => verifyMutation.isPending.value || verifyMeta.value.pending,
+)
 const isResending = computed(() => resendMutation.isPending.value)
 
-async function submitVerification(payload: { token?: string; email?: string; code?: string }) {
-  errorMessage.value = ''
-  infoMessage.value = ''
-
+async function submitVerification(payload: {
+  token?: string
+  email?: string
+  code?: string
+}) {
   try {
     await verifyMutation.mutateAsync(payload)
     verified.value = true
+    toast.success('¡Cuenta verificada! Redirigiendo a tu perfil…')
     setTimeout(() => navigateTo('/cuenta'), 1500)
   } catch (error) {
-    errorMessage.value = useApiErrorMessage(error)
+    toast.error(useApiErrorMessage(error))
   }
 }
 
-async function onSubmit() {
-  if (!email.value.trim() || code.value.trim().length !== 6) {
-    errorMessage.value = 'Ingresa tu correo y el código de 6 dígitos.'
-    return
-  }
-
-  await submitVerification({
-    email: email.value.trim(),
-    code: code.value.trim(),
-  })
-}
+const onSubmit = createVerifySubmit(
+  async (values) => {
+    await submitVerification({
+      email: values.email,
+      code: values.code,
+    })
+  },
+  { invalidMessage: 'Ingresa tu correo y el código de 6 dígitos.' },
+)
 
 async function onResend() {
-  errorMessage.value = ''
-  infoMessage.value = ''
-  devCode.value = ''
+  const parsed = resendVerificationSchema.safeParse({
+    email: emailValue.value?.trim() ?? '',
+  })
 
-  if (!email.value.trim()) {
-    errorMessage.value = 'Ingresa tu correo para reenviar el código.'
+  if (!parsed.success) {
+    toast.warning('Ingresa tu correo para reenviar el código.')
     return
   }
 
   try {
-    const result = await resendMutation.mutateAsync(email.value.trim())
-    infoMessage.value = result.message
+    const result = await resendMutation.mutateAsync(parsed.data.email)
+    toast.success(result.message)
     if (result.verificationCode) {
       devCode.value = result.verificationCode
     }
   } catch (error) {
-    errorMessage.value = useApiErrorMessage(error)
+    toast.error(useApiErrorMessage(error))
   }
 }
 
@@ -72,13 +89,13 @@ onMounted(async () => {
   const queryToken = route.query.token
 
   if (typeof queryEmail === 'string') {
-    email.value = queryEmail
+    setValues({ email: queryEmail })
   }
 
   if (typeof queryCode === 'string' && queryCode.length === 6) {
-    code.value = queryCode
-    if (email.value) {
-      await submitVerification({ email: email.value, code: queryCode })
+    setValues({ code: queryCode })
+    if (typeof queryEmail === 'string') {
+      await submitVerification({ email: queryEmail, code: queryCode })
     }
     return
   }
@@ -98,7 +115,7 @@ onMounted(async () => {
         : 'Ingresa el código que enviamos a tu correo'
     "
   >
-    <div v-if="verifyMutation.isPending && !code" class="text-center text-sm text-slate-600">
+    <div v-if="verifyMutation.isPending && !verified" class="text-center text-sm text-slate-600">
       Verificando tu cuenta…
     </div>
 
@@ -107,23 +124,18 @@ onMounted(async () => {
     </UiAlert>
 
     <form v-else class="space-y-4" @submit.prevent="onSubmit">
-      <UiAlert v-if="errorMessage" variant="error">{{ errorMessage }}</UiAlert>
-      <UiAlert v-if="infoMessage" variant="success">{{ infoMessage }}</UiAlert>
-
-      <UiInput
-        v-model="email"
+      <UiFormField
+        name="email"
         label="Correo electrónico"
         type="email"
         autocomplete="email"
-        required
       />
-      <UiInput
-        v-model="code"
+      <UiFormField
+        name="code"
         label="Código de verificación"
         autocomplete="one-time-code"
         hint="Código de 6 dígitos enviado a tu correo"
         maxlength="6"
-        required
       />
 
       <UiButton type="submit" class="w-full" :loading="isSubmitting">
@@ -145,7 +157,7 @@ onMounted(async () => {
         <button
           type="button"
           class="font-mono font-semibold underline"
-          @click="code = devCode"
+          @click="setValues({ code: devCode })"
         >
           {{ devCode }}
         </button>

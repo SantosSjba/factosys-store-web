@@ -4,6 +4,7 @@ import type {
   StaffUser,
   UpdateStaffUserPayload,
 } from '~/types/admin-users'
+import { updateStaffUserWithRolesSchema } from '~/utils/validation/schemas'
 
 const open = defineModel<boolean>({ required: true })
 
@@ -14,15 +15,22 @@ const props = defineProps<{
 
 const { can } = useAdminPermissions()
 const updateMutation = useAdminUpdateUserMutation()
-const isSubmitting = computed(() => updateMutation.isPending.value)
 
-const firstName = ref('')
-const lastName = ref('')
-const phone = ref('')
-const status = ref<StaffUser['status']>('ACTIVE')
-const password = ref('')
-const roleSlugs = ref<string[]>([])
-const errorMessage = ref('')
+const { resetForm, setValues, createSubmitHandler, meta } = useApiForm({
+  schema: updateStaffUserWithRolesSchema,
+  initialValues: {
+    firstName: '',
+    lastName: '',
+    phone: '',
+    status: 'ACTIVE' as StaffUser['status'],
+    password: '',
+    roleSlugs: [] as string[],
+  },
+})
+
+const isSubmitting = computed(
+  () => updateMutation.isPending.value || meta.value.pending,
+)
 
 const statusOptions = [
   { label: 'Activo', value: 'ACTIVE' },
@@ -38,13 +46,14 @@ const roleOptions = computed(() =>
 )
 
 function loadUser(user: StaffUser) {
-  firstName.value = user.firstName ?? ''
-  lastName.value = user.lastName ?? ''
-  phone.value = user.phone ?? ''
-  status.value = user.status
-  password.value = ''
-  roleSlugs.value = user.roles.map((role) => role.slug)
-  errorMessage.value = ''
+  setValues({
+    firstName: user.firstName ?? '',
+    lastName: user.lastName ?? '',
+    phone: user.phone ?? '',
+    status: user.status,
+    password: '',
+    roleSlugs: user.roles.map((role) => role.slug),
+  })
 }
 
 watch(
@@ -57,43 +66,36 @@ watch(
 
 watch(open, (value) => {
   if (value && props.user) loadUser(props.user)
+  if (!value) resetForm()
 })
 
-async function onSubmit() {
-  errorMessage.value = ''
-  if (!props.user) return
+const onSubmit = createSubmitHandler(
+  async (values) => {
+    if (!props.user) return
 
-  if (can('roles.assign') && !roleSlugs.value.length) {
-    errorMessage.value = 'Selecciona al menos un rol.'
-    return
-  }
-
-  try {
     const payload: UpdateStaffUserPayload = {
-      firstName: firstName.value || undefined,
-      lastName: lastName.value || undefined,
-      phone: phone.value || undefined,
-      status: status.value,
+      firstName: values.firstName,
+      lastName: values.lastName,
+      phone: values.phone,
+      status: values.status,
     }
 
-    if (password.value.trim()) {
-      payload.password = password.value
+    if (values.password) {
+      payload.password = values.password
     }
 
     if (can('roles.assign')) {
-      payload.roleSlugs = roleSlugs.value
+      payload.roleSlugs = values.roleSlugs
     }
 
     await updateMutation.mutateAsync({
       id: props.user.id,
       payload,
     })
-    useToast().success('Usuario actualizado correctamente')
     open.value = false
-  } catch (error) {
-    errorMessage.value = useApiErrorMessage(error)
-  }
-}
+  },
+  { successMessage: 'Usuario actualizado correctamente' },
+)
 </script>
 
 <template>
@@ -104,25 +106,20 @@ async function onSubmit() {
     size="lg"
   >
     <form v-if="user" class="space-y-4" @submit.prevent="onSubmit">
-      <UiAlert v-if="errorMessage" variant="error">{{ errorMessage }}</UiAlert>
-
       <div class="grid gap-4 sm:grid-cols-2">
-        <UiInput v-model="firstName" label="Nombre" autocomplete="off" />
-        <UiInput v-model="lastName" label="Apellido" autocomplete="off" />
-        <UiInput
-          v-model="phone"
-          class="sm:col-span-2"
-          label="Teléfono"
-          type="tel"
-          autocomplete="off"
-        />
-        <UiSelect
-          v-model="status"
-          label="Estado"
-          :options="statusOptions"
-        />
-        <UiInput
-          v-model="password"
+        <UiFormField name="firstName" label="Nombre" autocomplete="off" />
+        <UiFormField name="lastName" label="Apellido" autocomplete="off" />
+        <div class="sm:col-span-2">
+          <UiFormField
+            name="phone"
+            label="Teléfono"
+            type="tel"
+            autocomplete="off"
+          />
+        </div>
+        <UiFormSelect name="status" label="Estado" :options="statusOptions" />
+        <UiFormField
+          name="password"
           label="Nueva contraseña"
           type="password"
           autocomplete="new-password"
@@ -130,9 +127,9 @@ async function onSubmit() {
         />
       </div>
 
-      <UiCheckboxGroup
+      <UiFormCheckboxGroup
         v-if="can('roles.assign')"
-        v-model="roleSlugs"
+        name="roleSlugs"
         label="Roles asignados"
         :options="roleOptions"
         hint="Los permisos efectivos serán la unión de todos los roles seleccionados."

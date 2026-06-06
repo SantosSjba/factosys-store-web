@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ApiError } from '~/types/api'
+import { loginSchema } from '~/utils/validation/schemas'
 
 definePageMeta({
   layout: 'auth',
@@ -7,36 +8,43 @@ definePageMeta({
 })
 
 const route = useRoute()
+const toast = useToast()
 const loginMutation = useStoreLoginMutation()
-const isSubmitting = computed(() => loginMutation.isPending.value)
-
-const email = ref('')
-const password = ref('')
-const errorMessage = ref('')
-
-async function onSubmit() {
-  errorMessage.value = ''
-  try {
-    await loginMutation.mutateAsync({
-      email: email.value,
-      password: password.value,
-    })
-    const redirect =
-      typeof route.query.redirect === 'string' ? route.query.redirect : '/cuenta'
-    await navigateTo(redirect)
-  } catch (error) {
-    errorMessage.value = useApiErrorMessage(error)
-    if (error instanceof ApiError && error.code === 'EMAIL_NOT_VERIFIED') {
-      errorMessage.value += ' Revisa tu correo o vuelve a registrarte.'
-    }
-    if (error instanceof ApiError && error.code === 'AUTH_CONTEXT_MISMATCH') {
-      errorMessage.value +=
-        ' Las cuentas super@ / admin@ son del panel admin, no de la tienda.'
-    }
-  }
-}
-
 const authStore = useAuthStore()
+
+const { createSubmitHandler, meta } = useApiForm({
+  schema: loginSchema,
+  initialValues: {
+    email: '',
+    password: '',
+  },
+})
+
+const isSubmitting = computed(
+  () => loginMutation.isPending.value || meta.value.pending,
+)
+
+const onSubmit = createSubmitHandler(
+  async (values) => {
+    try {
+      await loginMutation.mutateAsync(values)
+      const redirect =
+        typeof route.query.redirect === 'string' ? route.query.redirect : '/cuenta'
+      await navigateTo(redirect)
+    } catch (error) {
+      let message = useApiErrorMessage(error)
+      if (error instanceof ApiError && error.code === 'EMAIL_NOT_VERIFIED') {
+        message += ' Revisa tu correo o vuelve a registrarte.'
+      }
+      if (error instanceof ApiError && error.code === 'AUTH_CONTEXT_MISMATCH') {
+        message +=
+          ' Las cuentas super@ / admin@ son del panel admin, no de la tienda.'
+      }
+      toast.error(message)
+    }
+  },
+  { invalidMessage: 'Ingresa un correo y contraseña válidos.' },
+)
 </script>
 
 <template>
@@ -45,21 +53,17 @@ const authStore = useAuthStore()
     subtitle="Accede a tu cuenta de cliente en la tienda"
   >
     <form class="space-y-4" @submit.prevent="onSubmit">
-      <UiAlert v-if="errorMessage" variant="error">{{ errorMessage }}</UiAlert>
-
-      <UiInput
-        v-model="email"
+      <UiFormField
+        name="email"
         label="Correo electrónico"
         type="email"
         autocomplete="email"
-        required
       />
-      <UiInput
-        v-model="password"
+      <UiFormField
+        name="password"
         label="Contraseña"
         type="password"
         autocomplete="current-password"
-        required
       />
 
       <UiButton type="submit" class="w-full" :loading="isSubmitting">

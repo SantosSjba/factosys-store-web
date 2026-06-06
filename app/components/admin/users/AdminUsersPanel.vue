@@ -35,9 +35,7 @@ const detailOpen = ref(false)
 const editOpen = ref(false)
 const selectedUser = ref<StaffUser | null>(null)
 
-const errorMessage = computed(() =>
-  isError.value ? useApiErrorMessage(error.value) : '',
-)
+useQueryErrorToast(isError, error)
 
 const columns: UiTableColumn<StaffUser>[] = [
   { key: 'email', label: 'Correo' },
@@ -123,10 +121,6 @@ async function reactivateUser(user: StaffUser) {
 
 <template>
   <div>
-    <UiAlert v-if="errorMessage" variant="error" class="mb-4">
-      {{ errorMessage }}
-    </UiAlert>
-
     <UiFilterBar title="Personal del sistema">
       <UiSearchInput
         v-model="search"
@@ -188,7 +182,7 @@ async function reactivateUser(user: StaffUser) {
           <div class="flex justify-end gap-0.5">
             <UiIconButton
               icon="lucide:eye"
-              aria-label="Ver detalle"
+              ariaLabel="Ver detalle"
               title="Ver detalle"
               size="sm"
               tone="admin"
@@ -197,7 +191,7 @@ async function reactivateUser(user: StaffUser) {
             <UiIconButton
               v-if="can('users.update')"
               icon="lucide:pencil"
-              aria-label="Editar usuario"
+              ariaLabel="Editar usuario"
               title="Editar usuario"
               size="sm"
               tone="admin"
@@ -206,7 +200,7 @@ async function reactivateUser(user: StaffUser) {
             <UiIconButton
               v-if="can('users.delete') && canManageStatus(row) && row.status !== 'SUSPENDED'"
               icon="lucide:user-x"
-              aria-label="Dar de baja"
+              ariaLabel="Dar de baja"
               title="Dar de baja"
               size="sm"
               tone="admin"
@@ -215,7 +209,7 @@ async function reactivateUser(user: StaffUser) {
             <UiIconButton
               v-if="can('users.update') && canManageStatus(row) && row.status === 'SUSPENDED'"
               icon="lucide:user-check"
-              aria-label="Reactivar usuario"
+              ariaLabel="Reactivar usuario"
               title="Reactivar usuario"
               size="sm"
               tone="admin"

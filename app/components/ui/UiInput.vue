@@ -10,6 +10,7 @@ const props = withDefaults(
     hint?: string
     error?: string
     disabled?: boolean
+    maxlength?: number | string
     id?: string
   }>(),
   { type: 'text' },
@@ -17,6 +18,7 @@ const props = withDefaults(
 
 defineEmits<{
   'update:modelValue': [value: string]
+  blur: []
 }>()
 
 const inputId = computed(() => props.id ?? `input-${useId()}`)
@@ -41,9 +43,11 @@ const fieldClass = computed(() => [
       :autocomplete="autocomplete"
       :required="required"
       :disabled="disabled"
+      :maxlength="maxlength"
       :class="fieldClass"
       :aria-invalid="Boolean(error)"
       @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
+      @blur="$emit('blur')"
     />
     <UiFieldMessage :error="error" :hint="hint" />
   </label>
@@ -56,9 +60,11 @@ const fieldClass = computed(() => [
       :autocomplete="autocomplete"
       :required="required"
       :disabled="disabled"
+      :maxlength="maxlength"
       :class="fieldClass"
       :aria-invalid="Boolean(error)"
       @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
+      @blur="$emit('blur')"
     />
     <UiFieldMessage :error="error" :hint="hint" />
   </div>

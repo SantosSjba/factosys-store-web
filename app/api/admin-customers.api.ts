@@ -1,4 +1,4 @@
-import type { StoreCustomer } from '~/types/admin-customers'
+import type { CreateCustomerPayload, StoreCustomer } from '~/types/admin-customers'
 import type { PaginatedResponse, PaginationParams } from '~/types/pagination'
 
 export async function fetchAdminCustomers(params: PaginationParams = {}) {
@@ -6,6 +6,11 @@ export async function fetchAdminCustomers(params: PaginationParams = {}) {
     '/admin/customers',
     { params },
   )
+  return data
+}
+
+export async function createAdminCustomer(payload: CreateCustomerPayload) {
+  const { data } = await useAdminApi().post<StoreCustomer>('/admin/customers', payload)
   return data
 }
 

@@ -5,7 +5,7 @@ const { toasts, remove } = useToast()
 <template>
   <Teleport to="body">
     <div
-      class="pointer-events-none fixed right-4 top-4 z-[10000] flex w-[min(100vw-2rem,24rem)] flex-col gap-2"
+      class="pointer-events-none fixed right-4 top-4 z-[10003] flex w-[min(100vw-2rem,24rem)] flex-col gap-2"
       aria-live="polite"
       aria-relevant="additions"
     >

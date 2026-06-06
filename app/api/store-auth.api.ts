@@ -7,7 +7,9 @@ import type {
   VerifyEmailPayload,
 } from '~/types/auth'
 
-export async function registerStoreUser(payload: RegisterPayload) {
+export async function registerStoreUser(
+  payload: RegisterPayload,
+): Promise<RegisterResponse> {
   const { data } = await useApi().post<RegisterResponse>(
     '/store/auth/register',
     payload,
@@ -16,7 +18,9 @@ export async function registerStoreUser(payload: RegisterPayload) {
   return data
 }
 
-export async function verifyStoreEmail(payload: VerifyEmailPayload) {
+export async function verifyStoreEmail(
+  payload: VerifyEmailPayload,
+): Promise<AuthTokensResponse> {
   const { data } = await useApi().post<AuthTokensResponse>(
     '/store/auth/verify-email',
     payload,
@@ -25,7 +29,9 @@ export async function verifyStoreEmail(payload: VerifyEmailPayload) {
   return data
 }
 
-export async function resendStoreVerification(email: string) {
+export async function resendStoreVerification(
+  email: string,
+): Promise<ResendVerificationResponse> {
   const { data } = await useApi().post<ResendVerificationResponse>(
     '/store/auth/resend-verification',
     { email },
@@ -34,7 +40,9 @@ export async function resendStoreVerification(email: string) {
   return data
 }
 
-export async function loginStoreUser(payload: LoginPayload) {
+export async function loginStoreUser(
+  payload: LoginPayload,
+): Promise<AuthTokensResponse> {
   const { data } = await useApi().post<AuthTokensResponse>(
     '/store/auth/login',
     payload,

@@ -14,3 +14,11 @@ export type StoreCustomer = {
   emailVerifiedAt: string | null
   createdAt: string
 }
+
+export type CreateCustomerPayload = {
+  email: string
+  password: string
+  firstName?: string
+  lastName?: string
+  phone?: string
+}
