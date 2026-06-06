@@ -1,49 +1,18 @@
 <script setup lang="ts">
-import { ApiError } from '~/types/api'
-import { loginSchema } from '~/utils/validation/schemas'
-
 definePageMeta({
   layout: 'auth',
   middleware: 'admin-guest',
 })
 
-const route = useRoute()
-const toast = useToast()
 const loginMutation = useAdminLoginMutation()
 
-const { createSubmitHandler, meta } = useApiForm({
-  schema: loginSchema,
-  initialValues: {
-    email: '',
-    password: '',
-  },
+const { onSubmit, isSubmitting } = useAuthLoginSubmit({
+  mutation: loginMutation,
+  redirectDefault: '/intranet',
+  successMessage: 'Sesión iniciada correctamente',
+  contextMismatchSuffix:
+    ' Usa una cuenta de personal (staff). Los clientes entran por la tienda.',
 })
-
-const isSubmitting = computed(
-  () => loginMutation.isPending.value || meta.value.pending,
-)
-
-const onSubmit = createSubmitHandler(
-  async (values) => {
-    try {
-      await loginMutation.mutateAsync(values)
-      toast.success('Sesión iniciada correctamente')
-      const redirect =
-        typeof route.query.redirect === 'string'
-          ? route.query.redirect
-          : '/intranet'
-      await navigateTo(redirect)
-    } catch (error) {
-      let message = useApiErrorMessage(error)
-      if (error instanceof ApiError && error.code === 'AUTH_CONTEXT_MISMATCH') {
-        message +=
-          ' Usa una cuenta de personal (staff). Los clientes entran por la tienda.'
-      }
-      toast.error(message)
-    }
-  },
-  { invalidMessage: 'Ingresa un correo y contraseña válidos.' },
-)
 </script>
 
 <template>

@@ -29,14 +29,7 @@ export const loginSchema = z.object({
   password: z.string({ message: 'La contraseña es obligatoria.' }).min(1, 'La contraseña es obligatoria.'),
 })
 
-export const registerSchema = z.object({
-  email: emailField,
-  password: passwordField,
-  firstName: optionalText,
-  lastName: optionalText,
-})
-
-export const createCustomerSchema = z.object({
+const personFieldsSchema = z.object({
   email: emailField,
   password: passwordField,
   firstName: optionalText,
@@ -44,12 +37,11 @@ export const createCustomerSchema = z.object({
   phone: optionalText,
 })
 
-export const createStaffUserSchema = z.object({
-  email: emailField,
-  password: passwordField,
-  firstName: optionalText,
-  lastName: optionalText,
-  phone: optionalText,
+export const registerSchema = personFieldsSchema.omit({ phone: true })
+
+export const createCustomerSchema = personFieldsSchema
+
+export const createStaffUserSchema = personFieldsSchema.extend({
   roleSlugs: z
     .array(z.string())
     .min(1, 'Selecciona al menos un rol.'),

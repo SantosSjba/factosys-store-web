@@ -3,32 +3,21 @@ import type { UiTableColumn } from '~/types/ui'
 import type { StoreCustomer } from '~/types/admin-customers'
 
 const { can } = useAdminPermissions()
-const { confirm } = useConfirm()
 const deleteMutation = useAdminDeleteCustomerMutation()
 
-const page = ref(1)
-const pageSize = ref(10)
-const search = ref('')
-
-const customersQuery = useAdminCustomersQuery(
-  computed(() => ({
-    page: page.value,
-    limit: pageSize.value,
-    search: search.value,
-  })),
+const {
+  page,
+  search,
+  isPending,
+  items: customers,
+  paginationMeta,
+} = usePaginatedAdminList<StoreCustomer>((params) =>
+  useAdminCustomersQuery(params),
 )
-
-const isPending = computed(() => customersQuery.isPending.value)
-const isError = computed(() => customersQuery.isError.value)
-const error = computed(() => customersQuery.error.value)
-const customers = computed(() => customersQuery.data.value?.items ?? [])
-const paginationMeta = computed(() => customersQuery.data.value?.meta)
 
 const createOpen = ref(false)
 const detailOpen = ref(false)
 const selectedCustomer = ref<StoreCustomer | null>(null)
-
-useQueryErrorToast(isError, error)
 
 const columns: UiTableColumn<StoreCustomer>[] = [
   { key: 'email', label: 'Correo' },
@@ -38,40 +27,22 @@ const columns: UiTableColumn<StoreCustomer>[] = [
   { key: 'createdAt', label: 'Alta', width: '9rem' },
 ]
 
-watch(search, () => {
-  page.value = 1
-})
-
 function openDetail(customer: StoreCustomer) {
   selectedCustomer.value = customer
   detailOpen.value = true
 }
 
-function formatDate(value: string) {
-  return new Date(value).toLocaleDateString('es-PE', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  })
-}
-
-async function suspendCustomer(customer: StoreCustomer) {
+function suspendCustomer(customer: StoreCustomer) {
   const name = formatUserName(customer) || customer.email
-  const ok = await confirm({
-    title: 'Dar de baja cliente',
-    message: `¿Suspender a ${name}? No podrá iniciar sesión en la tienda.`,
-    confirmLabel: 'Dar de baja',
-    variant: 'danger',
+  return runAdminSuspendAction({
+    confirm: {
+      title: 'Dar de baja cliente',
+      message: `¿Suspender a ${name}? No podrá iniciar sesión en la tienda.`,
+      confirmLabel: 'Dar de baja',
+    },
+    mutate: () => deleteMutation.mutateAsync(customer.id),
+    successMessage: 'Cliente dado de baja correctamente',
   })
-
-  if (!ok) return
-
-  try {
-    await deleteMutation.mutateAsync(customer.id)
-    useToast().success('Cliente dado de baja correctamente')
-  } catch (error) {
-    useToast().error(useApiErrorMessage(error))
-  }
 }
 </script>
 
@@ -124,7 +95,7 @@ async function suspendCustomer(customer: StoreCustomer) {
         </template>
 
         <template #cell-createdAt="{ row }">
-          {{ formatDate(row.createdAt) }}
+          {{ formatAdminDate(row.createdAt) }}
         </template>
 
         <template #actions="{ row }">

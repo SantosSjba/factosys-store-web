@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { formatModuleLabel, formatPermissionLabel } from '~/constants/admin-permissions'
+import { formatPermissionLabel } from '~/constants/admin-permissions'
 import type { StaffUser } from '~/types/admin-users'
 
 const open = defineModel<boolean>({ required: true })
@@ -18,34 +18,9 @@ const displayName = computed(() =>
   props.user ? formatUserName(props.user) : '',
 )
 
-const permissionsByModule = computed(() => {
-  if (!props.user) return []
-
-  const groups = new Map<string, string[]>()
-
-  for (const slug of props.user.permissions) {
-    const module = slug.split('.')[0] ?? 'general'
-    const current = groups.get(module) ?? []
-    current.push(slug)
-    groups.set(module, current)
-  }
-
-  return [...groups.entries()]
-    .map(([module, permissions]) => ({
-      module,
-      label: formatModuleLabel(module),
-      permissions: permissions.sort(),
-    }))
-    .sort((a, b) => a.label.localeCompare(b.label))
-})
-
-const createdAtLabel = computed(() => {
-  if (!props.user?.createdAt) return '—'
-  return new Date(props.user.createdAt).toLocaleString('es-PE', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  })
-})
+const permissionsByModule = computed(() =>
+  props.user ? groupPermissionSlugsByModule(props.user.permissions) : [],
+)
 </script>
 
 <template>
@@ -57,24 +32,20 @@ const createdAtLabel = computed(() => {
   >
     <div v-if="user" class="space-y-5">
       <div class="grid gap-3 sm:grid-cols-2">
-        <div class="bg-admin-surface rounded-xl p-4">
-          <p class="text-admin-muted text-xs font-medium uppercase">Nombre</p>
-          <p class="text-admin mt-1 font-medium">{{ displayName }}</p>
-        </div>
-        <div class="bg-admin-surface rounded-xl p-4">
-          <p class="text-admin-muted text-xs font-medium uppercase">Estado</p>
-          <UiBadge :variant="userStatusVariant(user.status)" class="mt-2 normal-case">
+        <AdminDetailCell label="Nombre">
+          <p class="font-medium">{{ displayName }}</p>
+        </AdminDetailCell>
+        <AdminDetailCell label="Estado">
+          <UiBadge :variant="userStatusVariant(user.status)" class="normal-case">
             {{ formatUserStatus(user.status) }}
           </UiBadge>
-        </div>
-        <div class="bg-admin-surface rounded-xl p-4">
-          <p class="text-admin-muted text-xs font-medium uppercase">Teléfono</p>
-          <p class="text-admin mt-1">{{ user.phone || '—' }}</p>
-        </div>
-        <div class="bg-admin-surface rounded-xl p-4">
-          <p class="text-admin-muted text-xs font-medium uppercase">Registrado</p>
-          <p class="text-admin mt-1 text-sm">{{ createdAtLabel }}</p>
-        </div>
+        </AdminDetailCell>
+        <AdminDetailCell label="Teléfono">
+          {{ user.phone || '—' }}
+        </AdminDetailCell>
+        <AdminDetailCell label="Registrado">
+          <span class="text-sm">{{ formatAdminDateTime(user.createdAt) }}</span>
+        </AdminDetailCell>
       </div>
 
       <div>

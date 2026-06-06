@@ -7,11 +7,9 @@ const { data: profile, isPending, isError, error } = useStoreProfileQuery()
 
 useQueryErrorToast(isError, error)
 
-const displayName = computed(() => {
-  if (!profile.value) return ''
-  const parts = [profile.value.firstName, profile.value.lastName].filter(Boolean)
-  return parts.length > 0 ? parts.join(' ') : profile.value.email
-})
+const displayName = computed(() =>
+  profile.value ? formatUserName(profile.value) : '',
+)
 </script>
 
 <template>

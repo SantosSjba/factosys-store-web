@@ -4,38 +4,27 @@ import type { StaffUser } from '~/types/admin-users'
 
 const { can } = useAdminPermissions()
 const { data: profile } = useAdminProfileQuery()
-const { confirm } = useConfirm()
 const deleteMutation = useAdminDeleteUserMutation()
 const updateMutation = useAdminUpdateUserMutation()
 
 const currentUserId = computed(() => profile.value?.id ?? '')
 
-const page = ref(1)
-const pageSize = ref(10)
-const search = ref('')
-
-const usersQuery = useAdminUsersQuery(
-  computed(() => ({
-    page: page.value,
-    limit: pageSize.value,
-    search: search.value,
-  })),
+const {
+  page,
+  search,
+  isPending,
+  items: users,
+  paginationMeta,
+} = usePaginatedAdminList<StaffUser>((params) =>
+  useAdminUsersQuery(params),
 )
 
 const { data: roles } = useAdminRolesQuery()
-
-const isPending = computed(() => usersQuery.isPending.value)
-const isError = computed(() => usersQuery.isError.value)
-const error = computed(() => usersQuery.error.value)
-const users = computed(() => usersQuery.data.value?.items ?? [])
-const paginationMeta = computed(() => usersQuery.data.value?.meta)
 
 const createOpen = ref(false)
 const detailOpen = ref(false)
 const editOpen = ref(false)
 const selectedUser = ref<StaffUser | null>(null)
-
-useQueryErrorToast(isError, error)
 
 const columns: UiTableColumn<StaffUser>[] = [
   { key: 'email', label: 'Correo' },
@@ -45,10 +34,6 @@ const columns: UiTableColumn<StaffUser>[] = [
   { key: 'permissions', label: 'Permisos', align: 'center', width: '6rem' },
   { key: 'createdAt', label: 'Alta', width: '9rem' },
 ]
-
-watch(search, () => {
-  page.value = 1
-})
 
 function openDetail(user: StaffUser) {
   selectedUser.value = user
@@ -65,57 +50,39 @@ function openEditFromDetail() {
   editOpen.value = true
 }
 
-function formatDate(value: string) {
-  return new Date(value).toLocaleDateString('es-PE', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  })
-}
-
 function canManageStatus(user: StaffUser) {
   return user.id !== currentUserId.value
 }
 
-async function suspendUser(user: StaffUser) {
+function suspendUser(user: StaffUser) {
   const name = formatUserName(user) || user.email
-  const ok = await confirm({
-    title: 'Dar de baja usuario',
-    message: `¿Suspender a ${name}? No podrá iniciar sesión y sus sesiones activas se cerrarán.`,
-    confirmLabel: 'Dar de baja',
-    variant: 'danger',
+  return runAdminSuspendAction({
+    confirm: {
+      title: 'Dar de baja usuario',
+      message: `¿Suspender a ${name}? No podrá iniciar sesión y sus sesiones activas se cerrarán.`,
+      confirmLabel: 'Dar de baja',
+    },
+    mutate: () => deleteMutation.mutateAsync(user.id),
+    successMessage: 'Usuario dado de baja correctamente',
   })
-
-  if (!ok) return
-
-  try {
-    await deleteMutation.mutateAsync(user.id)
-    useToast().success('Usuario dado de baja correctamente')
-  } catch (error) {
-    useToast().error(useApiErrorMessage(error))
-  }
 }
 
-async function reactivateUser(user: StaffUser) {
+function reactivateUser(user: StaffUser) {
   const name = formatUserName(user) || user.email
-  const ok = await confirm({
-    title: 'Reactivar usuario',
-    message: `¿Reactivar a ${name}? Podrá volver a acceder al panel.`,
-    confirmLabel: 'Reactivar',
-    variant: 'primary',
+  return runAdminSuspendAction({
+    confirm: {
+      title: 'Reactivar usuario',
+      message: `¿Reactivar a ${name}? Podrá volver a acceder al panel.`,
+      confirmLabel: 'Reactivar',
+      variant: 'primary',
+    },
+    mutate: () =>
+      updateMutation.mutateAsync({
+        id: user.id,
+        payload: { status: 'ACTIVE' },
+      }),
+    successMessage: 'Usuario reactivado correctamente',
   })
-
-  if (!ok) return
-
-  try {
-    await updateMutation.mutateAsync({
-      id: user.id,
-      payload: { status: 'ACTIVE' },
-    })
-    useToast().success('Usuario reactivado correctamente')
-  } catch (error) {
-    useToast().error(useApiErrorMessage(error))
-  }
 }
 </script>
 
@@ -175,7 +142,7 @@ async function reactivateUser(user: StaffUser) {
         </template>
 
         <template #cell-createdAt="{ row }">
-          {{ formatDate(row.createdAt) }}
+          {{ formatAdminDate(row.createdAt) }}
         </template>
 
         <template #actions="{ row }">

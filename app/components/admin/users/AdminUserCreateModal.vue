@@ -26,13 +26,7 @@ const isSubmitting = computed(
   () => createMutation.isPending.value || meta.value.pending,
 )
 
-const roleOptions = computed(() =>
-  props.roles.map((role) => ({
-    label: role.name,
-    value: role.slug,
-    hint: role.description ?? undefined,
-  })),
-)
+const roleOptions = computed(() => mapRoleOptions(props.roles))
 
 const onSubmit = createSubmitHandler(
   async (values) => {
@@ -55,31 +49,7 @@ watch(open, (value) => {
     size="lg"
   >
     <form class="space-y-4" @submit.prevent="onSubmit">
-      <div class="grid gap-4 sm:grid-cols-2">
-        <UiFormField
-          name="email"
-          label="Correo electrónico"
-          type="email"
-          autocomplete="off"
-        />
-        <UiFormField
-          name="password"
-          label="Contraseña temporal"
-          type="password"
-          autocomplete="new-password"
-          hint="Mínimo 8 caracteres"
-        />
-        <UiFormField name="firstName" label="Nombre" autocomplete="off" />
-        <UiFormField name="lastName" label="Apellido" autocomplete="off" />
-        <div class="sm:col-span-2">
-          <UiFormField
-            name="phone"
-            label="Teléfono"
-            type="tel"
-            autocomplete="off"
-          />
-        </div>
-      </div>
+      <AdminPersonFields />
 
       <UiFormCheckboxGroup
         name="roleSlugs"
@@ -90,12 +60,12 @@ watch(open, (value) => {
     </form>
 
     <template #footer>
-      <UiButton variant="ghost" :disabled="isSubmitting" @click="open = false">
-        Cancelar
-      </UiButton>
-      <UiButton :loading="isSubmitting" @click="onSubmit">
-        Crear usuario
-      </UiButton>
+      <AdminModalFooter
+        submit-label="Crear usuario"
+        :loading="isSubmitting"
+        @cancel="open = false"
+        @submit="onSubmit"
+      />
     </template>
   </UiModal>
 </template>

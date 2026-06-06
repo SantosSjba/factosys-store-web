@@ -1,50 +1,19 @@
 <script setup lang="ts">
-import { ApiError } from '~/types/api'
-import { loginSchema } from '~/utils/validation/schemas'
-
 definePageMeta({
   layout: 'auth',
   middleware: 'guest',
 })
 
-const route = useRoute()
-const toast = useToast()
 const loginMutation = useStoreLoginMutation()
 const authStore = useAuthStore()
 
-const { createSubmitHandler, meta } = useApiForm({
-  schema: loginSchema,
-  initialValues: {
-    email: '',
-    password: '',
-  },
+const { onSubmit, isSubmitting } = useAuthLoginSubmit({
+  mutation: loginMutation,
+  redirectDefault: '/cuenta',
+  contextMismatchSuffix:
+    ' Las cuentas super@ / admin@ son del panel admin, no de la tienda.',
+  emailNotVerifiedSuffix: ' Revisa tu correo o vuelve a registrarte.',
 })
-
-const isSubmitting = computed(
-  () => loginMutation.isPending.value || meta.value.pending,
-)
-
-const onSubmit = createSubmitHandler(
-  async (values) => {
-    try {
-      await loginMutation.mutateAsync(values)
-      const redirect =
-        typeof route.query.redirect === 'string' ? route.query.redirect : '/cuenta'
-      await navigateTo(redirect)
-    } catch (error) {
-      let message = useApiErrorMessage(error)
-      if (error instanceof ApiError && error.code === 'EMAIL_NOT_VERIFIED') {
-        message += ' Revisa tu correo o vuelve a registrarte.'
-      }
-      if (error instanceof ApiError && error.code === 'AUTH_CONTEXT_MISMATCH') {
-        message +=
-          ' Las cuentas super@ / admin@ son del panel admin, no de la tienda.'
-      }
-      toast.error(message)
-    }
-  },
-  { invalidMessage: 'Ingresa un correo y contraseña válidos.' },
-)
 </script>
 
 <template>

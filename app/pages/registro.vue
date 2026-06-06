@@ -25,7 +25,6 @@ const isSubmitting = computed(
 const onSubmit = createSubmitHandler(
   async (values) => {
     const result = await registerMutation.mutateAsync(values)
-    useToast().success('Cuenta creada. Revisa tu correo e ingresa el código.')
 
     await navigateTo({
       path: '/verify-email',
@@ -35,7 +34,10 @@ const onSubmit = createSubmitHandler(
       },
     })
   },
-  { invalidMessage: 'Completa los campos obligatorios correctamente.' },
+  {
+    successMessage: 'Cuenta creada. Revisa tu correo e ingresa el código.',
+    invalidMessage: 'Completa los campos obligatorios correctamente.',
+  },
 )
 </script>
 

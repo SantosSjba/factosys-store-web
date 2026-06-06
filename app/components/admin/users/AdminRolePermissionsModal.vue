@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useField } from 'vee-validate'
-import { formatModuleLabel } from '~/constants/admin-permissions'
 import type { PermissionCatalogItem, StaffRole } from '~/types/admin-users'
 import { rolePermissionsSchema } from '~/utils/validation/schemas'
 
@@ -29,23 +28,9 @@ const isSubmitting = computed(
 
 const isAdminRole = computed(() => props.role?.slug === 'admin')
 
-const permissionsByModule = computed(() => {
-  const groups = new Map<string, PermissionCatalogItem[]>()
-
-  for (const permission of props.permissions) {
-    const current = groups.get(permission.module) ?? []
-    current.push(permission)
-    groups.set(permission.module, current)
-  }
-
-  return [...groups.entries()]
-    .map(([module, items]) => ({
-      module,
-      label: formatModuleLabel(module),
-      permissions: items.sort((a, b) => a.name.localeCompare(b.name)),
-    }))
-    .sort((a, b) => a.label.localeCompare(b.label))
-})
+const permissionsByModule = computed(() =>
+  groupCatalogPermissionsByModule(props.permissions),
+)
 
 function loadRole(role: StaffRole) {
   setValues({
@@ -74,8 +59,13 @@ const onSubmit = createSubmitHandler(
       slug: props.role.slug,
       payload: { permissionSlugs: values.permissionSlugs },
     })
-    useToast().success(`Permisos de "${props.role.name}" actualizados`)
     open.value = false
+  },
+  {
+    successMessage: () =>
+      props.role
+        ? `Permisos de "${props.role.name}" actualizados`
+        : 'Permisos actualizados',
   },
 )
 </script>
@@ -125,16 +115,13 @@ const onSubmit = createSubmitHandler(
     </div>
 
     <template #footer>
-      <UiButton variant="ghost" :disabled="isSubmitting" @click="open = false">
-        Cancelar
-      </UiButton>
-      <UiButton
-        v-if="!isAdminRole"
+      <AdminModalFooter
+        submit-label="Guardar permisos"
         :loading="isSubmitting"
-        @click="onSubmit"
-      >
-        Guardar permisos
-      </UiButton>
+        :show-submit="!isAdminRole"
+        @cancel="open = false"
+        @submit="onSubmit"
+      />
     </template>
   </UiModal>
 </template>

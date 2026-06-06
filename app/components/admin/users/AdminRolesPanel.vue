@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { formatModuleLabel, getModuleIcon } from '~/constants/admin-permissions'
+import { getModuleIcon } from '~/constants/admin-permissions'
 import { getRoleIcon } from '~/constants/admin-roles'
 import type { StaffRole } from '~/types/admin-users'
 
@@ -13,25 +13,8 @@ const selectedRole = ref<StaffRole | null>(null)
 useQueryErrorToast(isError, error)
 
 const permissionsByModule = computed(() => {
-  const modules = new Map<string, { slug: string; name: string }[]>()
-
-  for (const role of roles.value ?? []) {
-    for (const permission of role.permissions) {
-      const current = modules.get(permission.module) ?? []
-      if (!current.some((item) => item.slug === permission.slug)) {
-        current.push({ slug: permission.slug, name: permission.name })
-      }
-      modules.set(permission.module, current)
-    }
-  }
-
-  return [...modules.entries()]
-    .map(([module, items]) => ({
-      module,
-      label: formatModuleLabel(module),
-      permissions: items.sort((a, b) => a.name.localeCompare(b.name)),
-    }))
-    .sort((a, b) => a.label.localeCompare(b.label))
+  const allPermissions = (roles.value ?? []).flatMap((role) => role.permissions)
+  return groupCatalogPermissionsByModule(allPermissions, { dedupe: true })
 })
 
 function openPermissions(role: StaffRole) {

@@ -37,13 +37,7 @@ const statusOptions = [
   { label: 'Suspendido', value: 'SUSPENDED' },
 ]
 
-const roleOptions = computed(() =>
-  props.roles.map((role) => ({
-    label: role.name,
-    value: role.slug,
-    hint: role.description ?? undefined,
-  })),
-)
+const roleOptions = computed(() => mapRoleOptions(props.roles))
 
 function loadUser(user: StaffUser) {
   setValues({
@@ -140,12 +134,12 @@ const onSubmit = createSubmitHandler(
     </form>
 
     <template #footer>
-      <UiButton variant="ghost" :disabled="isSubmitting" @click="open = false">
-        Cancelar
-      </UiButton>
-      <UiButton :loading="isSubmitting" @click="onSubmit">
-        Guardar cambios
-      </UiButton>
+      <AdminModalFooter
+        submit-label="Guardar cambios"
+        :loading="isSubmitting"
+        @cancel="open = false"
+        @submit="onSubmit"
+      />
     </template>
   </UiModal>
 </template>

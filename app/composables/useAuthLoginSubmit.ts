@@ -1,0 +1,62 @@
+import { ApiError } from '~/types/api'
+import { loginSchema } from '~/utils/validation/schemas'
+
+type LoginMutation = {
+  isPending: Ref<boolean>
+  mutateAsync: (values: { email: string; password: string }) => Promise<unknown>
+}
+
+export function useAuthLoginSubmit(options: {
+  mutation: LoginMutation
+  redirectDefault: string
+  contextMismatchSuffix: string
+  emailNotVerifiedSuffix?: string
+  successMessage?: string
+  invalidMessage?: string
+}) {
+  const route = useRoute()
+  const toast = useToast()
+
+  const { createSubmitHandler, meta } = useApiForm({
+    schema: loginSchema,
+    initialValues: {
+      email: '',
+      password: '',
+    },
+  })
+
+  const isSubmitting = computed(
+    () => options.mutation.isPending.value || meta.value.pending,
+  )
+
+  const onSubmit = createSubmitHandler(
+    async (values) => {
+      try {
+        await options.mutation.mutateAsync(values)
+        if (options.successMessage) {
+          toast.success(options.successMessage)
+        }
+        const redirect =
+          typeof route.query.redirect === 'string'
+            ? route.query.redirect
+            : options.redirectDefault
+        await navigateTo(redirect)
+      } catch (error) {
+        let message = useApiErrorMessage(error)
+        if (error instanceof ApiError && error.code === 'EMAIL_NOT_VERIFIED') {
+          message += options.emailNotVerifiedSuffix ?? ''
+        }
+        if (error instanceof ApiError && error.code === 'AUTH_CONTEXT_MISMATCH') {
+          message += options.contextMismatchSuffix
+        }
+        toast.error(message)
+      }
+    },
+    {
+      invalidMessage:
+        options.invalidMessage ?? 'Ingresa un correo y contraseña válidos.',
+    },
+  )
+
+  return { onSubmit, isSubmitting }
+}

@@ -3,7 +3,7 @@ import { useForm } from 'vee-validate'
 import type { z } from 'zod'
 
 type SubmitConfig = {
-  successMessage?: string
+  successMessage?: string | (() => string)
   onSuccess?: () => void | Promise<void>
   invalidMessage?: string
 }
@@ -31,7 +31,11 @@ export function useApiForm<TSchema extends z.ZodTypeAny>(options: {
         try {
           await handler(values as z.infer<TSchema>)
           if (config.successMessage) {
-            toast.success(config.successMessage)
+            const message =
+              typeof config.successMessage === 'function'
+                ? config.successMessage()
+                : config.successMessage
+            toast.success(message)
           }
           await config.onSuccess?.()
         } catch (error) {

@@ -41,40 +41,16 @@ watch(open, (value) => {
     size="lg"
   >
     <form class="space-y-4" @submit.prevent="onSubmit">
-      <div class="grid gap-4 sm:grid-cols-2">
-        <UiFormField
-          name="email"
-          label="Correo electrónico"
-          type="email"
-          autocomplete="off"
-        />
-        <UiFormField
-          name="password"
-          label="Contraseña temporal"
-          type="password"
-          autocomplete="new-password"
-          hint="Mínimo 8 caracteres"
-        />
-        <UiFormField name="firstName" label="Nombre" autocomplete="off" />
-        <UiFormField name="lastName" label="Apellido" autocomplete="off" />
-        <div class="sm:col-span-2">
-          <UiFormField
-            name="phone"
-            label="Teléfono"
-            type="tel"
-            autocomplete="off"
-          />
-        </div>
-      </div>
+      <AdminPersonFields />
     </form>
 
     <template #footer>
-      <UiButton variant="ghost" :disabled="isSubmitting" @click="open = false">
-        Cancelar
-      </UiButton>
-      <UiButton :loading="isSubmitting" @click="onSubmit">
-        Crear cliente
-      </UiButton>
+      <AdminModalFooter
+        submit-label="Crear cliente"
+        :loading="isSubmitting"
+        @cancel="open = false"
+        @submit="onSubmit"
+      />
     </template>
   </UiModal>
 </template>
