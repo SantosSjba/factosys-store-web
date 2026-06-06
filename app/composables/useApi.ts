@@ -1,18 +1,17 @@
 import type { AxiosInstance } from 'axios'
 import { createAxiosClient } from '~/utils/create-axios-client'
 
-const STORE_API_KEY = 'store-axios-client'
+let clientSingleton: AxiosInstance | null = null
 
 /**
  * Cliente HTTP tienda (Axios).
  * Bearer, refresh en 401 y errores tipados como `ApiError`.
  */
 export function useApi(): AxiosInstance {
-  const client = useState<AxiosInstance | null>(STORE_API_KEY, () => null)
   const authStore = useAuthStore()
 
-  if (!client.value) {
-    client.value = createAxiosClient({
+  const createClient = () =>
+    createAxiosClient({
       getAccessToken: () => authStore.accessToken,
       getRefreshToken: () => authStore.refreshToken,
       refreshSession: async () => {
@@ -20,7 +19,14 @@ export function useApi(): AxiosInstance {
       },
       clearSession: () => authStore.clearSession(),
     })
+
+  if (import.meta.server) {
+    return createClient()
   }
 
-  return client.value
+  if (!clientSingleton) {
+    clientSingleton = createClient()
+  }
+
+  return clientSingleton
 }

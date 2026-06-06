@@ -3,9 +3,11 @@ const props = withDefaults(
   defineProps<{
     icon: string
     ariaLabel: string
+    title?: string
     type?: 'button' | 'submit'
     size?: 'sm' | 'md' | 'lg'
     variant?: 'ghost' | 'round-dark'
+    tone?: 'store' | 'admin'
     badge?: string | number
     disabled?: boolean
   }>(),
@@ -13,6 +15,7 @@ const props = withDefaults(
     type: 'button',
     size: 'md',
     variant: 'ghost',
+    tone: 'store',
     disabled: false,
   },
 )
@@ -37,10 +40,13 @@ const iconSize = computed(() => {
     :class="[
       sizeClass,
       props.variant === 'ghost'
-        ? 'text-theme hover:bg-theme-muted'
+        ? props.tone === 'admin'
+          ? 'text-admin hover:bg-admin-surface'
+          : 'text-theme hover:bg-theme-muted'
         : 'bg-brand-ink-btn h-10 w-10 rounded-full text-white sm:mr-1',
     ]"
     :aria-label="props.ariaLabel"
+    :title="props.title ?? props.ariaLabel"
     :disabled="props.disabled"
   >
     <UiIcon :name="props.icon" :size="iconSize" />

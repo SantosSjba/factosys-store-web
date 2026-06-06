@@ -1,15 +1,14 @@
 import type { AxiosInstance } from 'axios'
 import { createAxiosClient } from '~/utils/create-axios-client'
 
-const ADMIN_API_KEY = 'admin-axios-client'
+let clientSingleton: AxiosInstance | null = null
 
 /** Cliente HTTP intranet / panel admin (Axios). */
 export function useAdminApi(): AxiosInstance {
-  const client = useState<AxiosInstance | null>(ADMIN_API_KEY, () => null)
   const adminAuth = useAdminAuthStore()
 
-  if (!client.value) {
-    client.value = createAxiosClient({
+  const createClient = () =>
+    createAxiosClient({
       getAccessToken: () => adminAuth.accessToken,
       getRefreshToken: () => adminAuth.refreshToken,
       refreshSession: async () => {
@@ -17,7 +16,15 @@ export function useAdminApi(): AxiosInstance {
       },
       clearSession: () => adminAuth.clearSession(),
     })
+
+  // SSR: instancia efímera (Axios no es serializable en el payload de Nuxt)
+  if (import.meta.server) {
+    return createClient()
   }
 
-  return client.value
+  if (!clientSingleton) {
+    clientSingleton = createClient()
+  }
+
+  return clientSingleton
 }

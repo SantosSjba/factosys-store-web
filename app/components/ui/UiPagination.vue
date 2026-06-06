@@ -1,9 +1,13 @@
 <script setup lang="ts">
-const props = defineProps<{
-  page: number
-  pageSize: number
-  total: number
-}>()
+const props = withDefaults(
+  defineProps<{
+    page: number
+    pageSize: number
+    total: number
+    tone?: 'admin' | 'store'
+  }>(),
+  { tone: 'admin' },
+)
 
 const emit = defineEmits<{
   'update:page': [value: number]
@@ -21,6 +25,20 @@ const to = computed(() =>
   Math.min(props.page * props.pageSize, props.total),
 )
 
+const surfaceClass = computed(() =>
+  props.tone === 'admin'
+    ? 'border-admin-line bg-admin-card'
+    : 'border-theme bg-theme-surface',
+)
+
+const textMutedClass = computed(() =>
+  props.tone === 'admin' ? 'text-admin-muted' : 'text-theme-muted',
+)
+
+const textClass = computed(() =>
+  props.tone === 'admin' ? 'text-admin' : 'text-theme',
+)
+
 function goTo(page: number) {
   const next = Math.min(Math.max(1, page), totalPages.value)
   emit('update:page', next)
@@ -29,11 +47,14 @@ function goTo(page: number) {
 
 <template>
   <div
-    class="border-admin-line bg-admin-card flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3"
+    class="flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3"
+    :class="surfaceClass"
   >
-    <p class="text-admin-muted text-sm">
-      Mostrando <span class="text-admin font-medium">{{ from }}-{{ to }}</span>
-      de <span class="text-admin font-medium">{{ total }}</span>
+    <p class="text-sm" :class="textMutedClass">
+      Mostrando
+      <span class="font-medium" :class="textClass">{{ from }}-{{ to }}</span>
+      de
+      <span class="font-medium" :class="textClass">{{ total }}</span>
     </p>
     <div class="flex items-center gap-1">
       <UiIconButton
@@ -42,7 +63,7 @@ function goTo(page: number) {
         :disabled="page <= 1"
         @click="goTo(page - 1)"
       />
-      <span class="text-admin min-w-[4rem] text-center text-sm font-medium">
+      <span class="min-w-[4rem] text-center text-sm font-medium" :class="textClass">
         {{ page }} / {{ totalPages }}
       </span>
       <UiIconButton

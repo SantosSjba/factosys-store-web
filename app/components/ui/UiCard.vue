@@ -5,6 +5,7 @@ const props = withDefaults(
   defineProps<{
     title?: string
     description?: string
+    icon?: string
     noPadding?: boolean
     tone?: UiCardTone
     variant?: UiCardVariant
@@ -55,13 +56,26 @@ const descriptionClass = computed(() =>
 <template>
   <component :is="as" :class="cardClass">
     <div
-      v-if="title || description || $slots.actions"
+      v-if="title || description || icon || $slots.actions"
       class="flex flex-wrap items-start justify-between gap-3 border-b px-5 py-4 md:px-6"
       :class="headerBorder"
     >
-      <div>
-        <h2 v-if="title" :class="titleClass">{{ title }}</h2>
-        <p v-if="description" :class="descriptionClass">{{ description }}</p>
+      <div class="flex items-start gap-3">
+        <div
+          v-if="icon"
+          class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+          :style="
+            tone === 'admin'
+              ? { background: 'var(--admin-primary-soft)', color: 'var(--admin-primary)' }
+              : { background: 'var(--brand-cyan-soft)', color: 'var(--brand-cyan)' }
+          "
+        >
+          <UiIcon :name="icon" :size="20" />
+        </div>
+        <div>
+          <h2 v-if="title" :class="titleClass">{{ title }}</h2>
+          <p v-if="description" :class="descriptionClass">{{ description }}</p>
+        </div>
       </div>
       <div v-if="$slots.actions" class="flex items-center gap-2">
         <slot name="actions" />

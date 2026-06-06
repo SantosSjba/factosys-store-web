@@ -48,7 +48,7 @@ export const adminNavMenu: AdminNavEntry[] = [
     type: 'group',
     label: 'Sistema',
     children: [
-      { label: 'Usuarios', to: '/intranet/usuarios', icon: 'users', soon: true },
+      { label: 'Usuarios', to: '/intranet/usuarios', icon: 'users' },
       { label: 'Configuración', to: '/intranet/configuracion', icon: 'settings', soon: true },
     ],
   },

@@ -2,12 +2,19 @@
 defineProps<{
   title?: string
   description?: string
+  icon?: string
   noPadding?: boolean
 }>()
 </script>
 
 <template>
-  <UiCard tone="admin" :title="title" :description="description" :no-padding="noPadding">
+  <UiCard
+    tone="admin"
+    :title="title"
+    :description="description"
+    :icon="icon"
+    :no-padding="noPadding"
+  >
     <template v-if="$slots.actions" #actions>
       <slot name="actions" />
     </template>

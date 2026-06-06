@@ -25,7 +25,7 @@ const isActive = computed(() => {
   <UiTooltip :label="label" :show="collapsed">
     <NuxtLink
       :to="to"
-      class="group flex items-center rounded-lg text-sm font-medium transition"
+      class="group flex w-full items-center rounded-lg text-sm font-medium transition"
       :class="[
         collapsed ? 'justify-center px-2 py-2.5' : 'gap-3 px-3 py-2.5',
         isActive ? 'admin-nav-link--active' : 'admin-nav-link',

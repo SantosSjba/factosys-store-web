@@ -59,7 +59,7 @@ function toggleGroup(label: string) {
         />
         <div
           v-show="collapsed || expandedGroups[entry.label]"
-          class="space-y-1"
+          class="w-full space-y-1"
         >
           <AdminSidebarLink
             v-for="child in entry.children"
