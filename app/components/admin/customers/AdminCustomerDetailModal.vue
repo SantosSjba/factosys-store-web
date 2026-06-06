@@ -7,6 +7,12 @@ const props = defineProps<{
   customer: StoreCustomer | null
 }>()
 
+const emit = defineEmits<{
+  edit: []
+}>()
+
+const { can } = useAdminPermissions()
+
 const displayName = computed(() =>
   props.customer ? formatUserName(props.customer) : '',
 )
@@ -46,6 +52,12 @@ const displayName = computed(() =>
 
     <template #footer>
       <UiButton variant="ghost" @click="open = false">Cerrar</UiButton>
+      <UiButton
+        v-if="can('users.update')"
+        @click="emit('edit')"
+      >
+        Editar cliente
+      </UiButton>
     </template>
   </UiModal>
 </template>

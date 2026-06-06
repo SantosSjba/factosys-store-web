@@ -17,6 +17,7 @@ const {
 
 const createOpen = ref(false)
 const detailOpen = ref(false)
+const editOpen = ref(false)
 const selectedCustomer = ref<StoreCustomer | null>(null)
 
 const columns: UiTableColumn<StoreCustomer>[] = [
@@ -30,6 +31,16 @@ const columns: UiTableColumn<StoreCustomer>[] = [
 function openDetail(customer: StoreCustomer) {
   selectedCustomer.value = customer
   detailOpen.value = true
+}
+
+function openEdit(customer: StoreCustomer) {
+  selectedCustomer.value = customer
+  editOpen.value = true
+}
+
+function openEditFromDetail() {
+  detailOpen.value = false
+  editOpen.value = true
 }
 
 function suspendCustomer(customer: StoreCustomer) {
@@ -109,6 +120,15 @@ function suspendCustomer(customer: StoreCustomer) {
               @click="openDetail(row)"
             />
             <UiIconButton
+              v-if="can('users.update')"
+              icon="lucide:pencil"
+              ariaLabel="Editar cliente"
+              title="Editar cliente"
+              size="sm"
+              tone="admin"
+              @click="openEdit(row)"
+            />
+            <UiIconButton
               v-if="can('users.delete') && row.status !== 'SUSPENDED'"
               icon="lucide:user-x"
               ariaLabel="Dar de baja"
@@ -139,6 +159,13 @@ function suspendCustomer(customer: StoreCustomer) {
 
     <AdminCustomerDetailModal
       v-model="detailOpen"
+      :customer="selectedCustomer"
+      @edit="openEditFromDetail"
+    />
+
+    <AdminCustomerEditModal
+      v-if="can('users.update')"
+      v-model="editOpen"
       :customer="selectedCustomer"
     />
   </div>

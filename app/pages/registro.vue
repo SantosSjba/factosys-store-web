@@ -8,7 +8,7 @@ definePageMeta({
 
 const registerMutation = useStoreRegisterMutation()
 
-const { createSubmitHandler, meta } = useApiForm({
+const { createSubmitHandler, withMutationPending } = useApiForm({
   schema: registerSchema,
   initialValues: {
     email: '',
@@ -18,9 +18,7 @@ const { createSubmitHandler, meta } = useApiForm({
   },
 })
 
-const isSubmitting = computed(
-  () => registerMutation.isPending.value || meta.value.pending,
-)
+const isSubmitting = withMutationPending(registerMutation)
 
 const onSubmit = createSubmitHandler(
   async (values) => {

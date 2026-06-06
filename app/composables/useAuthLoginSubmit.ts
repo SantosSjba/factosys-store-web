@@ -17,7 +17,7 @@ export function useAuthLoginSubmit(options: {
   const route = useRoute()
   const toast = useToast()
 
-  const { createSubmitHandler, meta } = useApiForm({
+  const { createSubmitHandler, withMutationPending } = useApiForm({
     schema: loginSchema,
     initialValues: {
       email: '',
@@ -25,9 +25,7 @@ export function useAuthLoginSubmit(options: {
     },
   })
 
-  const isSubmitting = computed(
-    () => options.mutation.isPending.value || meta.value.pending,
-  )
+  const isSubmitting = withMutationPending(options.mutation)
 
   const onSubmit = createSubmitHandler(
     async (values) => {

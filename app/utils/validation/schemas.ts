@@ -47,6 +47,14 @@ export const createStaffUserSchema = personFieldsSchema.extend({
     .min(1, 'Selecciona al menos un rol.'),
 })
 
+export const updateCustomerSchema = z.object({
+  firstName: optionalText,
+  lastName: optionalText,
+  phone: optionalText,
+  status: z.enum(['PENDING_VERIFICATION', 'ACTIVE', 'SUSPENDED']),
+  password: optionalPassword,
+})
+
 export const updateStaffUserSchema = z.object({
   firstName: optionalText,
   lastName: optionalText,

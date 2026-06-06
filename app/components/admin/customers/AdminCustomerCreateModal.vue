@@ -5,7 +5,7 @@ const open = defineModel<boolean>({ required: true })
 
 const createMutation = useAdminCreateCustomerMutation()
 
-const { resetForm, createSubmitHandler, meta } = useApiForm({
+const { resetForm, createSubmitHandler, withMutationPending } = useApiForm({
   schema: createCustomerSchema,
   initialValues: {
     email: '',
@@ -16,9 +16,7 @@ const { resetForm, createSubmitHandler, meta } = useApiForm({
   },
 })
 
-const isSubmitting = computed(
-  () => createMutation.isPending.value || meta.value.pending,
-)
+const isSubmitting = withMutationPending(createMutation)
 
 const onSubmit = createSubmitHandler(
   async (values) => {

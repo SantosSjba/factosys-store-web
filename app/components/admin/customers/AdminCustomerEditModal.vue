@@ -1,103 +1,94 @@
 <script setup lang="ts">
-import type {
-  StaffRole,
-  StaffUser,
-  UpdateStaffUserPayload,
-} from '~/types/admin-users'
-import { updateStaffUserWithRolesSchema } from '~/utils/validation/schemas'
+import type { StoreCustomer, UpdateCustomerPayload } from '~/types/admin-customers'
+import { updateCustomerSchema } from '~/utils/validation/schemas'
 
 const open = defineModel<boolean>({ required: true })
 
 const props = defineProps<{
-  user: StaffUser | null
-  roles: StaffRole[]
+  customer: StoreCustomer | null
 }>()
 
-const { can } = useAdminPermissions()
-const updateMutation = useAdminUpdateUserMutation()
+const updateMutation = useAdminUpdateCustomerMutation()
 
 const { resetForm, setValues, createSubmitHandler, withMutationPending } = useApiForm({
-  schema: updateStaffUserWithRolesSchema,
+  schema: updateCustomerSchema,
   initialValues: {
     firstName: '',
     lastName: '',
     phone: '',
-    status: 'ACTIVE' as StaffUser['status'],
+    status: 'ACTIVE' as StoreCustomer['status'],
     password: '',
-    roleSlugs: [] as string[],
   },
 })
 
 const isSubmitting = withMutationPending(updateMutation)
 
+const isLocalAuth = computed(
+  () => props.customer?.authProvider === 'LOCAL',
+)
+
 const statusOptions = [
+  { label: 'Pendiente de verificación', value: 'PENDING_VERIFICATION' },
   { label: 'Activo', value: 'ACTIVE' },
   { label: 'Suspendido', value: 'SUSPENDED' },
 ]
 
-const roleOptions = computed(() => mapRoleOptions(props.roles))
-
-function loadUser(user: StaffUser) {
+function loadCustomer(customer: StoreCustomer) {
   setValues({
-    firstName: user.firstName ?? '',
-    lastName: user.lastName ?? '',
-    phone: user.phone ?? '',
-    status: user.status,
+    firstName: customer.firstName ?? '',
+    lastName: customer.lastName ?? '',
+    phone: customer.phone ?? '',
+    status: customer.status,
     password: '',
-    roleSlugs: user.roles.map((role) => role.slug),
   })
 }
 
 watch(
-  () => props.user,
-  (user) => {
-    if (user) loadUser(user)
+  () => props.customer,
+  (customer) => {
+    if (customer) loadCustomer(customer)
   },
   { immediate: true },
 )
 
 watch(open, (value) => {
-  if (value && props.user) loadUser(props.user)
+  if (value && props.customer) loadCustomer(props.customer)
   if (!value) resetForm()
 })
 
 const onSubmit = createSubmitHandler(
   async (values) => {
-    if (!props.user) return
+    if (!props.customer) return
 
-    const payload: UpdateStaffUserPayload = {
+    const payload: UpdateCustomerPayload = {
       firstName: values.firstName,
       lastName: values.lastName,
       phone: values.phone,
       status: values.status,
     }
 
-    if (values.password) {
+    if (values.password && isLocalAuth.value) {
       payload.password = values.password
     }
 
-    if (can('roles.assign')) {
-      payload.roleSlugs = values.roleSlugs
-    }
-
     await updateMutation.mutateAsync({
-      id: props.user.id,
+      id: props.customer.id,
       payload,
     })
     open.value = false
   },
-  { successMessage: 'Usuario actualizado correctamente' },
+  { successMessage: 'Cliente actualizado correctamente' },
 )
 </script>
 
 <template>
   <UiModal
     v-model="open"
-    title="Editar usuario"
-    :description="user?.email"
+    title="Editar cliente"
+    :description="customer?.email"
     size="lg"
   >
-    <form v-if="user" class="space-y-4" @submit.prevent="onSubmit">
+    <form v-if="customer" class="space-y-4" @submit.prevent="onSubmit">
       <div class="grid gap-4 sm:grid-cols-2">
         <UiFormField name="firstName" label="Nombre" autocomplete="off" />
         <UiFormField name="lastName" label="Apellido" autocomplete="off" />
@@ -111,6 +102,7 @@ const onSubmit = createSubmitHandler(
         </div>
         <UiFormSelect name="status" label="Estado" :options="statusOptions" />
         <UiFormField
+          v-if="isLocalAuth"
           name="password"
           label="Nueva contraseña"
           type="password"
@@ -119,15 +111,8 @@ const onSubmit = createSubmitHandler(
         />
       </div>
 
-      <UiFormCheckboxGroup
-        v-if="can('roles.assign')"
-        name="roleSlugs"
-        label="Roles asignados"
-        :options="roleOptions"
-        hint="Los permisos efectivos serán la unión de todos los roles seleccionados."
-      />
-      <UiAlert v-else variant="info" class="text-sm">
-        No tienes permiso para cambiar roles (<code>roles.assign</code>).
+      <UiAlert v-if="!isLocalAuth" variant="info" class="text-sm">
+        Esta cuenta usa acceso con Google; no se puede cambiar la contraseña local.
       </UiAlert>
     </form>
 

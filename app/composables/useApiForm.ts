@@ -48,8 +48,15 @@ export function useApiForm<TSchema extends z.ZodTypeAny>(options: {
     )
   }
 
+  function withMutationPending(mutation: { isPending: MaybeRef<boolean> }) {
+    return computed(
+      () => toValue(mutation.isPending) || form.isSubmitting.value,
+    )
+  }
+
   return {
     ...form,
     createSubmitHandler,
+    withMutationPending,
   }
 }

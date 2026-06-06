@@ -21,7 +21,7 @@ const source = computed(() =>
 const {
   createSubmitHandler: createVerifySubmit,
   setValues,
-  meta: verifyMeta,
+  withMutationPending,
 } = useApiForm({
   schema: verifyEmailSchema,
   initialValues: {
@@ -32,9 +32,7 @@ const {
 
 const { value: emailValue } = useField<string>('email')
 
-const isSubmitting = computed(
-  () => verifyMutation.isPending.value || verifyMeta.value.pending,
-)
+const isSubmitting = withMutationPending(verifyMutation)
 const isResending = computed(() => resendMutation.isPending.value)
 
 async function submitVerification(payload: {

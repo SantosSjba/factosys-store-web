@@ -10,7 +10,7 @@ const props = defineProps<{
 
 const createMutation = useAdminCreateUserMutation()
 
-const { resetForm, createSubmitHandler, meta } = useApiForm({
+const { resetForm, createSubmitHandler, withMutationPending } = useApiForm({
   schema: createStaffUserSchema,
   initialValues: {
     email: '',
@@ -22,9 +22,7 @@ const { resetForm, createSubmitHandler, meta } = useApiForm({
   },
 })
 
-const isSubmitting = computed(
-  () => createMutation.isPending.value || meta.value.pending,
-)
+const isSubmitting = withMutationPending(createMutation)
 
 const roleOptions = computed(() => mapRoleOptions(props.roles))
 

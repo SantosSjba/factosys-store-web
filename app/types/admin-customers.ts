@@ -22,3 +22,11 @@ export type CreateCustomerPayload = {
   lastName?: string
   phone?: string
 }
+
+export type UpdateCustomerPayload = {
+  firstName?: string
+  lastName?: string
+  phone?: string
+  status?: CustomerStatus
+  password?: string
+}

@@ -12,7 +12,7 @@ const props = defineProps<{
 
 const updateMutation = useAdminUpdateRolePermissionsMutation()
 
-const { setValues, resetForm, createSubmitHandler, meta } = useApiForm({
+const { setValues, resetForm, createSubmitHandler, withMutationPending } = useApiForm({
   schema: rolePermissionsSchema,
   initialValues: {
     permissionSlugs: [] as string[],
@@ -22,9 +22,7 @@ const { setValues, resetForm, createSubmitHandler, meta } = useApiForm({
 const { value: permissionSlugs, errorMessage, handleChange } =
   useField<string[]>('permissionSlugs')
 
-const isSubmitting = computed(
-  () => updateMutation.isPending.value || meta.value.pending,
-)
+const isSubmitting = withMutationPending(updateMutation)
 
 const isAdminRole = computed(() => props.role?.slug === 'admin')
 
