@@ -133,8 +133,8 @@ export const useAuthStore = defineStore('auth', () => {
     if (base.startsWith('http')) {
       return `${base}/store/auth/google`
     }
-    const origin = config.public.apiOrigin.replace(/\/$/, '')
-    return `${origin}/api/store/auth/google`
+    // Misma origen (Nuxt :3001): el proxy de Vite reenvía a la API
+    return `${base}/store/auth/google`
   })
 
   return {

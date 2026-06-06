@@ -74,8 +74,9 @@ const authStore = useAuthStore()
     <div class="mt-6 space-y-3 border-t border-slate-100 pt-6 text-center text-sm">
       <a
         :href="authStore.googleAuthUrl"
-        class="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 font-medium text-slate-800 hover:bg-slate-50"
+        class="flex w-full items-center justify-center gap-3 rounded-lg border border-slate-300 bg-white px-4 py-2.5 font-medium text-slate-800 shadow-sm transition hover:bg-slate-50"
       >
+        <UiIcon name="logos:google-icon" :size="20" />
         Continuar con Google
       </a>
       <p class="text-slate-600">
