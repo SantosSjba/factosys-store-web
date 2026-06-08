@@ -1,3 +1,4 @@
+import { useQuery } from '@tanstack/vue-query'
 import { fetchAdminDashboardStats } from '~/api/admin-dashboard.api'
 
 export function useAdminDashboardQuery() {
