@@ -49,9 +49,6 @@ const { setValues, createSubmitHandler } = useApiForm({
     orderNumberPrefix: 'FS-',
     defaultWarehouseId: '',
     lowStockGlobalThreshold: '',
-    freeShippingMinAmount: '',
-    handlingDaysMin: '',
-    handlingDaysMax: '',
     warrantyPolicyUrl: '',
     returnsPolicyUrl: '',
     privacyPolicyUrl: '',
@@ -82,9 +79,6 @@ watch(settings, (value) => {
     orderNumberPrefix: value.orderNumberPrefix,
     defaultWarehouseId: value.defaultWarehouseId ?? '',
     lowStockGlobalThreshold: value.lowStockGlobalThreshold ?? '',
-    freeShippingMinAmount: value.freeShippingMinAmount ?? '',
-    handlingDaysMin: value.handlingDaysMin ?? '',
-    handlingDaysMax: value.handlingDaysMax ?? '',
     warrantyPolicyUrl: value.warrantyPolicyUrl ?? '',
     returnsPolicyUrl: value.returnsPolicyUrl ?? '',
     privacyPolicyUrl: value.privacyPolicyUrl ?? '',
@@ -118,10 +112,6 @@ const onSubmit = createSubmitHandler(
       defaultWarehouseId: values.defaultWarehouseId || null,
       lowStockGlobalThreshold:
         values.lowStockGlobalThreshold === '' ? null : Number(values.lowStockGlobalThreshold),
-      freeShippingMinAmount:
-        values.freeShippingMinAmount === '' ? null : Number(values.freeShippingMinAmount),
-      handlingDaysMin: values.handlingDaysMin === '' ? null : Number(values.handlingDaysMin),
-      handlingDaysMax: values.handlingDaysMax === '' ? null : Number(values.handlingDaysMax),
       warrantyPolicyUrl: values.warrantyPolicyUrl,
       returnsPolicyUrl: values.returnsPolicyUrl,
       privacyPolicyUrl: values.privacyPolicyUrl,
@@ -179,14 +169,6 @@ const onSubmit = createSubmitHandler(
           <UiFormField name="lowStockGlobalThreshold" label="Umbral global stock bajo" type="number" min="0" />
           <UiFormSelect name="guestCheckoutEnabled" label="Checkout invitado" :options="boolOptions" />
           <UiFormSelect name="serialNumberRequired" label="Requiere nº de serie" :options="boolOptions" />
-        </div>
-      </AdminFormSection>
-
-      <AdminFormSection title="Envíos" icon="lucide:truck">
-        <div class="grid gap-4 sm:grid-cols-3">
-          <UiFormField name="freeShippingMinAmount" label="Envío gratis desde" type="number" min="0" step="0.01" />
-          <UiFormField name="handlingDaysMin" label="Días preparación (mín)" type="number" min="0" />
-          <UiFormField name="handlingDaysMax" label="Días preparación (máx)" type="number" min="0" />
         </div>
       </AdminFormSection>
 

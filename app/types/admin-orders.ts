@@ -2,6 +2,7 @@ export type OrderStatus =
   | 'PENDING_PAYMENT'
   | 'CONFIRMED'
   | 'PROCESSING'
+  | 'READY_FOR_PICKUP'
   | 'SHIPPED'
   | 'DELIVERED'
   | 'CANCELLED'
@@ -123,6 +124,7 @@ export type ListOrdersParams = {
   search?: string
   status?: OrderStatus
   paymentStatus?: OrderPaymentStatus
+  deliveryMethod?: OrderDeliveryMethod
   customerId?: string
   dateFrom?: string
   dateTo?: string

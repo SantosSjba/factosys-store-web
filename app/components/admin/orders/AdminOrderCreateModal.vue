@@ -13,6 +13,7 @@ const emit = defineEmits<{
 
 const createMutation = useAdminCreateOrderMutation()
 const { data: warehouses } = useAdminActiveWarehousesQuery()
+const { data: storeSettings } = useAdminStoreSettingsQuery()
 
 type LineDraft = {
   key: string
@@ -41,6 +42,8 @@ const shippingAddressLine1 = ref('')
 const shippingDistrict = ref('')
 const shippingProvince = ref('')
 const shippingDepartment = ref('')
+const shippingAmount = ref<number | ''>('')
+const discountAmount = ref<number | ''>('')
 
 const lines = ref<LineDraft[]>([createLine()])
 const formError = ref('')
@@ -168,6 +171,10 @@ watch(open, (value) => {
     shippingDistrict.value = ''
     shippingProvince.value = ''
     shippingDepartment.value = ''
+    shippingAmount.value = storeSettings.value?.flatShippingFee
+      ? Number(storeSettings.value.flatShippingFee)
+      : ''
+    discountAmount.value = ''
     lines.value = [createLine()]
     formError.value = ''
   } else {
@@ -181,6 +188,15 @@ watch(open, (value) => {
 
 watch(customerMode, () => {
   clearCustomer()
+})
+
+watch(deliveryMethod, (value) => {
+  if (value === 'PICKUP') {
+    shippingAmount.value = 0
+    return
+  }
+  const flatFee = storeSettings.value?.flatShippingFee
+  shippingAmount.value = flatFee ? Number(flatFee) : ''
 })
 
 async function onSubmit() {
@@ -257,8 +273,16 @@ async function onSubmit() {
               country: 'PE',
             },
           ],
+          shippingAmount:
+            shippingAmount.value === '' ? undefined : Number(shippingAmount.value),
+          discountAmount:
+            discountAmount.value === '' ? undefined : Number(discountAmount.value),
         }
-      : { shippingAmount: 0 }),
+      : {
+          shippingAmount: 0,
+          discountAmount:
+            discountAmount.value === '' ? undefined : Number(discountAmount.value),
+        }),
   }
 
   try {
@@ -507,6 +531,20 @@ async function onSubmit() {
           <UiInput v-model="shippingDistrict" label="Distrito" />
           <UiInput v-model="shippingProvince" label="Provincia" />
           <UiInput v-model="shippingDepartment" label="Departamento" />
+          <UiInput
+            v-model.number="shippingAmount"
+            label="Costo de envío"
+            type="number"
+            min="0"
+            step="0.01"
+          />
+          <UiInput
+            v-model.number="discountAmount"
+            label="Descuento"
+            type="number"
+            min="0"
+            step="0.01"
+          />
         </div>
       </AdminFormSection>
 

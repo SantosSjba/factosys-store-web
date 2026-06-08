@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import type { OrderPaymentStatus, OrderStatus, OrderSummary } from '~/types/admin-orders'
+import type { OrderDeliveryMethod, OrderPaymentStatus, OrderStatus, OrderSummary } from '~/types/admin-orders'
 import type { UiTableColumn } from '~/types/ui'
 import {
+  formatDeliveryMethod,
   formatOrderStatus,
   formatPaymentStatus,
   ORDER_STATUS_OPTIONS,
@@ -9,15 +10,24 @@ import {
   orderStatusVariant,
   paymentStatusVariant,
 } from '~/utils/format-order'
+import { downloadOrdersExport } from '~/utils/export-orders-csv'
 
+const route = useRoute()
 const { can } = useAdminPermissions()
 
 const statusFilter = ref<OrderStatus | ''>('')
 const paymentFilter = ref<OrderPaymentStatus | ''>('')
+const deliveryFilter = ref<OrderDeliveryMethod | ''>('')
+const dateFrom = ref('')
+const dateTo = ref('')
+const isExporting = ref(false)
 
 const listFilters = computed(() => ({
   status: statusFilter.value || undefined,
   paymentStatus: paymentFilter.value || undefined,
+  deliveryMethod: deliveryFilter.value || undefined,
+  dateFrom: dateFrom.value ? `${dateFrom.value}T00:00:00.000Z` : undefined,
+  dateTo: dateTo.value ? `${dateTo.value}T23:59:59.999Z` : undefined,
 }))
 
 const {
@@ -42,9 +52,16 @@ const paymentOptions = [
   ...PAYMENT_STATUS_OPTIONS,
 ]
 
+const deliveryOptions = [
+  { label: 'Toda entrega', value: '' },
+  { label: 'Envío a domicilio', value: 'SHIPPING' },
+  { label: 'Recojo en tienda', value: 'PICKUP' },
+]
+
 const columns: UiTableColumn<OrderSummary>[] = [
   { key: 'orderNumber', label: 'Pedido', width: '9rem' },
   { key: 'customerName', label: 'Cliente' },
+  { key: 'deliveryMethod', label: 'Entrega', width: '9rem' },
   { key: 'status', label: 'Estado', width: '10rem' },
   { key: 'paymentStatus', label: 'Pago', width: '9rem' },
   { key: 'total', label: 'Total', width: '8rem' },
@@ -61,6 +78,26 @@ function onCreated(orderId: string) {
   selectedOrderId.value = orderId
   detailOpen.value = true
 }
+
+async function exportCsv() {
+  isExporting.value = true
+  try {
+    await downloadOrdersExport({
+      search: search.value,
+      ...listFilters.value,
+    })
+  } finally {
+    isExporting.value = false
+  }
+}
+
+onMounted(() => {
+  const orderId = route.query.orderId
+  if (typeof orderId === 'string' && orderId) {
+    selectedOrderId.value = orderId
+    detailOpen.value = true
+  }
+})
 </script>
 
 <template>
@@ -83,7 +120,19 @@ function onCreated(orderId: string) {
         aria-label="Filtrar por pago"
         class="w-44"
       />
+      <UiSelect
+        v-model="deliveryFilter"
+        :options="deliveryOptions"
+        aria-label="Filtrar por entrega"
+        class="w-44"
+      />
+      <UiInput v-model="dateFrom" type="date" label="Desde" class="w-40" />
+      <UiInput v-model="dateTo" type="date" label="Hasta" class="w-40" />
       <template #actions>
+        <UiButton variant="ghost" :loading="isExporting" @click="exportCsv">
+          <UiIcon name="lucide:download" :size="16" class="mr-2" />
+          Exportar CSV
+        </UiButton>
         <UiButton v-if="can('orders.write')" @click="createOpen = true">
           <UiIcon name="lucide:plus" :size="16" class="mr-2" />
           Nuevo pedido
@@ -106,6 +155,9 @@ function onCreated(orderId: string) {
         <template #cell-customerName="{ row }">
           <p class="font-medium">{{ row.customerName || '—' }}</p>
           <p class="text-admin-muted text-xs">{{ row.customerEmail || '—' }}</p>
+        </template>
+        <template #cell-deliveryMethod="{ row }">
+          <span class="text-sm">{{ formatDeliveryMethod(row.deliveryMethod) }}</span>
         </template>
         <template #cell-status="{ row }">
           <UiBadge :variant="orderStatusVariant(row.status)">

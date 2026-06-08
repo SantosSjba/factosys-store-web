@@ -209,9 +209,6 @@ export const storeSettingsSchema = z.object({
   orderNumberPrefix: z.string().trim().min(1),
   defaultWarehouseId: optionalText,
   lowStockGlobalThreshold: z.coerce.number().min(0).optional().or(z.literal('')),
-  freeShippingMinAmount: z.coerce.number().min(0).optional().or(z.literal('')),
-  handlingDaysMin: z.coerce.number().min(0).optional().or(z.literal('')),
-  handlingDaysMax: z.coerce.number().min(0).optional().or(z.literal('')),
   warrantyPolicyUrl: optionalText,
   returnsPolicyUrl: optionalText,
   privacyPolicyUrl: optionalText,
@@ -220,6 +217,27 @@ export const storeSettingsSchema = z.object({
   serialNumberRequired: boolSelect,
   orderConfirmationEmailEnabled: boolSelect,
   mailFromName: optionalText,
+})
+
+export const paymentsShippingSchema = z.object({
+  flatShippingFee: z.coerce.number().min(0).optional().or(z.literal('')),
+  freeShippingMinAmount: z.coerce.number().min(0).optional().or(z.literal('')),
+  handlingDaysMin: z.coerce.number().min(0).optional().or(z.literal('')),
+  handlingDaysMax: z.coerce.number().min(0).optional().or(z.literal('')),
+  pickupPointName: optionalText,
+  pickupPointAddress: optionalText,
+  pickupPointDistrict: optionalText,
+  pickupPointProvince: optionalText,
+  pickupPointDepartment: optionalText,
+  pickupPointHours: optionalText,
+  pickupPointPhone: optionalText,
+  paymentCashEnabled: boolSelect,
+  paymentBankTransferEnabled: boolSelect,
+  paymentYapeEnabled: boolSelect,
+  paymentPlinEnabled: boolSelect,
+  bankTransferInstructions: optionalText,
+  yapeNumber: optionalText,
+  plinNumber: optionalText,
 })
 
 export const currencyFormSchema = z.object({

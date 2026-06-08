@@ -23,6 +23,7 @@ export function useAdminOrdersQuery(params: MaybeRefOrGetter<ListOrdersParams> =
       status: raw.status || undefined,
       paymentStatus: raw.paymentStatus || undefined,
       customerId: raw.customerId || undefined,
+      deliveryMethod: raw.deliveryMethod || undefined,
       dateFrom: raw.dateFrom || undefined,
       dateTo: raw.dateTo || undefined,
     }

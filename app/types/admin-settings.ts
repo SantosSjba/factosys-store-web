@@ -41,8 +41,23 @@ export type StoreSettings = {
   defaultWarehouseName: string | null
   lowStockGlobalThreshold: number | null
   freeShippingMinAmount: string | null
+  flatShippingFee: string | null
   handlingDaysMin: number | null
   handlingDaysMax: number | null
+  pickupPointName: string | null
+  pickupPointAddress: string | null
+  pickupPointDistrict: string | null
+  pickupPointProvince: string | null
+  pickupPointDepartment: string | null
+  pickupPointHours: string | null
+  pickupPointPhone: string | null
+  paymentCashEnabled: boolean
+  paymentBankTransferEnabled: boolean
+  paymentYapeEnabled: boolean
+  paymentPlinEnabled: boolean
+  bankTransferInstructions: string | null
+  yapeNumber: string | null
+  plinNumber: string | null
   warrantyPolicyUrl: string | null
   returnsPolicyUrl: string | null
   privacyPolicyUrl: string | null
@@ -119,8 +134,23 @@ export type UpdateStoreSettingsPayload = {
   defaultWarehouseId?: string | null
   lowStockGlobalThreshold?: number | null
   freeShippingMinAmount?: number | null
+  flatShippingFee?: number | null
   handlingDaysMin?: number | null
   handlingDaysMax?: number | null
+  pickupPointName?: string | null
+  pickupPointAddress?: string | null
+  pickupPointDistrict?: string | null
+  pickupPointProvince?: string | null
+  pickupPointDepartment?: string | null
+  pickupPointHours?: string | null
+  pickupPointPhone?: string | null
+  paymentCashEnabled?: boolean
+  paymentBankTransferEnabled?: boolean
+  paymentYapeEnabled?: boolean
+  paymentPlinEnabled?: boolean
+  bankTransferInstructions?: string | null
+  yapeNumber?: string | null
+  plinNumber?: string | null
   warrantyPolicyUrl?: string
   returnsPolicyUrl?: string
   privacyPolicyUrl?: string

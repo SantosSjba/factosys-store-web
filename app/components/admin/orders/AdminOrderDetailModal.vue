@@ -18,6 +18,7 @@ const props = defineProps<{
 
 const { can } = useAdminPermissions()
 const toast = useToast()
+const { data: storeSettings } = useAdminStoreSettingsQuery()
 
 const orderIdRef = computed(() => (open.value ? props.orderId : null))
 const { data: order, isPending, refetch } = useAdminOrderQuery(orderIdRef)
@@ -50,6 +51,22 @@ const canCancel = computed(() => {
   if (!order.value) return false
   return !['CANCELLED', 'REFUNDED', 'DELIVERED'].includes(order.value.status)
 })
+
+const statusOptions = computed(() => {
+  if (!order.value) return ORDER_STATUS_OPTIONS
+  if (order.value.deliveryMethod === 'PICKUP') {
+    return ORDER_STATUS_OPTIONS.filter(
+      (option) => option.value !== 'SHIPPED',
+    )
+  }
+  return ORDER_STATUS_OPTIONS.filter(
+    (option) => option.value !== 'READY_FOR_PICKUP',
+  )
+})
+
+function printOrder() {
+  window.print()
+}
 
 async function applyStatus() {
   if (!order.value || !nextStatus.value) return
@@ -224,7 +241,23 @@ function formatAddress(address: {
         title="Entrega"
         icon="lucide:store"
       >
-        <p class="text-sm">Recojo en tienda{{ order.warehouseName ? ` · ${order.warehouseName}` : '' }}</p>
+        <div class="space-y-2 text-sm">
+          <p>Recojo en tienda{{ order.warehouseName ? ` · ${order.warehouseName}` : '' }}</p>
+          <template v-if="storeSettings && hasPickupPoint(storeSettings)">
+            <p v-if="storeSettings.pickupPointName" class="font-medium">
+              {{ storeSettings.pickupPointName }}
+            </p>
+            <p v-if="formatPickupPointAddress(storeSettings)" class="text-admin-muted">
+              {{ formatPickupPointAddress(storeSettings) }}
+            </p>
+            <p v-if="storeSettings.pickupPointPhone" class="text-admin-muted">
+              Tel: {{ storeSettings.pickupPointPhone }}
+            </p>
+            <p v-if="storeSettings.pickupPointHours" class="text-admin-muted">
+              Horario: {{ storeSettings.pickupPointHours }}
+            </p>
+          </template>
+        </div>
       </AdminFormSection>
 
       <AdminFormSection
@@ -283,7 +316,7 @@ function formatAddress(address: {
             <p class="text-sm font-medium">Cambiar estado</p>
             <UiSelect
               v-model="nextStatus"
-              :options="[{ label: 'Seleccionar…', value: '' }, ...ORDER_STATUS_OPTIONS]"
+              :options="[{ label: 'Seleccionar…', value: '' }, ...statusOptions]"
               placeholder="Nuevo estado"
             />
             <UiInput v-model="statusNote" placeholder="Nota opcional" />
@@ -317,7 +350,17 @@ function formatAddress(address: {
       </AdminFormSection>
     </div>
 
+    <AdminOrderPrintSheet
+      v-if="order"
+      :order="order"
+      :pickup-point="storeSettings && hasPickupPoint(storeSettings) ? storeSettings : null"
+    />
+
     <template #footer>
+      <UiButton v-if="order" variant="ghost" @click="printOrder">
+        <UiIcon name="lucide:printer" :size="16" class="mr-2" />
+        Imprimir
+      </UiButton>
       <UiButton variant="ghost" @click="open = false">Cerrar</UiButton>
       <UiButton
         v-if="can('orders.write') && canCancel"
