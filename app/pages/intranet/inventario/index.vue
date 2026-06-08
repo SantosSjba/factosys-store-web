@@ -13,7 +13,8 @@ definePageMeta({
 })
 
 const { can } = useAdminPermissions()
-const activeTab = ref('stock')
+const route = useRoute()
+const activeTab = ref(typeof route.query.tab === 'string' ? route.query.tab : 'stock')
 
 const tabs = computed<UiTabItem[]>(() => [
   {
@@ -26,6 +27,12 @@ const tabs = computed<UiTabItem[]>(() => [
     id: 'movements',
     label: 'Movimientos',
     icon: 'lucide:arrow-left-right',
+    disabled: !can('inventory.read'),
+  },
+  {
+    id: 'reservations',
+    label: 'Reservas',
+    icon: 'lucide:bookmark',
     disabled: !can('inventory.read'),
   },
   {
@@ -52,7 +59,7 @@ watch(
   <div>
     <AdminPageTitle
       title="Inventario"
-      description="Stock por almacén, movimientos y configuración de bodegas."
+      description="Stock por almacén, reservas, movimientos y bodegas."
     />
 
     <UiTabs v-model="activeTab" :tabs="tabs">
@@ -64,9 +71,19 @@ watch(
       </template>
 
       <template #movements>
-        <AdminMovementsPanel v-if="can('inventory.read')" />
+        <AdminMovementsPanel
+          v-if="can('inventory.read')"
+          :initial-variant-id="typeof route.query.variantId === 'string' ? route.query.variantId : undefined"
+        />
         <UiAlert v-else variant="warning">
           No tienes permiso para ver movimientos (<code>inventory.read</code>).
+        </UiAlert>
+      </template>
+
+      <template #reservations>
+        <AdminReservationsPanel v-if="can('inventory.read')" />
+        <UiAlert v-else variant="warning">
+          No tienes permiso para ver reservas (<code>inventory.read</code>).
         </UiAlert>
       </template>
 

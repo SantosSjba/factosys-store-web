@@ -22,6 +22,7 @@ export const adminQueryKeys = {
   inventoryWarehouses: () => [...adminQueryKeys.all, 'inventory-warehouses'] as const,
   inventoryStock: () => [...adminQueryKeys.all, 'inventory-stock'] as const,
   inventoryMovements: () => [...adminQueryKeys.all, 'inventory-movements'] as const,
+  inventoryReservations: () => [...adminQueryKeys.all, 'inventory-reservations'] as const,
   inventoryActiveWarehouses: () =>
     [...adminQueryKeys.all, 'inventory-warehouses', 'active'] as const,
 }

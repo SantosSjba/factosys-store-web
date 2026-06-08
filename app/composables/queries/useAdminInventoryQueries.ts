@@ -2,11 +2,16 @@ import { useQuery } from '@tanstack/vue-query'
 import {
   fetchAdminActiveWarehouses,
   fetchAdminMovements,
+  fetchAdminReservations,
   fetchAdminStock,
   fetchAdminWarehouses,
 } from '~/api/admin-inventory.api'
 import { adminQueryKeys } from '~/constants/query-keys'
-import type { ListMovementsParams, ListStockParams } from '~/types/admin-inventory'
+import type {
+  ListMovementsParams,
+  ListReservationsParams,
+  ListStockParams,
+} from '~/types/admin-inventory'
 import type { PaginationParams } from '~/types/pagination'
 
 function inventoryEnabled(canRead: () => boolean) {
@@ -55,6 +60,8 @@ export function useAdminStockQuery(params: MaybeRefOrGetter<ListStockParams> = {
       limit: raw.limit ?? 10,
       search: raw.search?.trim() || undefined,
       warehouseId: raw.warehouseId || undefined,
+      variantId: raw.variantId || undefined,
+      productId: raw.productId || undefined,
       lowStock: raw.lowStock || undefined,
     }
   })
@@ -75,6 +82,10 @@ export function useAdminMovementsQuery(params: MaybeRefOrGetter<ListMovementsPar
       limit: raw.limit ?? 10,
       warehouseId: raw.warehouseId || undefined,
       variantId: raw.variantId || undefined,
+      type: raw.type || undefined,
+      search: raw.search?.trim() || undefined,
+      dateFrom: raw.dateFrom || undefined,
+      dateTo: raw.dateTo || undefined,
     }
   })
 
@@ -82,5 +93,47 @@ export function useAdminMovementsQuery(params: MaybeRefOrGetter<ListMovementsPar
     queryKey: computed(() => [...adminQueryKeys.inventoryMovements(), queryParams.value]),
     queryFn: () => fetchAdminMovements(queryParams.value),
     enabled: inventoryEnabled(() => can('inventory.read')),
+  })
+}
+
+export function useAdminReservationsQuery(params: MaybeRefOrGetter<ListReservationsParams> = {}) {
+  const { can } = useAdminPermissions()
+  const queryParams = computed(() => {
+    const raw = toValue(params)
+    return {
+      page: raw.page ?? 1,
+      limit: raw.limit ?? 10,
+      status: raw.status ?? 'ACTIVE',
+      warehouseId: raw.warehouseId || undefined,
+      variantId: raw.variantId || undefined,
+      search: raw.search?.trim() || undefined,
+    }
+  })
+
+  return useQuery({
+    queryKey: computed(() => [...adminQueryKeys.inventoryReservations(), queryParams.value]),
+    queryFn: () => fetchAdminReservations(queryParams.value),
+    enabled: inventoryEnabled(() => can('inventory.read')),
+  })
+}
+
+export function useAdminProductStockQuery(productId: MaybeRefOrGetter<string | null | undefined>) {
+  const { can } = useAdminPermissions()
+  const queryParams = computed(() => {
+    const id = toValue(productId)
+    return {
+      page: 1,
+      limit: 100,
+      productId: id || undefined,
+    }
+  })
+
+  return useQuery({
+    queryKey: computed(() => [...adminQueryKeys.inventoryStock(), 'product', queryParams.value]),
+    queryFn: () => fetchAdminStock(queryParams.value),
+    enabled: computed(() => {
+      if (!toValue(productId)) return false
+      return inventoryEnabled(() => can('inventory.read')).value
+    }),
   })
 }

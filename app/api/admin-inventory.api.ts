@@ -1,10 +1,13 @@
 import type {
   CreateStockMovementPayload,
+  CreateStockReservationPayload,
   CreateWarehousePayload,
   InventoryMovement,
+  InventoryReservation,
   InventoryStockLevel,
   InventoryWarehouse,
   ListMovementsParams,
+  ListReservationsParams,
   ListStockParams,
   UpdateWarehousePayload,
   VariantLookup,
@@ -85,6 +88,29 @@ export async function updateAdminStockThreshold(stockLevelId: string, lowStockTh
   const { data } = await useAdminApi().patch<InventoryStockLevel>(
     `/admin/inventory/stock/${stockLevelId}/threshold`,
     { lowStockThreshold },
+  )
+  return data
+}
+
+export async function fetchAdminReservations(params: ListReservationsParams = {}) {
+  const { data } = await useAdminApi().get<PaginatedResponse<InventoryReservation>>(
+    '/admin/inventory/reservations',
+    { params: { page: 1, limit: 10, status: 'ACTIVE', ...params } },
+  )
+  return data
+}
+
+export async function createAdminStockReservation(payload: CreateStockReservationPayload) {
+  const { data } = await useAdminApi().post<InventoryReservation>(
+    '/admin/inventory/reservations',
+    payload,
+  )
+  return data
+}
+
+export async function releaseAdminStockReservation(id: string) {
+  const { data } = await useAdminApi().post<InventoryReservation>(
+    `/admin/inventory/reservations/${id}/release`,
   )
   return data
 }

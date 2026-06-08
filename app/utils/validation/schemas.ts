@@ -165,3 +165,11 @@ export const stockMovementSchema = z.object({
   note: optionalText,
   targetWarehouseId: optionalText,
 })
+
+export const stockReservationSchema = z.object({
+  warehouseId: z.string().uuid('Selecciona un almacén.'),
+  variantId: z.string().uuid('Selecciona una variante.'),
+  quantity: z.coerce.number().min(1, 'La cantidad debe ser al menos 1.'),
+  reference: optionalText,
+  note: optionalText,
+})

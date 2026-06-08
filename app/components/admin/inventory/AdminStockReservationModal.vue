@@ -1,17 +1,16 @@
 <script setup lang="ts">
 import { useField } from 'vee-validate'
 import { lookupAdminVariants } from '~/api/admin-inventory.api'
-import type { CreateStockMovementPayload, StockMovementType, VariantLookup } from '~/types/admin-inventory'
-import { stockMovementSchema } from '~/utils/validation/schemas'
+import type { CreateStockReservationPayload, VariantLookup } from '~/types/admin-inventory'
+import { stockReservationSchema } from '~/utils/validation/schemas'
 
 const props = defineProps<{
   initialVariant?: VariantLookup | null
-  initialType?: StockMovementType
   lockVariant?: boolean
 }>()
 
 const open = defineModel<boolean>({ required: true })
-const createMutation = useAdminCreateStockMovementMutation()
+const createMutation = useAdminCreateStockReservationMutation()
 const { data: warehouses } = useAdminActiveWarehousesQuery()
 
 const variantSearch = ref('')
@@ -26,36 +25,18 @@ const warehouseOptions = computed(() =>
   })),
 )
 
-const targetWarehouseOptions = computed(() =>
-  (warehouses.value ?? [])
-    .filter((warehouse) => warehouse.id !== warehouseId.value)
-    .map((warehouse) => ({ label: warehouse.name, value: warehouse.id })),
-)
-
-const movementTypeOptions = [
-  { label: 'Entrada', value: 'RECEIPT' },
-  { label: 'Salida', value: 'SHIPMENT' },
-  { label: 'Ajuste (+/-)', value: 'ADJUSTMENT' },
-  { label: 'Transferencia', value: 'TRANSFER' },
-]
-
 const { resetForm, setValues, createSubmitHandler } = useApiForm({
-  schema: stockMovementSchema,
+  schema: stockReservationSchema,
   initialValues: {
     warehouseId: '',
     variantId: '',
-    type: 'RECEIPT' as const,
     quantity: 1,
+    reference: '',
     note: '',
-    targetWarehouseId: '',
   },
 })
 
-const { value: warehouseId } = useField<string>('warehouseId')
-const { value: movementType } = useField<'RECEIPT' | 'SHIPMENT' | 'ADJUSTMENT' | 'TRANSFER'>('type')
-
 const isSubmitting = computed(() => createMutation.isPending.value)
-const isTransfer = computed(() => movementType.value === 'TRANSFER')
 
 let searchTimer: ReturnType<typeof setTimeout> | undefined
 const suppressVariantSearch = ref(false)
@@ -120,9 +101,6 @@ watch(open, (value) => {
     if (defaultWarehouse) {
       setValues({ warehouseId: defaultWarehouse.id })
     }
-    if (props.initialType) {
-      setValues({ type: props.initialType })
-    }
     if (props.initialVariant) {
       applyInitialVariant(props.initialVariant)
     }
@@ -147,33 +125,31 @@ watch(
 
 const onSubmit = createSubmitHandler(
   async (values) => {
-    const payload: CreateStockMovementPayload = {
+    const payload: CreateStockReservationPayload = {
       warehouseId: values.warehouseId,
       variantId: values.variantId,
-      type: values.type,
       quantity: values.quantity,
+      reference: values.reference,
       note: values.note,
-      targetWarehouseId:
-        values.type === 'TRANSFER' ? values.targetWarehouseId || undefined : undefined,
     }
     await createMutation.mutateAsync(payload)
     open.value = false
   },
-  { successMessage: 'Movimiento registrado correctamente' },
+  { successMessage: 'Stock reservado correctamente' },
 )
 </script>
 
 <template>
   <UiModal
     v-model="open"
-    title="Registrar movimiento"
-    description="Entrada, salida, ajuste o transferencia de stock."
+    title="Reservar stock"
+    description="Bloquea unidades disponibles para un pedido o referencia."
     size="lg"
   >
     <form class="space-y-5" @submit.prevent="onSubmit">
       <AdminFormSection
         title="Producto"
-        description="Busca la variante por SKU o nombre de producto."
+        description="Variante a reservar."
         icon="lucide:scan-barcode"
       >
         <div class="space-y-3">
@@ -223,17 +199,11 @@ const onSubmit = createSubmitHandler(
       </AdminFormSection>
 
       <AdminFormSection
-        title="Movimiento"
-        description="Tipo, almacén y cantidad."
-        icon="lucide:arrow-left-right"
+        title="Reserva"
+        description="Almacén, cantidad y referencia."
+        icon="lucide:bookmark"
       >
         <div class="grid gap-4 sm:grid-cols-2">
-          <UiFormSelect
-            name="type"
-            label="Tipo"
-            :options="movementTypeOptions"
-            required
-          />
           <UiFormSelect
             name="warehouseId"
             label="Almacén"
@@ -244,29 +214,21 @@ const onSubmit = createSubmitHandler(
             name="quantity"
             label="Cantidad"
             type="number"
+            min="1"
             step="1"
             required
-            :hint="
-              isTransfer
-                ? 'Cantidad a transferir al destino.'
-                : movementType === 'ADJUSTMENT'
-                  ? 'Positivo suma, negativo resta.'
-                  : 'Cantidad del movimiento.'
-            "
           />
-          <UiFormSelect
-            v-if="isTransfer"
-            name="targetWarehouseId"
-            label="Almacén destino"
-            :options="targetWarehouseOptions"
-            required
+          <UiFormField
+            name="reference"
+            label="Referencia"
+            autocomplete="off"
+            hint="Opcional. Nº pedido, cotización, etc."
           />
           <UiFormField
             name="note"
             label="Nota"
-            class="sm:col-span-2"
             autocomplete="off"
-            hint="Opcional. Motivo o referencia."
+            hint="Opcional."
           />
         </div>
       </AdminFormSection>
@@ -274,7 +236,7 @@ const onSubmit = createSubmitHandler(
 
     <template #footer>
       <AdminModalFooter
-        submit-label="Registrar"
+        submit-label="Reservar"
         :loading="isSubmitting"
         @cancel="open = false"
         @submit="onSubmit"

@@ -1,20 +1,41 @@
 <script setup lang="ts">
-import type { InventoryMovement } from '~/types/admin-inventory'
+import type { InventoryMovement, StockMovementType } from '~/types/admin-inventory'
 import type { UiTableColumn } from '~/types/ui'
 import {
   formatStockMovementType,
   stockMovementVariant,
 } from '~/utils/inventory/format-stock-movement'
 
+const props = defineProps<{
+  initialVariantId?: string
+}>()
+
 const { data: warehouses } = useAdminActiveWarehousesQuery()
 const filterWarehouseId = ref('')
+const filterType = ref<StockMovementType | ''>('')
+const filterDateFrom = ref('')
+const filterDateTo = ref('')
+const filterVariantId = ref(props.initialVariantId ?? '')
+
+watch(
+  () => props.initialVariantId,
+  (value) => {
+    if (value) filterVariantId.value = value
+  },
+  { immediate: true },
+)
 
 const listFilters = computed(() => ({
   warehouseId: filterWarehouseId.value || undefined,
+  variantId: filterVariantId.value || undefined,
+  type: filterType.value || undefined,
+  dateFrom: filterDateFrom.value || undefined,
+  dateTo: filterDateTo.value ? `${filterDateTo.value}T23:59:59.999Z` : undefined,
 }))
 
 const {
   page,
+  search,
   isPending,
   items: movements,
   paginationMeta,
@@ -31,6 +52,14 @@ const warehouseFilterOptions = computed(() => [
   })),
 ])
 
+const typeFilterOptions = [
+  { label: 'Todos los tipos', value: '' },
+  { label: 'Entrada', value: 'RECEIPT' },
+  { label: 'Salida', value: 'SHIPMENT' },
+  { label: 'Ajuste', value: 'ADJUSTMENT' },
+  { label: 'Transferencia', value: 'TRANSFER' },
+]
+
 const columns: UiTableColumn<InventoryMovement>[] = [
   { key: 'createdAt', label: 'Fecha', width: '9rem' },
   { key: 'type', label: 'Tipo', width: '9rem' },
@@ -38,17 +67,41 @@ const columns: UiTableColumn<InventoryMovement>[] = [
   { key: 'warehouseName', label: 'Almacén', width: '10rem' },
   { key: 'quantityChange', label: 'Cambio', width: '7rem' },
   { key: 'quantityAfter', label: 'Resultado', width: '8rem' },
+  { key: 'performedByName', label: 'Usuario', width: '9rem' },
 ]
 </script>
 
 <template>
   <div>
     <UiFilterBar title="Historial de movimientos">
+      <UiSearchInput
+        v-model="search"
+        placeholder="Buscar por SKU, producto o usuario…"
+        class="min-w-[16rem] flex-1"
+      />
       <UiSelect
         v-model="filterWarehouseId"
         :options="warehouseFilterOptions"
         placeholder="Almacén"
-        class="min-w-[12rem]"
+        class="min-w-[10rem]"
+      />
+      <UiSelect
+        v-model="filterType"
+        :options="typeFilterOptions"
+        placeholder="Tipo"
+        class="min-w-[9rem]"
+      />
+      <UiInput
+        v-model="filterDateFrom"
+        type="date"
+        label="Desde"
+        class="min-w-[9rem]"
+      />
+      <UiInput
+        v-model="filterDateTo"
+        type="date"
+        label="Hasta"
+        class="min-w-[9rem]"
       />
     </UiFilterBar>
 
@@ -69,6 +122,7 @@ const columns: UiTableColumn<InventoryMovement>[] = [
         <template #cell-sku="{ row }">
           <p class="font-medium">{{ row.sku }}</p>
           <p class="text-admin-muted truncate text-xs">{{ row.productName }}</p>
+          <p v-if="row.note" class="text-admin-muted text-xs">{{ row.note }}</p>
           <p v-if="row.targetWarehouseName" class="text-admin-muted text-xs">
             → {{ row.targetWarehouseName }}
           </p>
@@ -79,6 +133,7 @@ const columns: UiTableColumn<InventoryMovement>[] = [
           </span>
         </template>
         <template #cell-quantityAfter="{ row }">{{ row.quantityAfter }}</template>
+        <template #cell-performedByName="{ row }">{{ row.performedByName || '—' }}</template>
       </UiDataTable>
 
       <div

@@ -85,6 +85,8 @@ export type ListStockParams = {
   limit?: number
   search?: string
   warehouseId?: string
+  variantId?: string
+  productId?: string
   lowStock?: string
 }
 
@@ -93,4 +95,46 @@ export type ListMovementsParams = {
   limit?: number
   warehouseId?: string
   variantId?: string
+  type?: StockMovementType
+  search?: string
+  dateFrom?: string
+  dateTo?: string
+}
+
+export type StockReservationStatus = 'ACTIVE' | 'RELEASED'
+
+export type InventoryReservation = {
+  id: string
+  warehouseId: string
+  warehouseName: string
+  warehouseCode: string
+  variantId: string
+  sku: string
+  variantName: string | null
+  productName: string
+  quantity: number
+  reference: string | null
+  note: string | null
+  status: StockReservationStatus
+  performedById: string | null
+  performedByName: string | null
+  createdAt: string
+  releasedAt: string | null
+}
+
+export type CreateStockReservationPayload = {
+  warehouseId: string
+  variantId: string
+  quantity: number
+  reference?: string
+  note?: string
+}
+
+export type ListReservationsParams = {
+  page?: number
+  limit?: number
+  status?: StockReservationStatus
+  warehouseId?: string
+  variantId?: string
+  search?: string
 }

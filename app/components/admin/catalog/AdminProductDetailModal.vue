@@ -170,6 +170,8 @@ function requestEdit() {
         </div>
       </AdminFormSection>
 
+      <AdminProductStockSection v-if="displayProduct" :product="displayProduct" />
+
       <AdminFormSection
         v-if="displayProduct.attributeValues.length"
         title="Especificaciones"
