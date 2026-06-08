@@ -1,4 +1,8 @@
-import type { OrderPaymentStatus, OrderStatus } from '~/types/admin-orders'
+import type {
+  OrderDeliveryMethod,
+  OrderPaymentStatus,
+  OrderStatus,
+} from '~/types/admin-orders'
 
 const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   PENDING_PAYMENT: 'Pendiente de pago',
@@ -65,3 +69,12 @@ export const ORDER_STATUS_OPTIONS = Object.entries(ORDER_STATUS_LABELS).map(
 export const PAYMENT_STATUS_OPTIONS = Object.entries(PAYMENT_STATUS_LABELS).map(
   ([value, label]) => ({ value, label }),
 )
+
+const DELIVERY_METHOD_LABELS: Record<OrderDeliveryMethod, string> = {
+  SHIPPING: 'Envío a domicilio',
+  PICKUP: 'Recojo en tienda',
+}
+
+export function formatDeliveryMethod(method: OrderDeliveryMethod) {
+  return DELIVERY_METHOD_LABELS[method] ?? method
+}

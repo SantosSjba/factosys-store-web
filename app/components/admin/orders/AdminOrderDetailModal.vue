@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { OrderPaymentStatus, OrderStatus } from '~/types/admin-orders'
 import {
+  formatDeliveryMethod,
   formatOrderStatus,
   formatPaymentStatus,
   ORDER_STATUS_OPTIONS,
@@ -133,6 +134,9 @@ function formatAddress(address: {
         <UiBadge :variant="paymentStatusVariant(order.paymentStatus)">
           {{ formatPaymentStatus(order.paymentStatus) }}
         </UiBadge>
+        <UiBadge variant="default">
+          {{ formatDeliveryMethod(order.deliveryMethod) }}
+        </UiBadge>
         <span class="text-admin-muted text-xs">
           {{ order.warehouseName || 'Sin almacén' }} · {{ formatAdminDateTime(order.createdAt) }}
         </span>
@@ -200,7 +204,7 @@ function formatAddress(address: {
             </span>
             <span>{{ formatPrice(order.taxAmount, order.currencyCode) }}</span>
           </div>
-          <div class="flex justify-between">
+          <div v-if="order.deliveryMethod === 'SHIPPING'" class="flex justify-between">
             <span class="text-admin-muted">Envío</span>
             <span>{{ formatPrice(order.shippingAmount, order.currencyCode) }}</span>
           </div>
@@ -216,7 +220,15 @@ function formatAddress(address: {
       </AdminFormSection>
 
       <AdminFormSection
-        v-if="order.addresses.length"
+        v-if="order.deliveryMethod === 'PICKUP'"
+        title="Entrega"
+        icon="lucide:store"
+      >
+        <p class="text-sm">Recojo en tienda{{ order.warehouseName ? ` · ${order.warehouseName}` : '' }}</p>
+      </AdminFormSection>
+
+      <AdminFormSection
+        v-else-if="order.addresses.length"
         title="Direcciones"
         icon="lucide:map-pin"
       >

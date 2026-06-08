@@ -13,6 +13,15 @@ export async function fetchAdminCustomers(params: PaginationParams = {}) {
   return data
 }
 
+export async function lookupAdminCustomers(search: string) {
+  const response = await fetchAdminCustomers({
+    search: search.trim(),
+    page: 1,
+    limit: 10,
+  })
+  return response.items
+}
+
 export async function createAdminCustomer(payload: CreateCustomerPayload) {
   const { data } = await useAdminApi().post<StoreCustomer>('/admin/customers', payload)
   return data

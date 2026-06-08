@@ -18,6 +18,8 @@ export type OrderFulfillmentStatus = 'UNFULFILLED' | 'PARTIAL' | 'FULFILLED'
 
 export type OrderSource = 'ADMIN' | 'WEB' | 'PHONE'
 
+export type OrderDeliveryMethod = 'SHIPPING' | 'PICKUP'
+
 export type OrderAddressType = 'SHIPPING' | 'BILLING'
 
 export type OrderItem = {
@@ -74,6 +76,7 @@ export type OrderSummary = {
   paymentStatus: OrderPaymentStatus
   fulfillmentStatus: OrderFulfillmentStatus
   source: OrderSource
+  deliveryMethod: OrderDeliveryMethod
   customerId: string | null
   customerName: string | null
   customerEmail: string | null
@@ -161,6 +164,7 @@ export type CreateOrderPayload = {
   internalNotes?: string
   paymentStatus?: OrderPaymentStatus
   source?: OrderSource
+  deliveryMethod?: OrderDeliveryMethod
   shippingAmount?: number
   discountAmount?: number
 }

@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { lookupAdminCustomers } from '~/api/admin-customers.api'
 import { lookupAdminVariants } from '~/api/admin-inventory.api'
-import type { CreateOrderPayload } from '~/types/admin-orders'
+import type { CreateOrderPayload, OrderDeliveryMethod } from '~/types/admin-orders'
+import type { StoreCustomer } from '~/types/admin-customers'
 import type { VariantLookup } from '~/types/admin-inventory'
 
 const open = defineModel<boolean>({ required: true })
@@ -17,16 +19,21 @@ type LineDraft = {
   variant: VariantLookup | null
   search: string
   results: VariantLookup[]
+  searching: boolean
   quantity: number
 }
 
 const customerMode = ref<'registered' | 'guest'>('guest')
-const customerId = ref('')
+const selectedCustomer = ref<StoreCustomer | null>(null)
+const customerSearch = ref('')
+const customerResults = ref<StoreCustomer[]>([])
+const isCustomerSearching = ref(false)
 const guestEmail = ref('')
 const guestFirstName = ref('')
 const guestLastName = ref('')
 const guestPhone = ref('')
 const warehouseId = ref('')
+const deliveryMethod = ref<OrderDeliveryMethod>('SHIPPING')
 const paymentStatus = ref<'PENDING' | 'PAID'>('PENDING')
 const customerNotes = ref('')
 const internalNotes = ref('')
@@ -53,6 +60,7 @@ function createLine(): LineDraft {
     variant: null,
     search: '',
     results: [],
+    searching: false,
     quantity: 1,
   }
 }
@@ -67,21 +75,64 @@ function removeLine(key: string) {
 }
 
 const searchTimers = new Map<string, ReturnType<typeof setTimeout>>()
+let customerSearchTimer: ReturnType<typeof setTimeout> | undefined
+
+function formatCustomerLabel(customer: StoreCustomer) {
+  const name = [customer.firstName, customer.lastName].filter(Boolean).join(' ')
+  return name ? `${name} · ${customer.email}` : customer.email
+}
+
+function scheduleCustomerSearch() {
+  if (selectedCustomer.value) return
+  clearTimeout(customerSearchTimer)
+  if (customerSearch.value.trim().length < 2) {
+    customerResults.value = []
+    isCustomerSearching.value = false
+    return
+  }
+  customerSearchTimer = setTimeout(async () => {
+    isCustomerSearching.value = true
+    try {
+      customerResults.value = await lookupAdminCustomers(customerSearch.value)
+    } catch {
+      customerResults.value = []
+    } finally {
+      isCustomerSearching.value = false
+    }
+  }, 300)
+}
+
+function selectCustomer(customer: StoreCustomer) {
+  selectedCustomer.value = customer
+  customerSearch.value = ''
+  customerResults.value = []
+}
+
+function clearCustomer() {
+  selectedCustomer.value = null
+  customerSearch.value = ''
+  customerResults.value = []
+  isCustomerSearching.value = false
+}
 
 function scheduleVariantSearch(line: LineDraft) {
   if (line.variant) return
   clearTimeout(searchTimers.get(line.key))
   if (line.search.trim().length < 2) {
     line.results = []
+    line.searching = false
     return
   }
   searchTimers.set(
     line.key,
     setTimeout(async () => {
+      line.searching = true
       try {
         line.results = await lookupAdminVariants(line.search.trim())
       } catch {
         line.results = []
+      } finally {
+        line.searching = false
       }
     }, 300),
   )
@@ -103,8 +154,9 @@ watch(open, (value) => {
   if (value) {
     const defaultWarehouse = warehouses.value?.find((item) => item.isDefault)
     warehouseId.value = defaultWarehouse?.id ?? ''
+    deliveryMethod.value = 'SHIPPING'
     customerMode.value = 'guest'
-    customerId.value = ''
+    clearCustomer()
     guestEmail.value = ''
     guestFirstName.value = ''
     guestLastName.value = ''
@@ -121,7 +173,14 @@ watch(open, (value) => {
   } else {
     for (const timer of searchTimers.values()) clearTimeout(timer)
     searchTimers.clear()
+    clearTimeout(customerSearchTimer)
+    customerResults.value = []
+    isCustomerSearching.value = false
   }
+})
+
+watch(customerMode, () => {
+  clearCustomer()
 })
 
 async function onSubmit() {
@@ -138,14 +197,23 @@ async function onSubmit() {
     return
   }
 
-  if (customerMode.value === 'registered' && !customerId.value.trim()) {
-    formError.value = 'Ingresa el ID del cliente registrado.'
+  if (customerMode.value === 'registered' && !selectedCustomer.value) {
+    formError.value = 'Selecciona un cliente registrado.'
+    return
+  }
+
+  if (
+    deliveryMethod.value === 'SHIPPING' &&
+    !shippingAddressLine1.value.trim()
+  ) {
+    formError.value = 'Ingresa la dirección de envío.'
     return
   }
 
   const payload: CreateOrderPayload = {
     warehouseId: warehouseId.value || undefined,
     paymentStatus: paymentStatus.value,
+    deliveryMethod: deliveryMethod.value,
     source: 'ADMIN',
     customerNotes: customerNotes.value || undefined,
     internalNotes: internalNotes.value || undefined,
@@ -154,22 +222,34 @@ async function onSubmit() {
       quantity: line.quantity,
     })),
     ...(customerMode.value === 'registered'
-      ? { customerId: customerId.value.trim() }
+      ? { customerId: selectedCustomer.value!.id }
       : {
           guestEmail: guestEmail.value.trim(),
           guestFirstName: guestFirstName.value.trim() || undefined,
           guestLastName: guestLastName.value.trim() || undefined,
           guestPhone: guestPhone.value.trim() || undefined,
         }),
-    ...(shippingAddressLine1.value.trim()
+    ...(deliveryMethod.value === 'SHIPPING'
       ? {
           addresses: [
             {
-              type: 'SHIPPING',
-              firstName: guestFirstName.value.trim() || undefined,
-              lastName: guestLastName.value.trim() || undefined,
-              email: guestEmail.value.trim() || undefined,
-              phone: guestPhone.value.trim() || undefined,
+              type: 'SHIPPING' as const,
+              firstName:
+                customerMode.value === 'registered'
+                  ? selectedCustomer.value?.firstName?.trim() || undefined
+                  : guestFirstName.value.trim() || undefined,
+              lastName:
+                customerMode.value === 'registered'
+                  ? selectedCustomer.value?.lastName?.trim() || undefined
+                  : guestLastName.value.trim() || undefined,
+              email:
+                customerMode.value === 'registered'
+                  ? selectedCustomer.value?.email
+                  : guestEmail.value.trim() || undefined,
+              phone:
+                customerMode.value === 'registered'
+                  ? selectedCustomer.value?.phone?.trim() || undefined
+                  : guestPhone.value.trim() || undefined,
               addressLine1: shippingAddressLine1.value.trim(),
               district: shippingDistrict.value.trim() || undefined,
               province: shippingProvince.value.trim() || undefined,
@@ -178,7 +258,7 @@ async function onSubmit() {
             },
           ],
         }
-      : {}),
+      : { shippingAmount: 0 }),
   }
 
   try {
@@ -228,12 +308,59 @@ async function onSubmit() {
           <UiInput v-model="guestLastName" label="Apellido" />
         </div>
         <div v-else>
-          <UiInput
-            v-model="customerId"
-            label="ID de cliente"
-            hint="UUID del cliente registrado"
-            required
-          />
+          <div v-if="selectedCustomer" class="mb-3 rounded-md bg-admin-muted/40 px-3 py-2 text-sm">
+            <p class="font-medium">{{ formatCustomerLabel(selectedCustomer) }}</p>
+            <p v-if="selectedCustomer.phone" class="text-admin-muted text-xs">
+              {{ selectedCustomer.phone }}
+            </p>
+            <button
+              type="button"
+              class="text-brand-accent mt-1 text-xs hover:underline"
+              @click="clearCustomer"
+            >
+              Cambiar cliente
+            </button>
+          </div>
+
+          <div v-else class="space-y-2">
+            <UiInput
+              v-model="customerSearch"
+              label="Buscar cliente"
+              placeholder="Nombre, correo o teléfono…"
+              autocomplete="off"
+              @update:model-value="scheduleCustomerSearch"
+            />
+            <div
+              v-if="isCustomerSearching"
+              class="text-admin-muted flex items-center gap-2 text-sm"
+            >
+              <UiSpinner size="sm" />
+              Buscando clientes…
+            </div>
+            <div
+              v-else-if="customerResults.length"
+              class="border-admin-line max-h-40 overflow-auto rounded-lg border"
+            >
+              <button
+                v-for="customer in customerResults"
+                :key="customer.id"
+                type="button"
+                class="hover:bg-admin-surface block w-full px-3 py-2 text-left text-sm"
+                @click="selectCustomer(customer)"
+              >
+                <span class="font-medium">{{ formatCustomerLabel(customer) }}</span>
+                <span v-if="customer.phone" class="text-admin-muted block text-xs">
+                  {{ customer.phone }}
+                </span>
+              </button>
+            </div>
+            <p
+              v-else-if="customerSearch.trim().length >= 2"
+              class="text-admin-muted text-sm"
+            >
+              Sin coincidencias.
+            </p>
+          </div>
         </div>
       </AdminFormSection>
 
@@ -269,22 +396,30 @@ async function onSubmit() {
               </button>
             </div>
 
-            <div v-else class="relative mb-3">
+            <div v-else class="mb-3 space-y-2">
               <UiInput
                 v-model="line.search"
                 label="Buscar variante"
                 placeholder="SKU o nombre de producto…"
+                autocomplete="off"
                 @update:model-value="scheduleVariantSearch(line)"
               />
               <div
-                v-if="line.results.length"
-                class="border-admin-line absolute z-10 mt-1 max-h-40 w-full overflow-auto rounded-md border bg-white shadow-lg dark:bg-neutral-900"
+                v-if="line.searching"
+                class="text-admin-muted flex items-center gap-2 text-sm"
+              >
+                <UiSpinner size="sm" />
+                Buscando variantes…
+              </div>
+              <div
+                v-else-if="line.results.length"
+                class="border-admin-line max-h-40 overflow-auto rounded-lg border"
               >
                 <button
                   v-for="result in line.results"
                   :key="result.id"
                   type="button"
-                  class="hover:bg-admin-muted/50 block w-full px-3 py-2 text-left text-sm"
+                  class="hover:bg-admin-surface block w-full px-3 py-2 text-left text-sm"
                   @click="selectVariant(line, result)"
                 >
                   <span class="font-medium">{{ result.productName }}</span>
@@ -293,6 +428,12 @@ async function onSubmit() {
                   </span>
                 </button>
               </div>
+              <p
+                v-else-if="line.search.trim().length >= 2"
+                class="text-admin-muted text-sm"
+              >
+                Sin coincidencias.
+              </p>
             </div>
 
             <UiInput
@@ -329,12 +470,39 @@ async function onSubmit() {
         </div>
       </AdminFormSection>
 
-      <AdminFormSection title="Envío" icon="lucide:truck">
-        <div class="grid gap-3 sm:grid-cols-2">
+      <AdminFormSection title="Entrega" icon="lucide:truck">
+        <div class="mb-3 flex gap-2">
+          <UiButton
+            size="sm"
+            :variant="deliveryMethod === 'SHIPPING' ? 'primary' : 'ghost'"
+            type="button"
+            @click="deliveryMethod = 'SHIPPING'"
+          >
+            Envío a domicilio
+          </UiButton>
+          <UiButton
+            size="sm"
+            :variant="deliveryMethod === 'PICKUP' ? 'primary' : 'ghost'"
+            type="button"
+            @click="deliveryMethod = 'PICKUP'"
+          >
+            Recojo en tienda
+          </UiButton>
+        </div>
+
+        <p
+          v-if="deliveryMethod === 'PICKUP'"
+          class="text-admin-muted rounded-md bg-admin-muted/30 px-3 py-2 text-sm"
+        >
+          El cliente recogerá el pedido en el almacén seleccionado. No se requiere dirección de envío.
+        </p>
+
+        <div v-else class="grid gap-3 sm:grid-cols-2">
           <UiInput
             v-model="shippingAddressLine1"
             label="Dirección"
             class="sm:col-span-2"
+            required
           />
           <UiInput v-model="shippingDistrict" label="Distrito" />
           <UiInput v-model="shippingProvince" label="Provincia" />
