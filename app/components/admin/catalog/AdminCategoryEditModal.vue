@@ -64,25 +64,39 @@ const onSubmit = createSubmitHandler(
 
 <template>
   <UiModal v-model="open" title="Editar categoría" :description="category?.slug" size="lg">
-    <form v-if="category" class="space-y-4" @submit.prevent="onSubmit">
-      <div class="grid gap-4 sm:grid-cols-2">
-        <UiFormField name="name" label="Nombre" class="sm:col-span-2" autocomplete="off" required />
-        <UiFormField name="slug" label="Slug" autocomplete="off" />
-        <UiFormField name="sortOrder" label="Orden" type="number" min="0" />
-        <UiFormSelect name="parentId" label="Categoría padre" :options="parentOptions" />
-        <UiFormSelect
-          name="isActive"
-          label="Estado"
-          :options="[
-            { label: 'Activa', value: 'true' },
-            { label: 'Inactiva', value: 'false' },
-          ]"
-        />
-        <div class="sm:col-span-2">
-          <UiFormField name="description" label="Descripción" autocomplete="off" />
+    <form v-if="category" class="space-y-5" @submit.prevent="onSubmit">
+      <AdminFormSection
+        title="Datos básicos"
+        description="Nombre, identificador y descripción de la categoría."
+        icon="lucide:folder"
+      >
+        <div class="grid gap-4 sm:grid-cols-2">
+          <UiFormField name="name" label="Nombre" class="sm:col-span-2" autocomplete="off" required />
+          <UiFormField name="slug" label="Slug" autocomplete="off" />
+          <UiFormField name="description" label="Descripción" class="sm:col-span-2" autocomplete="off" />
         </div>
-      </div>
+      </AdminFormSection>
+
+      <AdminFormSection
+        title="Jerarquía y estado"
+        description="Ubicación en el árbol y visibilidad en tienda."
+        icon="lucide:folder-tree"
+      >
+        <div class="grid gap-4 sm:grid-cols-2">
+          <UiFormSelect name="parentId" label="Categoría padre" :options="parentOptions" />
+          <UiFormField name="sortOrder" label="Orden" type="number" min="0" />
+          <UiFormSelect
+            name="isActive"
+            label="Estado"
+            :options="[
+              { label: 'Activa', value: 'true' },
+              { label: 'Inactiva', value: 'false' },
+            ]"
+          />
+        </div>
+      </AdminFormSection>
     </form>
+
     <template #footer>
       <AdminModalFooter submit-label="Guardar" :loading="isSubmitting" @cancel="open = false" @submit="onSubmit" />
     </template>

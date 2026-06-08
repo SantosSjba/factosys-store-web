@@ -9,8 +9,10 @@ useQueryErrorToast(isError, error)
 
 const createOpen = ref(false)
 const editOpen = ref(false)
+const attributesOpen = ref(false)
 const defaultParentId = ref<string | undefined>()
 const selectedCategory = ref<CatalogCategoryNode | null>(null)
+const attributesCategory = ref<CatalogCategoryNode | null>(null)
 
 function openCreate(parentId?: string) {
   defaultParentId.value = parentId
@@ -20,6 +22,11 @@ function openCreate(parentId?: string) {
 function openEdit(node: CatalogCategoryNode) {
   selectedCategory.value = node
   editOpen.value = true
+}
+
+function openAttributes(node: CatalogCategoryNode) {
+  attributesCategory.value = node
+  attributesOpen.value = true
 }
 
 function removeCategory(node: CatalogCategoryNode) {
@@ -64,11 +71,17 @@ function removeCategory(node: CatalogCategoryNode) {
           @edit="openEdit"
           @remove="removeCategory"
           @add-child="openCreate($event.id)"
+          @attributes="openAttributes"
         />
       </div>
     </AdminCard>
 
     <AdminCategoryCreateModal v-if="can('products.write')" v-model="createOpen" :default-parent-id="defaultParentId" />
     <AdminCategoryEditModal v-if="can('products.write')" v-model="editOpen" :category="selectedCategory" />
+    <AdminCategoryAttributesModal
+      v-if="can('products.write')"
+      v-model="attributesOpen"
+      :category="attributesCategory"
+    />
   </div>
 </template>

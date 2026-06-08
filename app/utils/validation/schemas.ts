@@ -117,7 +117,7 @@ export const createAttributeSchema = z.object({
   sortOrder: z.coerce.number().int().min(0),
 })
 
-export const createProductSchema = z.object({
+export const productFormSchema = z.object({
   name: z.string().trim().min(2, 'Ingresa el nombre del producto.'),
   slug: optionalText,
   shortDescription: optionalText,
@@ -125,12 +125,18 @@ export const createProductSchema = z.object({
   primaryCategoryId: z.string().uuid('Selecciona una categoría.'),
   brandId: optionalText,
   status: z.enum(['DRAFT', 'ACTIVE', 'ARCHIVED']),
-  sku: z.string().trim().min(2, 'Ingresa el SKU.'),
-  price: z.coerce.number().min(0, 'El precio debe ser mayor o igual a 0.'),
+  productType: z.enum(['SIMPLE', 'VARIABLE']),
+  categoryIds: z.array(z.string()).optional(),
+  metaTitle: optionalText,
+  metaDescription: optionalText,
+  tagsText: optionalText,
+  sku: optionalText,
+  price: z.coerce.number().min(0).optional(),
   compareAtPrice: z.coerce.number().min(0).optional(),
 })
 
-export const updateProductSchema = createProductSchema
+export const createProductSchema = productFormSchema
+export const updateProductSchema = productFormSchema
 
 export const rolePermissionsSchema = z.object({
   permissionSlugs: z

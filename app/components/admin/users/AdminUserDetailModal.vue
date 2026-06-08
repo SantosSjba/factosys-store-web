@@ -31,25 +31,34 @@ const permissionsByModule = computed(() =>
     size="lg"
   >
     <div v-if="user" class="space-y-5">
-      <div class="grid gap-3 sm:grid-cols-2">
-        <AdminDetailCell label="Nombre">
-          <p class="font-medium">{{ displayName }}</p>
-        </AdminDetailCell>
-        <AdminDetailCell label="Estado">
-          <UiBadge :variant="userStatusVariant(user.status)" class="normal-case">
-            {{ formatUserStatus(user.status) }}
-          </UiBadge>
-        </AdminDetailCell>
-        <AdminDetailCell label="Teléfono">
-          {{ user.phone || '—' }}
-        </AdminDetailCell>
-        <AdminDetailCell label="Registrado">
-          <span class="text-sm">{{ formatAdminDateTime(user.createdAt) }}</span>
-        </AdminDetailCell>
-      </div>
+      <AdminFormSection
+        title="Perfil"
+        description="Datos personales y estado de la cuenta staff."
+        icon="lucide:user"
+      >
+        <div class="grid gap-3 sm:grid-cols-2">
+          <AdminDetailCell label="Nombre">
+            <p class="font-medium">{{ displayName }}</p>
+          </AdminDetailCell>
+          <AdminDetailCell label="Estado">
+            <UiBadge :variant="userStatusVariant(user.status)" class="normal-case">
+              {{ formatUserStatus(user.status) }}
+            </UiBadge>
+          </AdminDetailCell>
+          <AdminDetailCell label="Teléfono">
+            {{ user.phone || '—' }}
+          </AdminDetailCell>
+          <AdminDetailCell label="Registrado">
+            <span class="text-sm">{{ formatAdminDateTime(user.createdAt) }}</span>
+          </AdminDetailCell>
+        </div>
+      </AdminFormSection>
 
-      <div>
-        <p class="text-admin-muted mb-2 text-xs font-medium uppercase">Roles</p>
+      <AdminFormSection
+        title="Roles asignados"
+        description="Perfiles de acceso vinculados al usuario."
+        icon="lucide:shield"
+      >
         <div class="flex flex-wrap gap-2">
           <UiBadge
             v-for="role in user.roles"
@@ -59,14 +68,15 @@ const permissionsByModule = computed(() =>
           >
             {{ role.name }}
           </UiBadge>
-          <span v-if="!user.roles.length" class="text-admin-muted text-sm">—</span>
+          <span v-if="!user.roles.length" class="text-admin-muted text-sm">Sin roles asignados.</span>
         </div>
-      </div>
+      </AdminFormSection>
 
-      <div>
-        <p class="text-admin-muted mb-2 text-xs font-medium uppercase">
-          Permisos efectivos ({{ user.permissions.length }})
-        </p>
+      <AdminFormSection
+        title="Permisos efectivos"
+        :description="`${user.permissions.length} permisos activos en la sesión.`"
+        icon="lucide:key-round"
+      >
         <div class="space-y-3">
           <div
             v-for="group in permissionsByModule"
@@ -89,15 +99,13 @@ const permissionsByModule = computed(() =>
             Sin permisos asignados.
           </p>
         </div>
-      </div>
+      </AdminFormSection>
     </div>
 
     <template #footer>
       <UiButton variant="ghost" @click="open = false">Cerrar</UiButton>
-      <UiButton
-        v-if="can('users.update')"
-        @click="emit('edit')"
-      >
+      <UiButton v-if="can('users.update')" @click="emit('edit')">
+        <UiIcon name="lucide:pencil" :size="16" class="mr-2" />
         Editar usuario
       </UiButton>
     </template>

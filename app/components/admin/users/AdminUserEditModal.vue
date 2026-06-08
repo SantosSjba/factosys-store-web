@@ -97,19 +97,31 @@ const onSubmit = createSubmitHandler(
     :description="user?.email"
     size="lg"
   >
-    <form v-if="user" class="space-y-4" @submit.prevent="onSubmit">
-      <div class="grid gap-4 sm:grid-cols-2">
-        <UiFormField name="firstName" label="Nombre" autocomplete="off" />
-        <UiFormField name="lastName" label="Apellido" autocomplete="off" />
-        <div class="sm:col-span-2">
+    <form v-if="user" class="space-y-5" @submit.prevent="onSubmit">
+      <AdminFormSection
+        title="Perfil"
+        description="Datos personales y estado de la cuenta."
+        icon="lucide:user"
+      >
+        <div class="grid gap-4 sm:grid-cols-2">
+          <UiFormField name="firstName" label="Nombre" autocomplete="off" />
+          <UiFormField name="lastName" label="Apellido" autocomplete="off" />
           <UiFormField
             name="phone"
             label="Teléfono"
             type="tel"
+            class="sm:col-span-2"
             autocomplete="off"
           />
+          <UiFormSelect name="status" label="Estado" :options="statusOptions" required />
         </div>
-        <UiFormSelect name="status" label="Estado" :options="statusOptions" required />
+      </AdminFormSection>
+
+      <AdminFormSection
+        title="Seguridad"
+        description="Actualiza la contraseña de acceso al panel."
+        icon="lucide:lock-keyhole"
+      >
         <UiFormField
           name="password"
           label="Nueva contraseña"
@@ -117,16 +129,23 @@ const onSubmit = createSubmitHandler(
           autocomplete="new-password"
           hint="Opcional. Mínimo 8 caracteres."
         />
-      </div>
+      </AdminFormSection>
 
-      <UiFormCheckboxGroup
+      <AdminFormSection
         v-if="can('roles.assign')"
-        name="roleSlugs"
-        label="Roles asignados"
-        :options="roleOptions"
-        required
-        hint="Los permisos efectivos serán la unión de todos los roles seleccionados."
-      />
+        title="Roles y permisos"
+        description="Define el alcance de acceso en el panel admin."
+        icon="lucide:shield"
+      >
+        <UiFormCheckboxGroup
+          name="roleSlugs"
+          label="Roles asignados"
+          :options="roleOptions"
+          required
+          hint="Los permisos efectivos serán la unión de todos los roles seleccionados."
+        />
+      </AdminFormSection>
+
       <UiAlert v-else variant="info" class="text-sm">
         No tienes permiso para cambiar roles (<code>roles.assign</code>).
       </UiAlert>

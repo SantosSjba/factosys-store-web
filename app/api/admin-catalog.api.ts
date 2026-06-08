@@ -217,6 +217,28 @@ export async function fetchAdminAttributes(params: PaginationParams = {}) {
   return data
 }
 
+export async function fetchAllAdminAttributes() {
+  const limit = 100
+  const firstPage = await fetchAdminAttributes({ page: 1, limit })
+  const items = [...firstPage.items]
+
+  for (let page = 2; page <= firstPage.meta.totalPages; page += 1) {
+    const nextPage = await fetchAdminAttributes({ page, limit })
+    items.push(...nextPage.items)
+  }
+
+  return {
+    items,
+    meta: {
+      ...firstPage.meta,
+      page: 1,
+      limit: items.length,
+      total: items.length,
+      totalPages: 1,
+    },
+  }
+}
+
 export async function fetchAdminAttribute(id: string) {
   const { data } = await useAdminApi().get<CatalogAttribute>(
     `/admin/catalog/attributes/${id}`,

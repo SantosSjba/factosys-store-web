@@ -67,25 +67,57 @@ watch(open, (v) => { if (!v) resetForm() })
 </script>
 
 <template>
-  <UiModal v-model="open" title="Nuevo atributo" description="Especificaciones técnicas o variantes (color/talla)." size="lg">
-    <form class="grid gap-4 sm:grid-cols-2" @submit.prevent="onSubmit">
-      <UiFormField name="name" label="Nombre" class="sm:col-span-2" autocomplete="off" required />
-      <UiFormField name="slug" label="Slug" hint="Opcional" autocomplete="off" />
-      <UiFormField name="unit" label="Unidad" hint="Ej. GB, MHz" autocomplete="off" />
-      <UiFormSelect name="dataType" label="Tipo de dato" :options="dataTypeOptions" required />
-      <UiFormSelect name="scope" label="Ámbito" :options="scopeOptions" required />
-      <UiFormField name="sortOrder" label="Orden" type="number" min="0" />
-      <UiFormField
-        name="optionsText"
-        label="Opciones"
-        class="sm:col-span-2"
-        hint="Para SELECT. Separadas por coma: Rojo, Azul, Negro"
-        autocomplete="off"
-      />
-      <UiFormField name="description" label="Descripción" class="sm:col-span-2" autocomplete="off" />
-      <UiCheckbox v-model="isFilterable" label="Usar en filtros de tienda" />
-      <UiCheckbox v-model="isRequired" label="Obligatorio en productos" />
+  <UiModal
+    v-model="open"
+    title="Nuevo atributo"
+    description="Especificaciones técnicas o variantes (color/talla)."
+    size="lg"
+  >
+    <form class="space-y-5" @submit.prevent="onSubmit">
+      <AdminFormSection
+        title="Definición"
+        description="Nombre, unidad y descripción del atributo."
+        icon="lucide:tag"
+      >
+        <div class="grid gap-4 sm:grid-cols-2">
+          <UiFormField name="name" label="Nombre" class="sm:col-span-2" autocomplete="off" required />
+          <UiFormField name="slug" label="Slug" hint="Opcional" autocomplete="off" />
+          <UiFormField name="unit" label="Unidad" hint="Ej. GB, MHz" autocomplete="off" />
+          <UiFormField name="description" label="Descripción" class="sm:col-span-2" autocomplete="off" />
+        </div>
+      </AdminFormSection>
+
+      <AdminFormSection
+        title="Comportamiento"
+        description="Tipo de dato, ámbito y opciones de selección."
+        icon="lucide:settings-2"
+      >
+        <div class="grid gap-4 sm:grid-cols-2">
+          <UiFormSelect name="dataType" label="Tipo de dato" :options="dataTypeOptions" required />
+          <UiFormSelect name="scope" label="Ámbito" :options="scopeOptions" required />
+          <UiFormField name="sortOrder" label="Orden" type="number" min="0" />
+          <UiFormField
+            name="optionsText"
+            label="Opciones"
+            class="sm:col-span-2"
+            hint="Para SELECT. Separadas por coma: Rojo, Azul, Negro"
+            autocomplete="off"
+          />
+        </div>
+      </AdminFormSection>
+
+      <AdminFormSection
+        title="Reglas de uso"
+        description="Cómo se aplicará en filtros y formularios de producto."
+        icon="lucide:shield-check"
+      >
+        <div class="flex flex-wrap gap-6">
+          <UiCheckbox v-model="isFilterable" label="Usar en filtros de tienda" />
+          <UiCheckbox v-model="isRequired" label="Obligatorio en productos" />
+        </div>
+      </AdminFormSection>
     </form>
+
     <template #footer>
       <AdminModalFooter submit-label="Crear atributo" :loading="isSubmitting" @cancel="open = false" @submit="onSubmit" />
     </template>

@@ -130,6 +130,25 @@ export type CatalogProduct = {
   primaryImageUrl: string | null
 }
 
+export type ProductAttributeValuePayload = {
+  attributeId: string
+  value: string
+}
+
+export type ProductVariantPayload = {
+  sku: string
+  name?: string
+  barcode?: string
+  price: number
+  compareAtPrice?: number
+  cost?: number
+  weight?: number
+  isDefault?: boolean
+  isActive?: boolean
+  sortOrder?: number
+  attributeValues?: ProductAttributeValuePayload[]
+}
+
 export type CreateProductPayload = {
   name: string
   slug?: string
@@ -139,14 +158,12 @@ export type CreateProductPayload = {
   primaryCategoryId: string
   productType?: ProductType
   status?: ProductStatus
+  metaTitle?: string
+  metaDescription?: string
   tags?: string[]
-  variants: Array<{
-    sku: string
-    name?: string
-    price: number
-    compareAtPrice?: number
-    isDefault?: boolean
-  }>
+  categoryIds?: string[]
+  attributeValues?: ProductAttributeValuePayload[]
+  variants: ProductVariantPayload[]
 }
 
 export type ListProductsParams = {
@@ -203,8 +220,12 @@ export type UpdateProductPayload = {
   primaryCategoryId?: string
   productType?: ProductType
   status?: ProductStatus
+  metaTitle?: string
+  metaDescription?: string
   tags?: string[]
-  variants?: CreateProductPayload['variants']
+  categoryIds?: string[]
+  attributeValues?: ProductAttributeValuePayload[]
+  variants?: ProductVariantPayload[]
 }
 
 export type AssignCategoryAttributesPayload = {

@@ -46,16 +46,22 @@ watch(open, (value) => {
     description="Registra personal con acceso al panel administrativo."
     size="lg"
   >
-    <form class="space-y-4" @submit.prevent="onSubmit">
+    <form class="space-y-5" @submit.prevent="onSubmit">
       <AdminPersonFields />
 
-      <UiFormCheckboxGroup
-        name="roleSlugs"
-        label="Roles asignados"
-        :options="roleOptions"
-        required
-        hint="Los permisos efectivos serán la unión de todos los roles seleccionados."
-      />
+      <AdminFormSection
+        title="Roles y permisos"
+        description="Define el alcance de acceso en el panel admin."
+        icon="lucide:shield"
+      >
+        <UiFormCheckboxGroup
+          name="roleSlugs"
+          label="Roles asignados"
+          :options="roleOptions"
+          required
+          hint="Los permisos efectivos serán la unión de todos los roles seleccionados."
+        />
+      </AdminFormSection>
     </form>
 
     <template #footer>

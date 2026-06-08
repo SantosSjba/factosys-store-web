@@ -12,6 +12,7 @@ const emit = defineEmits<{
   edit: [node: CatalogCategoryNode]
   remove: [node: CatalogCategoryNode]
   addChild: [node: CatalogCategoryNode]
+  attributes: [node: CatalogCategoryNode]
 }>()
 
 const { can } = useAdminPermissions()
@@ -36,6 +37,11 @@ const { can } = useAdminPermissions()
           ariaLabel="Agregar subcategoría"
           @click="emit('addChild', node)"
         />
+        <UiIconButton
+          icon="lucide:tags"
+          ariaLabel="Atributos"
+          @click="emit('attributes', node)"
+        />
         <UiIconButton icon="lucide:pencil" ariaLabel="Editar" @click="emit('edit', node)" />
         <UiIconButton icon="lucide:trash-2" ariaLabel="Eliminar" @click="emit('remove', node)" />
       </div>
@@ -48,6 +54,7 @@ const { can } = useAdminPermissions()
       @edit="emit('edit', $event)"
       @remove="emit('remove', $event)"
       @add-child="emit('addChild', $event)"
+      @attributes="emit('attributes', $event)"
     />
   </div>
 </template>

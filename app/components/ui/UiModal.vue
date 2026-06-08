@@ -10,7 +10,7 @@ const props = withDefaults(
     modelValue: boolean
     title?: string
     description?: string
-    size?: 'sm' | 'md' | 'lg' | 'xl'
+    size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full'
     closable?: boolean
     tone?: 'admin' | 'store'
   }>(),
@@ -31,6 +31,8 @@ const widthClass = computed(() => {
   if (props.size === 'sm') return 'max-w-md'
   if (props.size === 'lg') return 'max-w-3xl'
   if (props.size === 'xl') return 'max-w-5xl'
+  if (props.size === '2xl') return 'max-w-7xl'
+  if (props.size === 'full') return 'max-w-[min(96rem,calc(100vw-2rem))]'
   return 'max-w-xl'
 })
 

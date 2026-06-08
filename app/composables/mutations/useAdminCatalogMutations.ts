@@ -150,7 +150,12 @@ export function useAdminAssignCategoryAttributesMutation() {
       categoryId: string
       payload: AssignCategoryAttributesPayload
     }) => assignAdminCategoryAttributes(categoryId, payload),
-    onSuccess: () => invalidateCatalog(queryClient),
+    onSuccess: (_data, vars) => {
+      invalidateCatalog(queryClient)
+      queryClient.invalidateQueries({
+        queryKey: adminQueryKeys.catalogCategory(vars.categoryId),
+      })
+    },
   })
 }
 

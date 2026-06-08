@@ -2,9 +2,12 @@ import { useQuery } from '@tanstack/vue-query'
 import {
   fetchAdminAttributes,
   fetchAdminBrands,
+  fetchAdminCategory,
   fetchAdminCategoryTree,
+  fetchAllAdminAttributes,
   fetchAdminProduct,
 } from '~/api/admin-catalog.api'
+import { enrichCategoryAttributes } from '~/utils/catalog/product-form'
 import { flattenCategoryTree } from '~/utils/flatten-category-tree'
 import { adminQueryKeys } from '~/constants/query-keys'
 import type { PaginationParams } from '~/types/pagination'
@@ -74,6 +77,81 @@ export function useAdminAttributesQuery(
       return can('products.read')
     }),
   })
+}
+
+export function useAdminCategoryDetailQuery(
+  categoryId: MaybeRefOrGetter<string | null | undefined>,
+) {
+  const adminAuth = useAdminAuthStore()
+  const { can } = useAdminPermissions()
+  const id = computed(() => toValue(categoryId) || null)
+
+  return useQuery({
+    queryKey: computed(() =>
+      id.value ? adminQueryKeys.catalogCategory(id.value) : ['admin', 'catalog-categories', 'none'],
+    ),
+    queryFn: () => fetchAdminCategory(id.value!),
+    enabled: computed(() => {
+      if (!id.value || !adminAuth.accessToken) return false
+      if (!adminAuth.profile) return true
+      return can('products.read')
+    }),
+  })
+}
+
+export function useAdminAllAttributesQuery() {
+  const adminAuth = useAdminAuthStore()
+  const { can } = useAdminPermissions()
+
+  return useQuery({
+    queryKey: [...adminQueryKeys.catalogAttributes(), 'all'],
+    queryFn: fetchAllAdminAttributes,
+    enabled: computed(() => {
+      if (!adminAuth.accessToken) return false
+      if (!adminAuth.profile) return true
+      return can('products.read')
+    }),
+  })
+}
+
+export function useAdminCategoryProductAttributes(
+  primaryCategoryId: MaybeRefOrGetter<string | undefined>,
+) {
+  const categoryId = computed(() => {
+    const id = toValue(primaryCategoryId)?.trim()
+    return id || null
+  })
+  const categoryQuery = useAdminCategoryDetailQuery(categoryId)
+  const attributesQuery = useAdminAllAttributesQuery()
+
+  const productAttributes = computed(() =>
+    enrichCategoryAttributes(
+      categoryQuery.data.value?.attributes ?? [],
+      attributesQuery.data.value?.items ?? [],
+    ).filter((attribute) => attribute.scope === 'PRODUCT'),
+  )
+
+  const variantAttributes = computed(() =>
+    enrichCategoryAttributes(
+      categoryQuery.data.value?.attributes ?? [],
+      attributesQuery.data.value?.items ?? [],
+    ).filter((attribute) => attribute.scope === 'VARIANT'),
+  )
+
+  // isPending queda true en queries deshabilitadas; isLoading solo durante fetch activo.
+  const isLoading = computed(() => {
+    if (!categoryId.value) return false
+
+    return categoryQuery.isLoading.value || attributesQuery.isLoading.value
+  })
+
+  return {
+    categoryQuery,
+    attributesQuery,
+    productAttributes,
+    variantAttributes,
+    isLoading,
+  }
 }
 
 export function useAdminCatalogLookupsQuery() {

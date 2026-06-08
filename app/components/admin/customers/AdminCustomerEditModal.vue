@@ -102,41 +102,53 @@ const onSubmit = createSubmitHandler(
     :description="customer?.email"
     size="lg"
   >
-    <form v-if="customer" class="space-y-4" @submit.prevent="onSubmit">
-      <div class="grid gap-4 sm:grid-cols-2">
-        <UiFormField name="firstName" label="Nombre" autocomplete="off" />
-        <UiFormField name="lastName" label="Apellido" autocomplete="off" />
-        <div class="sm:col-span-2">
+    <form v-if="customer" class="space-y-5" @submit.prevent="onSubmit">
+      <AdminFormSection
+        title="Perfil"
+        description="Datos personales y estado de la cuenta en tienda."
+        icon="lucide:user-circle"
+      >
+        <div class="grid gap-4 sm:grid-cols-2">
+          <UiFormField name="firstName" label="Nombre" autocomplete="off" />
+          <UiFormField name="lastName" label="Apellido" autocomplete="off" />
           <UiFormField
             name="phone"
             label="Teléfono"
             type="tel"
+            class="sm:col-span-2"
             autocomplete="off"
           />
+          <UiFormSelect name="status" label="Estado" :options="statusOptions" required />
         </div>
-        <UiFormSelect name="status" label="Estado" :options="statusOptions" required />
-        <div v-if="isEmailVerified" class="sm:col-span-2">
+      </AdminFormSection>
+
+      <AdminFormSection
+        title="Seguridad y verificación"
+        description="Contraseña y estado del correo electrónico."
+        icon="lucide:shield-check"
+      >
+        <div class="space-y-4">
           <UiCheckbox
+            v-if="isEmailVerified"
             :model-value="clearEmailVerification ?? false"
             label="Quitar verificación de correo"
             hint="El cliente deberá verificar su correo de nuevo para acceder. Se cerrarán sus sesiones activas."
             :error="clearEmailVerificationError"
             @update:model-value="clearEmailVerification = $event"
           />
+          <UiFormField
+            v-if="isLocalAuth"
+            name="password"
+            label="Nueva contraseña"
+            type="password"
+            autocomplete="new-password"
+            hint="Opcional. Mínimo 8 caracteres."
+          />
+          <UiAlert v-if="!isLocalAuth" variant="info" class="text-sm">
+            Esta cuenta usa acceso con Google; no se puede cambiar la contraseña local.
+          </UiAlert>
         </div>
-        <UiFormField
-          v-if="isLocalAuth"
-          name="password"
-          label="Nueva contraseña"
-          type="password"
-          autocomplete="new-password"
-          hint="Opcional. Mínimo 8 caracteres."
-        />
-      </div>
-
-      <UiAlert v-if="!isLocalAuth" variant="info" class="text-sm">
-        Esta cuenta usa acceso con Google; no se puede cambiar la contraseña local.
-      </UiAlert>
+      </AdminFormSection>
     </form>
 
     <template #footer>

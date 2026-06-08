@@ -51,20 +51,38 @@ const onSubmit = createSubmitHandler(
 
 <template>
   <UiModal v-model="open" title="Editar marca" :description="brand?.slug" size="lg">
-    <form v-if="brand" class="grid gap-4 sm:grid-cols-2" @submit.prevent="onSubmit">
-      <UiFormField name="name" label="Nombre" class="sm:col-span-2" autocomplete="off" required />
-      <UiFormField name="slug" label="Slug" autocomplete="off" />
-      <UiFormSelect
-        name="isActive"
-        label="Estado"
-        :options="[
-          { label: 'Activa', value: 'true' },
-          { label: 'Inactiva', value: 'false' },
-        ]"
-      />
-      <UiFormField name="website" label="Sitio web" class="sm:col-span-2" autocomplete="off" />
-      <UiFormField name="description" label="Descripción" class="sm:col-span-2" autocomplete="off" />
+    <form v-if="brand" class="space-y-5" @submit.prevent="onSubmit">
+      <AdminFormSection
+        title="Identidad de marca"
+        description="Nombre, slug y descripción pública."
+        icon="lucide:award"
+      >
+        <div class="grid gap-4 sm:grid-cols-2">
+          <UiFormField name="name" label="Nombre" class="sm:col-span-2" autocomplete="off" required />
+          <UiFormField name="slug" label="Slug" autocomplete="off" />
+          <UiFormField name="description" label="Descripción" class="sm:col-span-2" autocomplete="off" />
+        </div>
+      </AdminFormSection>
+
+      <AdminFormSection
+        title="Presencia y estado"
+        description="Sitio web oficial y visibilidad en catálogo."
+        icon="lucide:globe"
+      >
+        <div class="grid gap-4 sm:grid-cols-2">
+          <UiFormField name="website" label="Sitio web" class="sm:col-span-2" autocomplete="off" />
+          <UiFormSelect
+            name="isActive"
+            label="Estado"
+            :options="[
+              { label: 'Activa', value: 'true' },
+              { label: 'Inactiva', value: 'false' },
+            ]"
+          />
+        </div>
+      </AdminFormSection>
     </form>
+
     <template #footer>
       <AdminModalFooter submit-label="Guardar" :loading="isSubmitting" @cancel="open = false" @submit="onSubmit" />
     </template>

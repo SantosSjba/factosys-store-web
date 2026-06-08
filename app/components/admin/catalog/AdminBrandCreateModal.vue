@@ -37,21 +37,44 @@ watch(open, (v) => { if (!v) resetForm() })
 </script>
 
 <template>
-  <UiModal v-model="open" title="Nueva marca" size="lg">
-    <form class="grid gap-4 sm:grid-cols-2" @submit.prevent="onSubmit">
-      <UiFormField name="name" label="Nombre" class="sm:col-span-2" autocomplete="off" required />
-      <UiFormField name="slug" label="Slug" hint="Opcional" autocomplete="off" />
-      <UiFormSelect
-        name="isActive"
-        label="Estado"
-        :options="[
-          { label: 'Activa', value: 'true' },
-          { label: 'Inactiva', value: 'false' },
-        ]"
-      />
-      <UiFormField name="website" label="Sitio web" class="sm:col-span-2" autocomplete="off" />
-      <UiFormField name="description" label="Descripción" class="sm:col-span-2" autocomplete="off" />
+  <UiModal
+    v-model="open"
+    title="Nueva marca"
+    description="Fabricante o línea comercial del catálogo."
+    size="lg"
+  >
+    <form class="space-y-5" @submit.prevent="onSubmit">
+      <AdminFormSection
+        title="Identidad de marca"
+        description="Nombre, slug y descripción pública."
+        icon="lucide:award"
+      >
+        <div class="grid gap-4 sm:grid-cols-2">
+          <UiFormField name="name" label="Nombre" class="sm:col-span-2" autocomplete="off" required />
+          <UiFormField name="slug" label="Slug" hint="Opcional" autocomplete="off" />
+          <UiFormField name="description" label="Descripción" class="sm:col-span-2" autocomplete="off" />
+        </div>
+      </AdminFormSection>
+
+      <AdminFormSection
+        title="Presencia y estado"
+        description="Sitio web oficial y visibilidad en catálogo."
+        icon="lucide:globe"
+      >
+        <div class="grid gap-4 sm:grid-cols-2">
+          <UiFormField name="website" label="Sitio web" class="sm:col-span-2" autocomplete="off" />
+          <UiFormSelect
+            name="isActive"
+            label="Estado"
+            :options="[
+              { label: 'Activa', value: 'true' },
+              { label: 'Inactiva', value: 'false' },
+            ]"
+          />
+        </div>
+      </AdminFormSection>
     </form>
+
     <template #footer>
       <AdminModalFooter submit-label="Crear marca" :loading="isSubmitting" @cancel="open = false" @submit="onSubmit" />
     </template>

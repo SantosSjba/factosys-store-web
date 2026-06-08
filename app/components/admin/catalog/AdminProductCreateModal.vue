@@ -1,66 +1,69 @@
 <script setup lang="ts">
-import type { CreateProductPayload } from '~/types/admin-catalog'
-import { createProductSchema } from '~/utils/validation/schemas'
+import { useField } from 'vee-validate'
+import {
+  buildCreateProductPayload,
+  createEmptyVariantRow,
+  emptyProductFormValues,
+  validateProductFormInput,
+  type ProductVariantFormRow,
+} from '~/utils/catalog/product-form'
+import { productFormSchema } from '~/utils/validation/schemas'
 
 const open = defineModel<boolean>({ required: true })
 
 const createMutation = useAdminCreateProductMutation()
-const { categoryOptions, brandOptions } = useAdminCatalogLookupsQuery()
+const toast = useToast()
 
-const statusOptions = [
-  { label: 'Borrador', value: 'DRAFT' },
-  { label: 'Activo', value: 'ACTIVE' },
-  { label: 'Archivado', value: 'ARCHIVED' },
-]
+const variants = ref<ProductVariantFormRow[]>([createEmptyVariantRow(true)])
+const productAttributeValues = ref<Record<string, string>>({})
 
 const { resetForm, createSubmitHandler, withMutationPending } = useApiForm({
-  schema: createProductSchema,
-  initialValues: {
-    name: '',
-    slug: '',
-    shortDescription: '',
-    description: '',
-    primaryCategoryId: '',
-    brandId: '',
-    status: 'DRAFT' as const,
-    sku: '',
-    price: 0,
-    compareAtPrice: undefined as number | undefined,
-  },
+  schema: productFormSchema,
+  initialValues: emptyProductFormValues,
 })
+
+const { value: primaryCategoryId } = useField<string>('primaryCategoryId')
+const { productAttributes, variantAttributes } =
+  useAdminCategoryProductAttributes(primaryCategoryId)
 
 const isSubmitting = withMutationPending(createMutation)
 
 const onSubmit = createSubmitHandler(
   async (values) => {
-    const payload: CreateProductPayload = {
-      name: values.name,
-      shortDescription: values.shortDescription || undefined,
-      description: values.description || undefined,
-      slug: values.slug || undefined,
-      primaryCategoryId: values.primaryCategoryId,
-      brandId: values.brandId || undefined,
-      status: values.status,
-      productType: 'SIMPLE',
-      variants: [
-        {
-          sku: values.sku,
-          price: values.price,
-          compareAtPrice: values.compareAtPrice,
-          isDefault: true,
-        },
-      ],
+    const validationError = validateProductFormInput(
+      values,
+      variants.value,
+      productAttributes.value,
+      productAttributeValues.value,
+      variantAttributes.value,
+    )
+
+    if (validationError) {
+      toast.warning(validationError)
+      return
     }
+
+    const payload = buildCreateProductPayload(
+      values,
+      variants.value,
+      productAttributeValues.value,
+    )
 
     await createMutation.mutateAsync(payload)
     open.value = false
     resetForm()
+    variants.value = [createEmptyVariantRow(true)]
+    productAttributeValues.value = {}
   },
   { successMessage: 'Producto creado correctamente' },
 )
 
 watch(open, (value) => {
-  if (!value) resetForm()
+  if (!value) {
+    resetForm()
+    variants.value = [createEmptyVariantRow(true)]
+    productAttributeValues.value = {}
+  }
 })
 </script>
 
@@ -68,55 +71,14 @@ watch(open, (value) => {
   <UiModal
     v-model="open"
     title="Nuevo producto"
-    description="Crea un producto simple con una variante (SKU y precio)."
-    size="lg"
+    description="Producto simple o variable con categorías, atributos y SEO."
+    size="full"
   >
-    <form class="space-y-4" @submit.prevent="onSubmit">
-      <div class="grid gap-4 sm:grid-cols-2">
-        <UiFormField name="name" label="Nombre" class="sm:col-span-2" autocomplete="off" required />
-        <UiFormField name="slug" label="Slug" hint="Opcional. Se genera automáticamente." autocomplete="off" />
-        <UiFormField name="sku" label="SKU" autocomplete="off" required />
-        <UiFormSelect
-          name="primaryCategoryId"
-          label="Categoría principal"
-          :options="categoryOptions"
-          required
-        />
-        <UiFormSelect
-          name="brandId"
-          label="Marca"
-          :options="brandOptions"
-        />
-        <UiFormSelect name="status" label="Estado" :options="statusOptions" />
-        <UiFormField
-          name="price"
-          label="Precio"
-          type="number"
-          step="0.01"
-          min="0"
-          required
-        />
-        <UiFormField
-          name="compareAtPrice"
-          label="Precio comparativo"
-          type="number"
-          step="0.01"
-          min="0"
-          hint="Opcional. Precio tachado en tienda."
-        />
-        <UiFormField
-          name="shortDescription"
-          label="Descripción corta"
-          class="sm:col-span-2"
-          autocomplete="off"
-        />
-        <UiFormField
-          name="description"
-          label="Descripción larga"
-          class="sm:col-span-2"
-          autocomplete="off"
-        />
-      </div>
+    <form @submit.prevent="onSubmit">
+      <AdminProductFormBody
+        v-model:variants="variants"
+        v-model:product-attribute-values="productAttributeValues"
+      />
     </form>
 
     <template #footer>

@@ -1,86 +1,120 @@
 <script setup lang="ts">
-import type { UpdateProductPayload } from '~/types/admin-catalog'
-import { updateProductSchema } from '~/utils/validation/schemas'
+import { useField } from 'vee-validate'
+import {
+  buildUpdateProductPayload,
+  createEmptyVariantRow,
+  emptyProductFormValues,
+  formatTagsText,
+  mapAttributeValuesRecord,
+  validateProductFormInput,
+  type ProductVariantFormRow,
+} from '~/utils/catalog/product-form'
+import { productFormSchema } from '~/utils/validation/schemas'
 
 const open = defineModel<boolean>({ required: true })
 const props = defineProps<{ productId: string | null }>()
 
 const updateMutation = useAdminUpdateProductMutation()
-const { categoryOptions, brandOptions } = useAdminCatalogLookupsQuery()
+const toast = useToast()
 
 const productIdRef = computed(() => (open.value ? props.productId : null))
 const { data: product, isPending, isError } = useAdminProductQuery(productIdRef)
 
-const statusOptions = [
-  { label: 'Borrador', value: 'DRAFT' },
-  { label: 'Activo', value: 'ACTIVE' },
-  { label: 'Archivado', value: 'ARCHIVED' },
-]
+const variants = ref<ProductVariantFormRow[]>([createEmptyVariantRow(true)])
+const productAttributeValues = ref<Record<string, string>>({})
 
 const { resetForm, setValues, createSubmitHandler, withMutationPending } = useApiForm({
-  schema: updateProductSchema,
-  initialValues: {
-    name: '',
-    slug: '',
-    shortDescription: '',
-    description: '',
-    primaryCategoryId: '',
-    brandId: '',
-    status: 'DRAFT' as const,
-    sku: '',
-    price: 0,
-    compareAtPrice: undefined as number | undefined,
-  },
+  schema: productFormSchema,
+  initialValues: emptyProductFormValues,
 })
+
+const { value: primaryCategoryId } = useField<string>('primaryCategoryId')
+const { productAttributes, variantAttributes } =
+  useAdminCategoryProductAttributes(primaryCategoryId)
 
 const isSubmitting = withMutationPending(updateMutation)
 
-watch(product, (p) => {
-  if (!p) return
+function loadProductIntoForm() {
+  const current = product.value
+  if (!current) return
+
   const defaultVariant =
-    p.variants.find((variant) => variant.isDefault) ?? p.variants[0]
+    current.variants.find((variant) => variant.isDefault) ?? current.variants[0]
 
   setValues({
-    name: p.name,
-    slug: p.slug,
-    shortDescription: p.shortDescription ?? '',
-    description: p.description ?? '',
-    primaryCategoryId: p.primaryCategoryId,
-    brandId: p.brandId ?? '',
-    status: p.status,
+    name: current.name,
+    slug: current.slug,
+    shortDescription: current.shortDescription ?? '',
+    description: current.description ?? '',
+    primaryCategoryId: current.primaryCategoryId,
+    brandId: current.brandId ?? '',
+    status: current.status,
+    productType: current.productType,
+    categoryIds: current.categoryIds.filter((id) => id !== current.primaryCategoryId),
+    metaTitle: current.metaTitle ?? '',
+    metaDescription: current.metaDescription ?? '',
+    tagsText: formatTagsText(current.tags),
     sku: defaultVariant?.sku ?? '',
     price: defaultVariant ? Number(defaultVariant.price) : 0,
     compareAtPrice: defaultVariant?.compareAtPrice
       ? Number(defaultVariant.compareAtPrice)
       : undefined,
   })
+
+  productAttributeValues.value = mapAttributeValuesRecord(current.attributeValues)
+
+  variants.value =
+    current.productType === 'VARIABLE' && current.variants.length > 0
+      ? current.variants.map((variant) => ({
+          sku: variant.sku,
+          name: variant.name ?? '',
+          price: Number(variant.price),
+          compareAtPrice: variant.compareAtPrice
+            ? Number(variant.compareAtPrice)
+            : undefined,
+          barcode: variant.barcode ?? '',
+          isDefault: variant.isDefault,
+          isActive: variant.isActive,
+          attributeValues: mapAttributeValuesRecord(variant.attributeValues),
+        }))
+      : [createEmptyVariantRow(true)]
+}
+
+watch(product, (current) => {
+  if (current) loadProductIntoForm()
 })
 
 watch(open, (value) => {
-  if (!value) resetForm()
+  if (value && product.value) loadProductIntoForm()
+  if (!value) {
+    resetForm()
+    variants.value = [createEmptyVariantRow(true)]
+    productAttributeValues.value = {}
+  }
 })
 
 const onSubmit = createSubmitHandler(
   async (values) => {
     if (!props.productId) return
 
-    const payload: UpdateProductPayload = {
-      name: values.name,
-      slug: values.slug || undefined,
-      shortDescription: values.shortDescription || undefined,
-      description: values.description || undefined,
-      primaryCategoryId: values.primaryCategoryId,
-      brandId: values.brandId || null,
-      status: values.status,
-      variants: [
-        {
-          sku: values.sku,
-          price: values.price,
-          compareAtPrice: values.compareAtPrice,
-          isDefault: true,
-        },
-      ],
+    const validationError = validateProductFormInput(
+      values,
+      variants.value,
+      productAttributes.value,
+      productAttributeValues.value,
+      variantAttributes.value,
+    )
+
+    if (validationError) {
+      toast.warning(validationError)
+      return
     }
+
+    const payload = buildUpdateProductPayload(
+      values,
+      variants.value,
+      productAttributeValues.value,
+    )
 
     await updateMutation.mutateAsync({ id: props.productId, payload })
     open.value = false
@@ -94,7 +128,7 @@ const onSubmit = createSubmitHandler(
     v-model="open"
     title="Editar producto"
     :description="product?.slug"
-    size="xl"
+    size="full"
   >
     <div v-if="isPending" class="text-admin-muted py-8 text-center text-sm">
       Cargando producto…
@@ -105,44 +139,20 @@ const onSubmit = createSubmitHandler(
     </UiAlert>
 
     <div v-else-if="product" class="space-y-6">
-      <form class="grid gap-4 sm:grid-cols-2" @submit.prevent="onSubmit">
-        <UiFormField name="name" label="Nombre" class="sm:col-span-2" autocomplete="off" required />
-        <UiFormField name="slug" label="Slug" autocomplete="off" />
-        <UiFormField name="sku" label="SKU" autocomplete="off" required />
-        <UiFormSelect
-          name="primaryCategoryId"
-          label="Categoría principal"
-          :options="categoryOptions"
-          required
-        />
-        <UiFormSelect name="brandId" label="Marca" :options="brandOptions" />
-        <UiFormSelect name="status" label="Estado" :options="statusOptions" />
-        <UiFormField name="price" label="Precio" type="number" step="0.01" min="0" required />
-        <UiFormField
-          name="compareAtPrice"
-          label="Precio comparativo"
-          type="number"
-          step="0.01"
-          min="0"
-        />
-        <UiFormField
-          name="shortDescription"
-          label="Descripción corta"
-          class="sm:col-span-2"
-          autocomplete="off"
-        />
-        <UiFormField
-          name="description"
-          label="Descripción larga"
-          class="sm:col-span-2"
-          autocomplete="off"
+      <form @submit.prevent="onSubmit">
+        <AdminProductFormBody
+          v-model:variants="variants"
+          v-model:product-attribute-values="productAttributeValues"
         />
       </form>
 
-      <div class="border-admin-line border-t pt-6">
-        <h3 class="mb-4 text-sm font-semibold">Galería de imágenes</h3>
+      <AdminFormSection
+        title="Galería de imágenes"
+        description="Sube, ordena y marca la imagen principal del producto."
+        icon="lucide:images"
+      >
         <AdminProductImagesSection :product-id="product.id" can-write />
-      </div>
+      </AdminFormSection>
     </div>
 
     <template #footer>

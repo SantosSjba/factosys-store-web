@@ -38,7 +38,7 @@ watch(open, (value) => {
     description="Crea una cuenta de cliente activa en la tienda. El usuario podrá iniciar sesión de inmediato."
     size="lg"
   >
-    <form class="space-y-4" @submit.prevent="onSubmit">
+    <form @submit.prevent="onSubmit">
       <AdminPersonFields />
     </form>
 

@@ -86,18 +86,53 @@ const onSubmit = createSubmitHandler(
 
 <template>
   <UiModal v-model="open" title="Editar atributo" :description="attribute?.slug" size="lg">
-    <form v-if="attribute" class="grid gap-4 sm:grid-cols-2" @submit.prevent="onSubmit">
-      <UiFormField name="name" label="Nombre" class="sm:col-span-2" autocomplete="off" required />
-      <UiFormField name="slug" label="Slug" autocomplete="off" />
-      <UiFormField name="unit" label="Unidad" autocomplete="off" />
-      <UiFormSelect name="dataType" label="Tipo" :options="dataTypeOptions" required />
-      <UiFormSelect name="scope" label="Ámbito" :options="scopeOptions" required />
-      <UiFormField name="sortOrder" label="Orden" type="number" min="0" />
-      <UiFormField name="optionsText" label="Opciones" class="sm:col-span-2" autocomplete="off" />
-      <UiFormField name="description" label="Descripción" class="sm:col-span-2" autocomplete="off" />
-      <UiCheckbox :model-value="isFilterable ?? false" label="Filtro en tienda" @update:model-value="isFilterable = $event" />
-      <UiCheckbox :model-value="isRequired ?? false" label="Obligatorio" @update:model-value="isRequired = $event" />
+    <form v-if="attribute" class="space-y-5" @submit.prevent="onSubmit">
+      <AdminFormSection
+        title="Definición"
+        description="Nombre, unidad y descripción del atributo."
+        icon="lucide:tag"
+      >
+        <div class="grid gap-4 sm:grid-cols-2">
+          <UiFormField name="name" label="Nombre" class="sm:col-span-2" autocomplete="off" required />
+          <UiFormField name="slug" label="Slug" autocomplete="off" />
+          <UiFormField name="unit" label="Unidad" autocomplete="off" />
+          <UiFormField name="description" label="Descripción" class="sm:col-span-2" autocomplete="off" />
+        </div>
+      </AdminFormSection>
+
+      <AdminFormSection
+        title="Comportamiento"
+        description="Tipo de dato, ámbito y opciones de selección."
+        icon="lucide:settings-2"
+      >
+        <div class="grid gap-4 sm:grid-cols-2">
+          <UiFormSelect name="dataType" label="Tipo" :options="dataTypeOptions" required />
+          <UiFormSelect name="scope" label="Ámbito" :options="scopeOptions" required />
+          <UiFormField name="sortOrder" label="Orden" type="number" min="0" />
+          <UiFormField name="optionsText" label="Opciones" class="sm:col-span-2" autocomplete="off" />
+        </div>
+      </AdminFormSection>
+
+      <AdminFormSection
+        title="Reglas de uso"
+        description="Cómo se aplicará en filtros y formularios de producto."
+        icon="lucide:shield-check"
+      >
+        <div class="flex flex-wrap gap-6">
+          <UiCheckbox
+            :model-value="isFilterable ?? false"
+            label="Filtro en tienda"
+            @update:model-value="isFilterable = $event"
+          />
+          <UiCheckbox
+            :model-value="isRequired ?? false"
+            label="Obligatorio"
+            @update:model-value="isRequired = $event"
+          />
+        </div>
+      </AdminFormSection>
     </form>
+
     <template #footer>
       <AdminModalFooter submit-label="Guardar" :loading="isSubmitting" @cancel="open = false" @submit="onSubmit" />
     </template>
