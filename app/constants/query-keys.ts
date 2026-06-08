@@ -23,6 +23,13 @@ export const adminQueryKeys = {
   inventoryStock: () => [...adminQueryKeys.all, 'inventory-stock'] as const,
   inventoryMovements: () => [...adminQueryKeys.all, 'inventory-movements'] as const,
   inventoryReservations: () => [...adminQueryKeys.all, 'inventory-reservations'] as const,
+  settingsCompany: () => [...adminQueryKeys.all, 'settings-company'] as const,
+  settingsStore: () => [...adminQueryKeys.all, 'settings-store'] as const,
+  settingsCurrencies: () => [...adminQueryKeys.all, 'settings-currencies'] as const,
+  settingsTaxes: () => [...adminQueryKeys.all, 'settings-taxes'] as const,
+  settingsActiveCurrencies: () =>
+    [...adminQueryKeys.all, 'settings-currencies', 'active'] as const,
+  settingsActiveTaxes: () => [...adminQueryKeys.all, 'settings-taxes', 'active'] as const,
   inventoryActiveWarehouses: () =>
     [...adminQueryKeys.all, 'inventory-warehouses', 'active'] as const,
 }

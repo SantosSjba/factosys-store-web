@@ -173,3 +173,72 @@ export const stockReservationSchema = z.object({
   reference: optionalText,
   note: optionalText,
 })
+
+const boolSelect = z.enum(['true', 'false'])
+
+export const companyProfileSchema = z.object({
+  legalName: optionalText,
+  tradeName: optionalText,
+  taxId: optionalText,
+  taxRegime: optionalText,
+  fiscalAddress: optionalText,
+  district: optionalText,
+  province: optionalText,
+  department: optionalText,
+  country: z.string().trim().min(2).max(2).optional().or(z.literal('')),
+  supportEmail: z.string().trim().email('Correo inválido.').optional().or(z.literal('')),
+  supportPhone: optionalText,
+  whatsapp: optionalText,
+  website: optionalText,
+})
+
+export const storeSettingsSchema = z.object({
+  storeName: z.string().trim().min(2, 'Ingresa el nombre de la tienda.'),
+  storeTagline: optionalText,
+  defaultLocale: z.string().trim().min(2),
+  timezone: z.string().trim().min(2),
+  defaultCurrencyCode: z.string().trim().min(3).max(3),
+  defaultTaxRateId: optionalText,
+  pricesIncludeTax: boolSelect,
+  metaTitleDefault: optionalText,
+  metaDescriptionDefault: optionalText,
+  maintenanceMode: boolSelect,
+  maintenanceMessage: optionalText,
+  guestCheckoutEnabled: boolSelect,
+  minOrderAmount: z.coerce.number().min(0).optional().or(z.literal('')),
+  orderNumberPrefix: z.string().trim().min(1),
+  defaultWarehouseId: optionalText,
+  lowStockGlobalThreshold: z.coerce.number().min(0).optional().or(z.literal('')),
+  freeShippingMinAmount: z.coerce.number().min(0).optional().or(z.literal('')),
+  handlingDaysMin: z.coerce.number().min(0).optional().or(z.literal('')),
+  handlingDaysMax: z.coerce.number().min(0).optional().or(z.literal('')),
+  warrantyPolicyUrl: optionalText,
+  returnsPolicyUrl: optionalText,
+  privacyPolicyUrl: optionalText,
+  termsUrl: optionalText,
+  complaintsBookUrl: optionalText,
+  serialNumberRequired: boolSelect,
+  orderConfirmationEmailEnabled: boolSelect,
+  mailFromName: optionalText,
+})
+
+export const currencyFormSchema = z.object({
+  code: z.string().trim().min(3).max(3),
+  name: z.string().trim().min(2),
+  symbol: z.string().trim().min(1).max(8),
+  exchangeRate: z.coerce.number().min(0),
+  decimalPlaces: z.coerce.number().min(0).max(4),
+  isDefault: boolSelect,
+  isActive: boolSelect,
+  sortOrder: z.coerce.number().min(0),
+})
+
+export const taxRateFormSchema = z.object({
+  name: z.string().trim().min(2),
+  code: optionalText,
+  rate: z.coerce.number().min(0).max(100),
+  isDefault: boolSelect,
+  isActive: boolSelect,
+  appliesToShipping: boolSelect,
+  sortOrder: z.coerce.number().min(0),
+})

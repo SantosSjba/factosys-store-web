@@ -55,7 +55,7 @@ export const adminNavMenu: AdminNavEntry[] = [
     label: 'Sistema',
     children: [
       { label: 'Usuarios', to: '/intranet/usuarios', icon: 'users' },
-      { label: 'Configuración', to: '/intranet/configuracion', icon: 'settings', soon: true },
+      { label: 'Configuración', to: '/intranet/configuracion', icon: 'settings' },
     ],
   },
 ]
