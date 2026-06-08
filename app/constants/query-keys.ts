@@ -32,4 +32,6 @@ export const adminQueryKeys = {
   settingsActiveTaxes: () => [...adminQueryKeys.all, 'settings-taxes', 'active'] as const,
   inventoryActiveWarehouses: () =>
     [...adminQueryKeys.all, 'inventory-warehouses', 'active'] as const,
+  orders: () => [...adminQueryKeys.all, 'orders'] as const,
+  order: (id: string) => [...adminQueryKeys.all, 'orders', id] as const,
 }

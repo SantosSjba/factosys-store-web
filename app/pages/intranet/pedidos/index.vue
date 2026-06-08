@@ -9,14 +9,20 @@ definePageMeta({
     { label: 'Pedidos' },
   ],
 })
+
+const { can } = useAdminPermissions()
 </script>
 
 <template>
   <div>
     <AdminPageTitle
       title="Pedidos"
-      description="Seguimiento y gestión de órdenes de la tienda."
+      description="Seguimiento, creación manual y gestión de órdenes de la tienda."
     />
-    <AdminEmptyState title="Listado de pedidos" module="Pedidos" />
+
+    <AdminOrdersPanel v-if="can('orders.read')" />
+    <UiAlert v-else variant="warning">
+      No tienes permiso para ver pedidos (<code>orders.read</code>).
+    </UiAlert>
   </div>
 </template>
