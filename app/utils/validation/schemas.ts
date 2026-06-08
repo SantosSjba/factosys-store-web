@@ -146,3 +146,22 @@ export const rolePermissionsSchema = z.object({
     .array(z.string())
     .min(1, 'Selecciona al menos un permiso.'),
 })
+
+export const warehouseFormSchema = z.object({
+  name: z.string().trim().min(2, 'Ingresa el nombre del almacén.'),
+  code: z.string().trim().min(2, 'Ingresa el código del almacén.').max(32),
+  description: optionalText,
+  address: optionalText,
+  isDefault: z.enum(['true', 'false']),
+  isActive: z.enum(['true', 'false']),
+  sortOrder: z.coerce.number().min(0),
+})
+
+export const stockMovementSchema = z.object({
+  warehouseId: z.string().uuid('Selecciona un almacén.'),
+  variantId: z.string().uuid('Selecciona una variante.'),
+  type: z.enum(['RECEIPT', 'SHIPMENT', 'ADJUSTMENT', 'TRANSFER']),
+  quantity: z.coerce.number().refine((value) => value !== 0, 'La cantidad no puede ser cero.'),
+  note: optionalText,
+  targetWarehouseId: optionalText,
+})

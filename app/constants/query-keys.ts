@@ -19,4 +19,9 @@ export const adminQueryKeys = {
     [...adminQueryKeys.all, 'catalog-categories', id] as const,
   catalogBrands: () => [...adminQueryKeys.all, 'catalog-brands'] as const,
   catalogAttributes: () => [...adminQueryKeys.all, 'catalog-attributes'] as const,
+  inventoryWarehouses: () => [...adminQueryKeys.all, 'inventory-warehouses'] as const,
+  inventoryStock: () => [...adminQueryKeys.all, 'inventory-stock'] as const,
+  inventoryMovements: () => [...adminQueryKeys.all, 'inventory-movements'] as const,
+  inventoryActiveWarehouses: () =>
+    [...adminQueryKeys.all, 'inventory-warehouses', 'active'] as const,
 }
