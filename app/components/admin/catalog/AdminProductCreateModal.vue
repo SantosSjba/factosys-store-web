@@ -73,13 +73,14 @@ watch(open, (value) => {
   >
     <form class="space-y-4" @submit.prevent="onSubmit">
       <div class="grid gap-4 sm:grid-cols-2">
-        <UiFormField name="name" label="Nombre" class="sm:col-span-2" autocomplete="off" />
+        <UiFormField name="name" label="Nombre" class="sm:col-span-2" autocomplete="off" required />
         <UiFormField name="slug" label="Slug" hint="Opcional. Se genera automáticamente." autocomplete="off" />
-        <UiFormField name="sku" label="SKU" autocomplete="off" />
+        <UiFormField name="sku" label="SKU" autocomplete="off" required />
         <UiFormSelect
           name="primaryCategoryId"
           label="Categoría principal"
           :options="categoryOptions"
+          required
         />
         <UiFormSelect
           name="brandId"
@@ -93,6 +94,7 @@ watch(open, (value) => {
           type="number"
           step="0.01"
           min="0"
+          required
         />
         <UiFormField
           name="compareAtPrice"

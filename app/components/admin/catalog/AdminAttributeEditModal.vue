@@ -87,11 +87,11 @@ const onSubmit = createSubmitHandler(
 <template>
   <UiModal v-model="open" title="Editar atributo" :description="attribute?.slug" size="lg">
     <form v-if="attribute" class="grid gap-4 sm:grid-cols-2" @submit.prevent="onSubmit">
-      <UiFormField name="name" label="Nombre" class="sm:col-span-2" autocomplete="off" />
+      <UiFormField name="name" label="Nombre" class="sm:col-span-2" autocomplete="off" required />
       <UiFormField name="slug" label="Slug" autocomplete="off" />
       <UiFormField name="unit" label="Unidad" autocomplete="off" />
-      <UiFormSelect name="dataType" label="Tipo" :options="dataTypeOptions" />
-      <UiFormSelect name="scope" label="Ámbito" :options="scopeOptions" />
+      <UiFormSelect name="dataType" label="Tipo" :options="dataTypeOptions" required />
+      <UiFormSelect name="scope" label="Ámbito" :options="scopeOptions" required />
       <UiFormField name="sortOrder" label="Orden" type="number" min="0" />
       <UiFormField name="optionsText" label="Opciones" class="sm:col-span-2" autocomplete="off" />
       <UiFormField name="description" label="Descripción" class="sm:col-span-2" autocomplete="off" />

@@ -66,12 +66,14 @@ onMounted(() => {
         label="Correo electrónico"
         type="email"
         autocomplete="email"
+        required
       />
       <UiFormField
         name="password"
         label="Contraseña"
         type="password"
         autocomplete="current-password"
+        required
       />
 
       <UiButton type="submit" class="w-full" :loading="isSubmitting">

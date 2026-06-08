@@ -55,6 +55,7 @@ const onSubmit = createSubmitHandler(
         label="Correo electrónico"
         type="email"
         autocomplete="email"
+        required
       />
       <UiFormField
         name="password"
@@ -62,6 +63,7 @@ const onSubmit = createSubmitHandler(
         type="password"
         autocomplete="new-password"
         hint="Mínimo 8 caracteres"
+        required
       />
 
       <UiButton type="submit" class="w-full" :loading="isSubmitting">

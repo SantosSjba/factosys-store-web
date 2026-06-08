@@ -39,7 +39,7 @@ watch(open, (v) => { if (!v) resetForm() })
 <template>
   <UiModal v-model="open" title="Nueva marca" size="lg">
     <form class="grid gap-4 sm:grid-cols-2" @submit.prevent="onSubmit">
-      <UiFormField name="name" label="Nombre" class="sm:col-span-2" autocomplete="off" />
+      <UiFormField name="name" label="Nombre" class="sm:col-span-2" autocomplete="off" required />
       <UiFormField name="slug" label="Slug" hint="Opcional" autocomplete="off" />
       <UiFormSelect
         name="isActive"

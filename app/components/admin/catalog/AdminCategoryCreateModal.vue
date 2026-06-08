@@ -66,7 +66,7 @@ watch(open, (value) => {
   <UiModal v-model="open" title="Nueva categoría" size="lg">
     <form class="space-y-4" @submit.prevent="onSubmit">
       <div class="grid gap-4 sm:grid-cols-2">
-        <UiFormField name="name" label="Nombre" class="sm:col-span-2" autocomplete="off" />
+        <UiFormField name="name" label="Nombre" class="sm:col-span-2" autocomplete="off" required />
         <UiFormField name="slug" label="Slug" hint="Opcional" autocomplete="off" />
         <UiFormField name="sortOrder" label="Orden" type="number" min="0" />
         <UiFormSelect name="parentId" label="Categoría padre" :options="parentOptions" />

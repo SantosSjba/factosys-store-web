@@ -5,6 +5,7 @@
       label="Correo electrónico"
       type="email"
       autocomplete="off"
+      required
     />
     <UiFormField
       name="password"
@@ -12,6 +13,7 @@
       type="password"
       autocomplete="new-password"
       hint="Mínimo 8 caracteres"
+      required
     />
     <UiFormField name="firstName" label="Nombre" autocomplete="off" />
     <UiFormField name="lastName" label="Apellido" autocomplete="off" />

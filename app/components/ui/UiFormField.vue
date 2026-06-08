@@ -11,6 +11,7 @@ const props = withDefaults(
     placeholder?: string
     disabled?: boolean
     maxlength?: number | string
+    required?: boolean
   }>(),
   { type: 'text' },
 )
@@ -30,6 +31,7 @@ const { value, errorMessage, handleChange, handleBlur } = useField<string>(
     :placeholder="placeholder"
     :disabled="disabled"
     :maxlength="maxlength"
+    :required="required"
     :error="errorMessage"
     @update:model-value="handleChange"
     @blur="handleBlur"

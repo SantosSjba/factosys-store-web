@@ -5,6 +5,7 @@ const props = defineProps<{
   modelValue: string[]
   label?: string
   options: UiChoiceOption[]
+  required?: boolean
   hint?: string
   error?: string
   disabled?: boolean
@@ -32,7 +33,9 @@ function onToggle(value: string, checked: boolean) {
 
 <template>
   <fieldset class="space-y-3" :disabled="disabled">
-    <legend v-if="label" class="text-theme mb-1 text-sm font-medium">{{ label }}</legend>
+    <legend v-if="label" class="mb-1">
+      <UiFieldLabel :label="label" :required="required" />
+    </legend>
     <UiCheckbox
       v-for="option in options"
       :key="option.value"

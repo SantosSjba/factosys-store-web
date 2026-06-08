@@ -53,6 +53,7 @@ watch(open, (value) => {
         name="roleSlugs"
         label="Roles asignados"
         :options="roleOptions"
+        required
         hint="Los permisos efectivos serán la unión de todos los roles seleccionados."
       />
     </form>

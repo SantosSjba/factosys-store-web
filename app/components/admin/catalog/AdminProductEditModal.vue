@@ -106,17 +106,18 @@ const onSubmit = createSubmitHandler(
 
     <div v-else-if="product" class="space-y-6">
       <form class="grid gap-4 sm:grid-cols-2" @submit.prevent="onSubmit">
-        <UiFormField name="name" label="Nombre" class="sm:col-span-2" autocomplete="off" />
+        <UiFormField name="name" label="Nombre" class="sm:col-span-2" autocomplete="off" required />
         <UiFormField name="slug" label="Slug" autocomplete="off" />
-        <UiFormField name="sku" label="SKU" autocomplete="off" />
+        <UiFormField name="sku" label="SKU" autocomplete="off" required />
         <UiFormSelect
           name="primaryCategoryId"
           label="Categoría principal"
           :options="categoryOptions"
+          required
         />
         <UiFormSelect name="brandId" label="Marca" :options="brandOptions" />
         <UiFormSelect name="status" label="Estado" :options="statusOptions" />
-        <UiFormField name="price" label="Precio" type="number" step="0.01" min="0" />
+        <UiFormField name="price" label="Precio" type="number" step="0.01" min="0" required />
         <UiFormField
           name="compareAtPrice"
           label="Precio comparativo"

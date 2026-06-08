@@ -8,6 +8,7 @@ const props = defineProps<{
   options: UiChoiceOption[]
   hint?: string
   disabled?: boolean
+  required?: boolean
 }>()
 
 const { value, errorMessage, handleChange } = useField<string[]>(() => props.name)
@@ -24,6 +25,7 @@ function onUpdate(next: string[]) {
     :options="options"
     :hint="hint"
     :disabled="disabled"
+    :required="required"
     :error="errorMessage"
     @update:model-value="onUpdate"
   />

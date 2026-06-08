@@ -66,7 +66,7 @@ const onSubmit = createSubmitHandler(
   <UiModal v-model="open" title="Editar categoría" :description="category?.slug" size="lg">
     <form v-if="category" class="space-y-4" @submit.prevent="onSubmit">
       <div class="grid gap-4 sm:grid-cols-2">
-        <UiFormField name="name" label="Nombre" class="sm:col-span-2" autocomplete="off" />
+        <UiFormField name="name" label="Nombre" class="sm:col-span-2" autocomplete="off" required />
         <UiFormField name="slug" label="Slug" autocomplete="off" />
         <UiFormField name="sortOrder" label="Orden" type="number" min="0" />
         <UiFormSelect name="parentId" label="Categoría padre" :options="parentOptions" />

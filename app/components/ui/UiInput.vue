@@ -34,7 +34,7 @@ const fieldClass = computed(() => [
 
 <template>
   <label v-if="label" class="block space-y-1.5" :for="inputId">
-    <span class="text-theme text-sm font-medium">{{ label }}</span>
+    <UiFieldLabel :label="label" :required="required" />
     <input
       :id="inputId"
       :type="type"

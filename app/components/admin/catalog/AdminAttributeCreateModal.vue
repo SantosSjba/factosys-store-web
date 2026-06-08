@@ -69,11 +69,11 @@ watch(open, (v) => { if (!v) resetForm() })
 <template>
   <UiModal v-model="open" title="Nuevo atributo" description="Especificaciones técnicas o variantes (color/talla)." size="lg">
     <form class="grid gap-4 sm:grid-cols-2" @submit.prevent="onSubmit">
-      <UiFormField name="name" label="Nombre" class="sm:col-span-2" autocomplete="off" />
+      <UiFormField name="name" label="Nombre" class="sm:col-span-2" autocomplete="off" required />
       <UiFormField name="slug" label="Slug" hint="Opcional" autocomplete="off" />
       <UiFormField name="unit" label="Unidad" hint="Ej. GB, MHz" autocomplete="off" />
-      <UiFormSelect name="dataType" label="Tipo de dato" :options="dataTypeOptions" />
-      <UiFormSelect name="scope" label="Ámbito" :options="scopeOptions" />
+      <UiFormSelect name="dataType" label="Tipo de dato" :options="dataTypeOptions" required />
+      <UiFormSelect name="scope" label="Ámbito" :options="scopeOptions" required />
       <UiFormField name="sortOrder" label="Orden" type="number" min="0" />
       <UiFormField
         name="optionsText"

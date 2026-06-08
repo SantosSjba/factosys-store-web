@@ -170,6 +170,7 @@ onMounted(async () => {
         label="Correo electrónico"
         type="email"
         autocomplete="email"
+        required
       />
       <UiFormField
         name="code"
@@ -177,6 +178,7 @@ onMounted(async () => {
         autocomplete="one-time-code"
         hint="Código de 6 dígitos enviado a tu correo"
         maxlength="6"
+        required
       />
 
       <UiButton type="submit" class="w-full" :loading="isSubmitting">

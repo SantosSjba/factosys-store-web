@@ -9,6 +9,7 @@ const props = defineProps<{
   hint?: string
   placeholder?: string
   disabled?: boolean
+  required?: boolean
 }>()
 
 const { value, errorMessage, handleChange, handleBlur } = useField<string>(
@@ -24,6 +25,7 @@ const { value, errorMessage, handleChange, handleBlur } = useField<string>(
     :hint="hint"
     :placeholder="placeholder"
     :disabled="disabled"
+    :required="required"
     :error="errorMessage"
     @update:model-value="handleChange"
     @blur="handleBlur"

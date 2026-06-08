@@ -109,7 +109,7 @@ const onSubmit = createSubmitHandler(
             autocomplete="off"
           />
         </div>
-        <UiFormSelect name="status" label="Estado" :options="statusOptions" />
+        <UiFormSelect name="status" label="Estado" :options="statusOptions" required />
         <UiFormField
           name="password"
           label="Nueva contraseña"
@@ -124,6 +124,7 @@ const onSubmit = createSubmitHandler(
         name="roleSlugs"
         label="Roles asignados"
         :options="roleOptions"
+        required
         hint="Los permisos efectivos serán la unión de todos los roles seleccionados."
       />
       <UiAlert v-else variant="info" class="text-sm">

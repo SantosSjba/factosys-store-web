@@ -27,7 +27,7 @@ const fieldClass = computed(() => [
 
 <template>
   <label class="block space-y-1.5" :for="textareaId">
-    <span v-if="label" class="text-theme text-sm font-medium">{{ label }}</span>
+    <UiFieldLabel v-if="label" :label="label" :required="required" />
     <textarea
       :id="textareaId"
       :value="modelValue"

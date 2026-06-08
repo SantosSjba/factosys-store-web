@@ -114,7 +114,7 @@ const onSubmit = createSubmitHandler(
             autocomplete="off"
           />
         </div>
-        <UiFormSelect name="status" label="Estado" :options="statusOptions" />
+        <UiFormSelect name="status" label="Estado" :options="statusOptions" required />
         <div v-if="isEmailVerified" class="sm:col-span-2">
           <UiCheckbox
             :model-value="clearEmailVerification ?? false"
