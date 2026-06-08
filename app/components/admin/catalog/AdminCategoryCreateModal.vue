@@ -10,13 +10,15 @@ const props = defineProps<{
 }>()
 
 const createMutation = useAdminCreateCategoryMutation()
+const uploadImageMutation = useAdminUploadCategoryImageMutation()
+const imageFile = ref<File | null>(null)
 const { flatCategories } = useAdminCatalogLookupsQuery()
 
 const parentOptions = computed(() =>
   categorySelectOptions(flatCategories.value),
 )
 
-const { resetForm, setValues, createSubmitHandler, withMutationPending } = useApiForm({
+const { resetForm, setValues, createSubmitHandler } = useApiForm({
   schema: createCategorySchema,
   initialValues: {
     name: '',
@@ -28,7 +30,15 @@ const { resetForm, setValues, createSubmitHandler, withMutationPending } = useAp
   },
 })
 
-const isSubmitting = withMutationPending(createMutation)
+const isSubmitting = computed(
+  () => createMutation.isPending.value || uploadImageMutation.isPending.value,
+)
+
+const submitLabel = computed(() => {
+  if (uploadImageMutation.isPending.value) return 'Subiendo imagen…'
+  if (createMutation.isPending.value) return 'Creando categoría…'
+  return 'Crear categoría'
+})
 
 const onSubmit = createSubmitHandler(
   async (values) => {
@@ -40,10 +50,23 @@ const onSubmit = createSubmitHandler(
       sortOrder: values.sortOrder,
       isActive: values.isActive === 'true',
     }
-    await createMutation.mutateAsync(payload)
+    const category = await createMutation.mutateAsync(payload)
+
+    if (imageFile.value) {
+      await uploadImageMutation.mutateAsync({
+        categoryId: category.id,
+        file: imageFile.value,
+      })
+    }
+
     open.value = false
   },
-  { successMessage: 'Categoría creada correctamente' },
+  {
+    successMessage: () =>
+      imageFile.value
+        ? 'Categoría creada e imagen subida correctamente'
+        : 'Categoría creada correctamente',
+  },
 )
 
 watch(open, (value) => {
@@ -58,6 +81,7 @@ watch(open, (value) => {
     })
   } else {
     resetForm()
+    imageFile.value = null
   }
 })
 </script>
@@ -100,11 +124,23 @@ watch(open, (value) => {
           />
         </div>
       </AdminFormSection>
+
+      <AdminFormSection
+        title="Imagen de categoría"
+        description="Icono o banner representativo en la tienda."
+        icon="lucide:image"
+      >
+        <AdminCatalogAssetUpload
+          v-model:pending-file="imageFile"
+          kind="category-image"
+          :disabled="isSubmitting"
+        />
+      </AdminFormSection>
     </form>
 
     <template #footer>
       <AdminModalFooter
-        submit-label="Crear categoría"
+        :submit-label="submitLabel"
         :loading="isSubmitting"
         @cancel="open = false"
         @submit="onSubmit"
