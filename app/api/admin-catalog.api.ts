@@ -167,6 +167,25 @@ export async function assignAdminCategoryAttributes(
   return data
 }
 
+export async function uploadAdminCategoryImage(categoryId: string, file: File) {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  const { data } = await useAdminApi().post<CatalogCategory>(
+    `/admin/catalog/categories/${categoryId}/image`,
+    formData,
+    { headers: { 'Content-Type': 'multipart/form-data' } },
+  )
+  return data
+}
+
+export async function deleteAdminCategoryImage(categoryId: string) {
+  const { data } = await useAdminApi().delete<CatalogCategory>(
+    `/admin/catalog/categories/${categoryId}/image`,
+  )
+  return data
+}
+
 // ——— Marcas ———
 
 export async function fetchAdminBrands(params: PaginationParams = {}) {
@@ -203,6 +222,25 @@ export async function updateAdminBrand(id: string, payload: UpdateBrandPayload) 
 export async function deleteAdminBrand(id: string) {
   const { data } = await useAdminApi().delete<{ message: string }>(
     `/admin/catalog/brands/${id}`,
+  )
+  return data
+}
+
+export async function uploadAdminBrandLogo(brandId: string, file: File) {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  const { data } = await useAdminApi().post<CatalogBrand>(
+    `/admin/catalog/brands/${brandId}/logo`,
+    formData,
+    { headers: { 'Content-Type': 'multipart/form-data' } },
+  )
+  return data
+}
+
+export async function deleteAdminBrandLogo(brandId: string) {
+  const { data } = await useAdminApi().delete<CatalogBrand>(
+    `/admin/catalog/brands/${brandId}/logo`,
   )
   return data
 }

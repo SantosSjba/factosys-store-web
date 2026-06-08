@@ -8,10 +8,13 @@ import type {
 } from '~/types/admin-catalog'
 
 export type ProductVariantFormRow = {
+  id?: string
   sku: string
   name: string
   price: number
   compareAtPrice?: number
+  cost?: number
+  weight?: number
   barcode: string
   isDefault: boolean
   isActive: boolean
@@ -44,8 +47,11 @@ export type ProductFormValues = {
   metaDescription: string
   tagsText: string
   sku: string
+  barcode: string
   price: number
   compareAtPrice?: number
+  cost?: number
+  weight?: number
 }
 
 export const emptyProductFormValues: ProductFormValues = {
@@ -62,8 +68,11 @@ export const emptyProductFormValues: ProductFormValues = {
   metaDescription: '',
   tagsText: '',
   sku: '',
+  barcode: '',
   price: 0,
   compareAtPrice: undefined,
+  cost: undefined,
+  weight: undefined,
 }
 
 export function createEmptyVariantRow(isDefault = false): ProductVariantFormRow {
@@ -73,6 +82,8 @@ export function createEmptyVariantRow(isDefault = false): ProductVariantFormRow 
     price: 0,
     compareAtPrice: undefined,
     barcode: '',
+    cost: undefined,
+    weight: undefined,
     isDefault,
     isActive: true,
     attributeValues: {},
@@ -185,20 +196,27 @@ function buildVariantsPayload(
   if (values.productType === 'SIMPLE') {
     return [
       {
+        id: variants[0]?.id,
         sku: values.sku.trim(),
+        barcode: values.barcode.trim() || undefined,
         price: values.price,
         compareAtPrice: values.compareAtPrice,
+        cost: values.cost,
+        weight: values.weight,
         isDefault: true,
       },
     ]
   }
 
   return variants.map((variant, index) => ({
+    id: variant.id,
     sku: variant.sku.trim(),
     name: variant.name.trim() || undefined,
     barcode: variant.barcode.trim() || undefined,
     price: variant.price,
     compareAtPrice: variant.compareAtPrice,
+    cost: variant.cost,
+    weight: variant.weight,
     isDefault: variant.isDefault,
     isActive: variant.isActive,
     sortOrder: index,

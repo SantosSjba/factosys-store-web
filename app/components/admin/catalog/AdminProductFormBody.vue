@@ -113,6 +113,7 @@ const hasPrimaryCategory = computed(() => Boolean(primaryCategoryId.value?.trim(
     >
       <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <UiFormField name="sku" label="SKU" autocomplete="off" required />
+        <UiFormField name="barcode" label="Código de barras" autocomplete="off" />
         <UiFormField name="price" label="Precio" type="number" step="0.01" min="0" required />
         <UiFormField
           name="compareAtPrice"
@@ -121,6 +122,22 @@ const hasPrimaryCategory = computed(() => Boolean(primaryCategoryId.value?.trim(
           step="0.01"
           min="0"
           hint="Opcional. Precio tachado en tienda."
+        />
+        <UiFormField
+          name="cost"
+          label="Costo"
+          type="number"
+          step="0.01"
+          min="0"
+          hint="Opcional. Costo interno."
+        />
+        <UiFormField
+          name="weight"
+          label="Peso (kg)"
+          type="number"
+          step="0.001"
+          min="0"
+          hint="Opcional. Para envíos."
         />
       </div>
     </AdminFormSection>

@@ -81,6 +81,19 @@ const onSubmit = createSubmitHandler(
           />
         </div>
       </AdminFormSection>
+
+      <AdminFormSection
+        title="Logo de marca"
+        description="Identificador visual en catálogo y fichas de producto."
+        icon="lucide:image"
+      >
+        <AdminCatalogAssetUpload
+          :entity-id="brand.id"
+          kind="brand-logo"
+          :image-url="brand.logoUrl"
+          :disabled="isSubmitting"
+        />
+      </AdminFormSection>
     </form>
 
     <template #footer>

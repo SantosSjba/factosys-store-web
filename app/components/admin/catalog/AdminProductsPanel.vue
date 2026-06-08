@@ -1,9 +1,20 @@
 <script setup lang="ts">
-import type { CatalogProduct } from '~/types/admin-catalog'
+import type { CatalogProduct, ProductStatus } from '~/types/admin-catalog'
 import type { UiTableColumn } from '~/types/ui'
 
 const { can } = useAdminPermissions()
 const deleteMutation = useAdminDeleteProductMutation()
+const { categoryOptions, brandOptions } = useAdminCatalogLookupsQuery()
+
+const filterCategoryId = ref('')
+const filterBrandId = ref('')
+const filterStatus = ref('')
+
+const listFilters = computed(() => ({
+  categoryId: filterCategoryId.value || undefined,
+  brandId: filterBrandId.value || undefined,
+  status: (filterStatus.value || undefined) as ProductStatus | undefined,
+}))
 
 const {
   page,
@@ -11,9 +22,27 @@ const {
   isPending,
   items: products,
   paginationMeta,
-} = usePaginatedAdminList<CatalogProduct>((params) =>
-  useAdminProductsQuery(params),
+} = usePaginatedAdminList<CatalogProduct>(
+  (params) => useAdminProductsQuery(params),
+  { filters: listFilters },
 )
+
+const statusFilterOptions = [
+  { label: 'Todos los estados', value: '' },
+  { label: 'Borrador', value: 'DRAFT' },
+  { label: 'Activo', value: 'ACTIVE' },
+  { label: 'Archivado', value: 'ARCHIVED' },
+]
+
+const categoryFilterOptions = computed(() => [
+  { label: 'Todas las categorías', value: '' },
+  ...categoryOptions.value,
+])
+
+const brandFilterOptions = computed(() => [
+  { label: 'Todas las marcas', value: '' },
+  ...brandOptions.value.filter((option) => option.value),
+])
 
 const createOpen = ref(false)
 const detailOpen = ref(false)
@@ -65,6 +94,24 @@ function deleteProduct(product: CatalogProduct) {
         v-model="search"
         placeholder="Buscar por nombre, slug o etiquetas…"
         class="min-w-[16rem] flex-1"
+      />
+      <UiSelect
+        v-model="filterCategoryId"
+        :options="categoryFilterOptions"
+        placeholder="Categoría"
+        class="min-w-[10rem]"
+      />
+      <UiSelect
+        v-model="filterBrandId"
+        :options="brandFilterOptions"
+        placeholder="Marca"
+        class="min-w-[10rem]"
+      />
+      <UiSelect
+        v-model="filterStatus"
+        :options="statusFilterOptions"
+        placeholder="Estado"
+        class="min-w-[10rem]"
       />
       <template #actions>
         <UiButton

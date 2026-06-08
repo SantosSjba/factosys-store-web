@@ -7,7 +7,9 @@ import {
   createAdminProduct,
   deleteAdminAttribute,
   deleteAdminBrand,
+  deleteAdminBrandLogo,
   deleteAdminCategory,
+  deleteAdminCategoryImage,
   deleteAdminProduct,
   deleteAdminProductImage,
   reorderAdminProductImages,
@@ -16,6 +18,8 @@ import {
   updateAdminBrand,
   updateAdminCategory,
   updateAdminProduct,
+  uploadAdminCategoryImage,
+  uploadAdminBrandLogo,
 } from '~/api/admin-catalog.api'
 import { adminQueryKeys } from '~/constants/query-keys'
 import type {
@@ -159,6 +163,23 @@ export function useAdminAssignCategoryAttributesMutation() {
   })
 }
 
+export function useAdminUploadCategoryImageMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ categoryId, file }: { categoryId: string; file: File }) =>
+      uploadAdminCategoryImage(categoryId, file),
+    onSuccess: () => invalidateCatalog(queryClient),
+  })
+}
+
+export function useAdminDeleteCategoryImageMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (categoryId: string) => deleteAdminCategoryImage(categoryId),
+    onSuccess: () => invalidateCatalog(queryClient),
+  })
+}
+
 // Marcas
 export function useAdminCreateBrandMutation() {
   const queryClient = useQueryClient()
@@ -181,6 +202,23 @@ export function useAdminDeleteBrandMutation() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (id: string) => deleteAdminBrand(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: adminQueryKeys.catalogBrands() }),
+  })
+}
+
+export function useAdminUploadBrandLogoMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ brandId, file }: { brandId: string; file: File }) =>
+      uploadAdminBrandLogo(brandId, file),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: adminQueryKeys.catalogBrands() }),
+  })
+}
+
+export function useAdminDeleteBrandLogoMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (brandId: string) => deleteAdminBrandLogo(brandId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: adminQueryKeys.catalogBrands() }),
   })
 }

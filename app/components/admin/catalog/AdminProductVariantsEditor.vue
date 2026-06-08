@@ -157,9 +157,30 @@ function updateVariantAttribute(index: number, attributeId: string, value: strin
             "
           />
           <UiInput
+            :model-value="variant.cost != null ? String(variant.cost) : ''"
+            label="Costo"
+            type="number"
+            step="0.01"
+            min="0"
+            :disabled="disabled"
+            @update:model-value="
+              updateVariant(index, 'cost', $event === '' ? undefined : Number($event))
+            "
+          />
+          <UiInput
+            :model-value="variant.weight != null ? String(variant.weight) : ''"
+            label="Peso (kg)"
+            type="number"
+            step="0.001"
+            min="0"
+            :disabled="disabled"
+            @update:model-value="
+              updateVariant(index, 'weight', $event === '' ? undefined : Number($event))
+            "
+          />
+          <UiInput
             :model-value="variant.barcode"
             label="Código de barras"
-            class="sm:col-span-2"
             :disabled="disabled"
             autocomplete="off"
             @update:model-value="updateVariant(index, 'barcode', $event)"

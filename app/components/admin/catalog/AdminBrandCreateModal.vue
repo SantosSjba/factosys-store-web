@@ -4,8 +4,10 @@ import { createBrandSchema } from '~/utils/validation/schemas'
 
 const open = defineModel<boolean>({ required: true })
 const createMutation = useAdminCreateBrandMutation()
+const uploadLogoMutation = useAdminUploadBrandLogoMutation()
+const logoFile = ref<File | null>(null)
 
-const { resetForm, createSubmitHandler, withMutationPending } = useApiForm({
+const { resetForm, createSubmitHandler } = useApiForm({
   schema: createBrandSchema,
   initialValues: {
     name: '',
@@ -16,7 +18,15 @@ const { resetForm, createSubmitHandler, withMutationPending } = useApiForm({
   },
 })
 
-const isSubmitting = withMutationPending(createMutation)
+const isSubmitting = computed(
+  () => createMutation.isPending.value || uploadLogoMutation.isPending.value,
+)
+
+const submitLabel = computed(() => {
+  if (uploadLogoMutation.isPending.value) return 'Subiendo logo…'
+  if (createMutation.isPending.value) return 'Creando marca…'
+  return 'Crear marca'
+})
 
 const onSubmit = createSubmitHandler(
   async (values) => {
@@ -27,13 +37,28 @@ const onSubmit = createSubmitHandler(
       website: values.website,
       isActive: values.isActive === 'true',
     }
-    await createMutation.mutateAsync(payload)
+    const brand = await createMutation.mutateAsync(payload)
+
+    if (logoFile.value) {
+      await uploadLogoMutation.mutateAsync({ brandId: brand.id, file: logoFile.value })
+    }
+
     open.value = false
   },
-  { successMessage: 'Marca creada correctamente' },
+  {
+    successMessage: () =>
+      logoFile.value
+        ? 'Marca creada y logo subido correctamente'
+        : 'Marca creada correctamente',
+  },
 )
 
-watch(open, (v) => { if (!v) resetForm() })
+watch(open, (v) => {
+  if (!v) {
+    resetForm()
+    logoFile.value = null
+  }
+})
 </script>
 
 <template>
@@ -73,10 +98,27 @@ watch(open, (v) => { if (!v) resetForm() })
           />
         </div>
       </AdminFormSection>
+
+      <AdminFormSection
+        title="Logo de marca"
+        description="Identificador visual en catálogo y fichas de producto."
+        icon="lucide:image"
+      >
+        <AdminCatalogAssetUpload
+          v-model:pending-file="logoFile"
+          kind="brand-logo"
+          :disabled="isSubmitting"
+        />
+      </AdminFormSection>
     </form>
 
     <template #footer>
-      <AdminModalFooter submit-label="Crear marca" :loading="isSubmitting" @cancel="open = false" @submit="onSubmit" />
+      <AdminModalFooter
+        :submit-label="submitLabel"
+        :loading="isSubmitting"
+        @cancel="open = false"
+        @submit="onSubmit"
+      />
     </template>
   </UiModal>
 </template>

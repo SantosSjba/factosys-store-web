@@ -131,8 +131,11 @@ export const productFormSchema = z.object({
   metaDescription: optionalText,
   tagsText: optionalText,
   sku: optionalText,
+  barcode: optionalText,
   price: z.coerce.number().min(0).optional(),
   compareAtPrice: z.coerce.number().min(0).optional(),
+  cost: z.coerce.number().min(0).optional(),
+  weight: z.coerce.number().min(0).optional(),
 })
 
 export const createProductSchema = productFormSchema

@@ -4,6 +4,7 @@ import type {
 } from 'filepond'
 import { uploadAdminProductImage } from '~/api/admin-catalog.api'
 import type { CatalogProductImage } from '~/types/admin-catalog'
+import { toUploadFile } from '~/utils/filepond/to-upload-file'
 
 export type FilePondCustomServer = Exclude<
   NonNullable<FilePondServerConfigProps['server']>,
@@ -17,14 +18,6 @@ export type ProductImageUploadServerOptions = {
   onUploadedCountChange: (count: number) => void
   onUploaded: (image: CatalogProductImage) => void
   onError: (error: unknown) => void
-}
-
-function toUploadFile(file: Blob & { name: string }): File {
-  if (file instanceof File) return file
-  return new File([file], file.name, {
-    type: file.type,
-    lastModified: file.lastModified,
-  })
 }
 
 export function createProductImageUploadServer(

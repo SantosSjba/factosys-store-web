@@ -55,10 +55,13 @@ function loadProductIntoForm() {
     metaDescription: current.metaDescription ?? '',
     tagsText: formatTagsText(current.tags),
     sku: defaultVariant?.sku ?? '',
+    barcode: defaultVariant?.barcode ?? '',
     price: defaultVariant ? Number(defaultVariant.price) : 0,
     compareAtPrice: defaultVariant?.compareAtPrice
       ? Number(defaultVariant.compareAtPrice)
       : undefined,
+    cost: defaultVariant?.cost ? Number(defaultVariant.cost) : undefined,
+    weight: defaultVariant?.weight ? Number(defaultVariant.weight) : undefined,
   })
 
   productAttributeValues.value = mapAttributeValuesRecord(current.attributeValues)
@@ -66,18 +69,39 @@ function loadProductIntoForm() {
   variants.value =
     current.productType === 'VARIABLE' && current.variants.length > 0
       ? current.variants.map((variant) => ({
+          id: variant.id,
           sku: variant.sku,
           name: variant.name ?? '',
           price: Number(variant.price),
           compareAtPrice: variant.compareAtPrice
             ? Number(variant.compareAtPrice)
             : undefined,
+          cost: variant.cost ? Number(variant.cost) : undefined,
+          weight: variant.weight ? Number(variant.weight) : undefined,
           barcode: variant.barcode ?? '',
           isDefault: variant.isDefault,
           isActive: variant.isActive,
           attributeValues: mapAttributeValuesRecord(variant.attributeValues),
         }))
-      : [createEmptyVariantRow(true)]
+      : defaultVariant
+        ? [
+            {
+              id: defaultVariant.id,
+              sku: defaultVariant.sku,
+              name: defaultVariant.name ?? '',
+              price: Number(defaultVariant.price),
+              compareAtPrice: defaultVariant.compareAtPrice
+                ? Number(defaultVariant.compareAtPrice)
+                : undefined,
+              cost: defaultVariant.cost ? Number(defaultVariant.cost) : undefined,
+              weight: defaultVariant.weight ? Number(defaultVariant.weight) : undefined,
+              barcode: defaultVariant.barcode ?? '',
+              isDefault: true,
+              isActive: defaultVariant.isActive,
+              attributeValues: mapAttributeValuesRecord(defaultVariant.attributeValues),
+            },
+          ]
+        : [createEmptyVariantRow(true)]
 }
 
 watch(product, (current) => {

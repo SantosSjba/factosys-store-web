@@ -136,6 +136,7 @@ export type ProductAttributeValuePayload = {
 }
 
 export type ProductVariantPayload = {
+  id?: string
   sku: string
   name?: string
   barcode?: string

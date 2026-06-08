@@ -95,6 +95,19 @@ const onSubmit = createSubmitHandler(
           />
         </div>
       </AdminFormSection>
+
+      <AdminFormSection
+        title="Imagen de categoría"
+        description="Icono o banner representativo en la tienda."
+        icon="lucide:image"
+      >
+        <AdminCatalogAssetUpload
+          :entity-id="category.id"
+          kind="category-image"
+          :image-url="category.imageUrl"
+          :disabled="isSubmitting"
+        />
+      </AdminFormSection>
     </form>
 
     <template #footer>
