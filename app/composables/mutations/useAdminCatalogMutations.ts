@@ -10,6 +10,8 @@ import {
   deleteAdminCategory,
   deleteAdminProduct,
   deleteAdminProductImage,
+  reorderAdminProductImages,
+  setAdminProductImagePrimary,
   updateAdminAttribute,
   updateAdminBrand,
   updateAdminCategory,
@@ -69,6 +71,42 @@ export function useAdminDeleteProductImageMutation() {
   return useMutation({
     mutationFn: ({ productId, imageId }: { productId: string; imageId: string }) =>
       deleteAdminProductImage(productId, imageId),
+    onSuccess: (_data, vars) => {
+      queryClient.invalidateQueries({ queryKey: adminQueryKeys.products() })
+      queryClient.invalidateQueries({ queryKey: adminQueryKeys.product(vars.productId) })
+    },
+  })
+}
+
+export function useAdminSetProductImagePrimaryMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      productId,
+      imageId,
+      isPrimary,
+    }: {
+      productId: string
+      imageId: string
+      isPrimary: boolean
+    }) => setAdminProductImagePrimary(productId, imageId, isPrimary),
+    onSuccess: (_data, vars) => {
+      queryClient.invalidateQueries({ queryKey: adminQueryKeys.products() })
+      queryClient.invalidateQueries({ queryKey: adminQueryKeys.product(vars.productId) })
+    },
+  })
+}
+
+export function useAdminReorderProductImagesMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      productId,
+      imageIds,
+    }: {
+      productId: string
+      imageIds: string[]
+    }) => reorderAdminProductImages(productId, imageIds),
     onSuccess: (_data, vars) => {
       queryClient.invalidateQueries({ queryKey: adminQueryKeys.products() })
       queryClient.invalidateQueries({ queryKey: adminQueryKeys.product(vars.productId) })

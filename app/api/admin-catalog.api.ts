@@ -87,6 +87,29 @@ export async function deleteAdminProductImage(productId: string, imageId: string
   return data
 }
 
+export async function setAdminProductImagePrimary(
+  productId: string,
+  imageId: string,
+  isPrimary: boolean,
+) {
+  const { data } = await useAdminApi().patch<CatalogProductImage>(
+    `/admin/catalog/products/${productId}/images/${imageId}/primary`,
+    { isPrimary },
+  )
+  return data
+}
+
+export async function reorderAdminProductImages(
+  productId: string,
+  imageIds: string[],
+) {
+  const { data } = await useAdminApi().patch<CatalogProductImage[]>(
+    `/admin/catalog/products/${productId}/images/order`,
+    { imageIds },
+  )
+  return data
+}
+
 // ——— Categorías ———
 
 export async function fetchAdminCategoryTree() {

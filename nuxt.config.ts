@@ -90,6 +90,8 @@ export default defineNuxtConfig({
         'filepond-plugin-image-preview',
         'vee-validate',
         'vue-filepond',
+        'vue-draggable-plus',
+        'sortablejs',
         'zod',
       ],
       exclude: ['@vue/devtools-api'],
