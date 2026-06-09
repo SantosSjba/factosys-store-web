@@ -8,7 +8,9 @@ const { data: roles, isPending, isError, error } = useAdminRolesQuery()
 const { data: permissions } = useAdminPermissionsQuery()
 
 const permissionsOpen = ref(false)
+const createOpen = ref(false)
 const selectedRole = ref<StaffRole | null>(null)
+const deleteMutation = useAdminDeleteRoleMutation()
 
 useQueryErrorToast(isError, error)
 
@@ -21,10 +23,29 @@ function openPermissions(role: StaffRole) {
   selectedRole.value = role
   permissionsOpen.value = true
 }
+
+function deleteRole(role: StaffRole) {
+  return runAdminSuspendAction({
+    confirm: {
+      title: 'Eliminar rol',
+      message: `¿Eliminar el rol "${role.name}"? Los usuarios perderán este rol.`,
+      confirmLabel: 'Eliminar',
+    },
+    mutate: () => deleteMutation.mutateAsync(role.slug),
+    successMessage: 'Rol eliminado',
+  })
+}
 </script>
 
 <template>
   <div class="space-y-4">
+    <div v-if="can('roles.write')" class="flex justify-end">
+      <UiButton @click="createOpen = true">
+        <UiIcon name="lucide:plus" :size="16" class="mr-2" />
+        Nuevo rol
+      </UiButton>
+    </div>
+
     <div v-if="isPending" class="grid gap-4 md:grid-cols-2">
       <UiSkeleton v-for="i in 4" :key="i" height="12rem" />
     </div>
@@ -57,6 +78,15 @@ function openPermissions(role: StaffRole) {
               size="sm"
               tone="admin"
               @click="openPermissions(role)"
+            />
+            <UiIconButton
+              v-if="can('roles.write') && !role.isSystem"
+              icon="lucide:trash-2"
+              ariaLabel="Eliminar rol"
+              title="Eliminar rol"
+              size="sm"
+              tone="admin"
+              @click="deleteRole(role)"
             />
           </div>
         </template>
@@ -112,6 +142,12 @@ function openPermissions(role: StaffRole) {
       v-if="can('roles.assign')"
       v-model="permissionsOpen"
       :role="selectedRole"
+      :permissions="permissions ?? []"
+    />
+
+    <AdminRoleCreateModal
+      v-if="can('roles.write')"
+      v-model="createOpen"
       :permissions="permissions ?? []"
     />
   </div>

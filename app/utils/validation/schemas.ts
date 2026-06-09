@@ -147,6 +147,20 @@ export const rolePermissionsSchema = z.object({
     .min(1, 'Selecciona al menos un permiso.'),
 })
 
+export const roleCreateSchema = z.object({
+  name: z.string().trim().min(2, 'Ingresa el nombre del rol.'),
+  slug: z
+    .string()
+    .trim()
+    .min(2, 'Ingresa el slug del rol.')
+    .max(60)
+    .regex(/^[a-z0-9-]+$/, 'Solo minúsculas, números y guiones.'),
+  description: optionalText,
+  permissionSlugs: z
+    .array(z.string())
+    .min(1, 'Selecciona al menos un permiso.'),
+})
+
 export const warehouseFormSchema = z.object({
   name: z.string().trim().min(2, 'Ingresa el nombre del almacén.'),
   code: z.string().trim().min(2, 'Ingresa el código del almacén.').max(32),

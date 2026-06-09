@@ -1,9 +1,15 @@
 <script setup lang="ts">
+import { exportAdminProductsCsv } from '~/api/admin-catalog.api'
 import type { CatalogProduct, ProductStatus } from '~/types/admin-catalog'
 import type { UiTableColumn } from '~/types/ui'
 
 const { can } = useAdminPermissions()
 const deleteMutation = useAdminDeleteProductMutation()
+const importMutation = useAdminImportProductsMutation()
+
+const isExporting = ref(false)
+const isImporting = ref(false)
+const importInputRef = ref<HTMLInputElement | null>(null)
 const { categoryOptions, brandOptions } = useAdminCatalogLookupsQuery()
 
 const filterCategoryId = ref('')
@@ -74,6 +80,49 @@ function openEditFromDetail(productId: string) {
   editOpen.value = true
 }
 
+async function exportCatalog() {
+  isExporting.value = true
+  try {
+    const csv = await exportAdminProductsCsv()
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.download = `catalogo-productos-${new Date().toISOString().slice(0, 10)}.csv`
+    link.click()
+    URL.revokeObjectURL(link.href)
+    useToast().success('Catálogo exportado')
+  } catch (error) {
+    useToast().error(useApiErrorMessage(error))
+  } finally {
+    isExporting.value = false
+  }
+}
+
+function openImportPicker() {
+  importInputRef.value?.click()
+}
+
+async function onImportFile(event: Event) {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  isImporting.value = true
+  try {
+    const csv = await file.text()
+    const result = await importMutation.mutateAsync(csv)
+    const message = `Importación: ${result.created} creados, ${result.updated} actualizados`
+    if (result.errors.length) {
+      useToast().warning(`${message}. ${result.errors.length} errores.`)
+    } else {
+      useToast().success(message)
+    }
+  } catch (error) {
+    useToast().error(useApiErrorMessage(error))
+  } finally {
+    isImporting.value = false
+    if (importInputRef.value) importInputRef.value.value = ''
+  }
+}
+
 function deleteProduct(product: CatalogProduct) {
   return runAdminSuspendAction({
     confirm: {
@@ -114,6 +163,33 @@ function deleteProduct(product: CatalogProduct) {
         class="min-w-[10rem]"
       />
       <template #actions>
+        <UiButton
+          v-if="can('products.read')"
+          variant="ghost"
+          size="sm"
+          :loading="isExporting"
+          @click="exportCatalog"
+        >
+          <UiIcon name="lucide:download" :size="16" class="mr-2" />
+          Exportar CSV
+        </UiButton>
+        <UiButton
+          v-if="can('products.write')"
+          variant="ghost"
+          size="sm"
+          :loading="isImporting"
+          @click="openImportPicker"
+        >
+          <UiIcon name="lucide:upload" :size="16" class="mr-2" />
+          Importar CSV
+        </UiButton>
+        <input
+          ref="importInputRef"
+          type="file"
+          accept=".csv,text/csv"
+          class="hidden"
+          @change="onImportFile"
+        />
         <UiButton
           v-if="can('products.write')"
           @click="createOpen = true"

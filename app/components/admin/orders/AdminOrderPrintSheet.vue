@@ -7,6 +7,7 @@ import {
   formatOrderStatus,
   formatPaymentStatus,
 } from '~/utils/format-order'
+import { formatPaymentMethod } from '~/utils/format-payment-method'
 import { formatPickupPointAddress } from '~/utils/format-pickup-point'
 
 defineProps<{
@@ -28,7 +29,8 @@ defineProps<{
   <div class="print-sheet hidden print:block">
     <div class="p-8 text-sm text-black">
       <div class="mb-6 border-b border-black pb-4">
-        <h1 class="text-2xl font-bold">Pedido {{ order.orderNumber }}</h1>
+        <h1 class="text-2xl font-bold">Hoja de despacho</h1>
+        <p class="mt-1 text-lg font-semibold">Pedido {{ order.orderNumber }}</p>
         <p class="mt-1">{{ formatAdminDateTime(order.createdAt) }}</p>
       </div>
 
@@ -46,12 +48,25 @@ defineProps<{
           <p>{{ formatDeliveryMethod(order.deliveryMethod) }}</p>
           <p>Despacho: {{ formatFulfillmentStatus(order.fulfillmentStatus) }}</p>
           <p v-if="order.warehouseName">Almacén: {{ order.warehouseName }}</p>
+          <p v-if="order.paymentMethod">Pago: {{ formatPaymentMethod(order.paymentMethod) }}</p>
         </div>
+      </div>
+
+      <div
+        v-if="order.deliveryMethod === 'SHIPPING' && (order.trackingNumber || order.carrier)"
+        class="mb-4 rounded border border-gray-400 p-3"
+      >
+        <p class="font-semibold">Envío</p>
+        <p v-if="order.carrier">Transportista: {{ order.carrier }}</p>
+        <p v-if="order.trackingNumber">Tracking: {{ order.trackingNumber }}</p>
+        <p v-if="order.trackingUrl" class="break-all text-xs">{{ order.trackingUrl }}</p>
+        <p v-if="order.shippingNotes" class="mt-1 text-xs">Notas: {{ order.shippingNotes }}</p>
       </div>
 
       <table class="mb-6 w-full border-collapse text-left">
         <thead>
           <tr class="border-b border-black">
+            <th class="w-8 py-2 pr-2">✓</th>
             <th class="py-2 pr-2">Producto</th>
             <th class="py-2 pr-2">SKU</th>
             <th class="py-2 pr-2 text-right">Cant.</th>
@@ -61,13 +76,16 @@ defineProps<{
         <tbody>
           <tr v-for="item in order.items" :key="item.id" class="border-b border-gray-300">
             <td class="py-2 pr-2">
+              <span class="inline-block h-4 w-4 border border-black" />
+            </td>
+            <td class="py-2 pr-2">
               {{ item.productName }}
               <span v-if="item.variantName" class="block text-xs text-gray-600">
                 {{ item.variantName }}
               </span>
             </td>
             <td class="py-2 pr-2">{{ item.sku }}</td>
-            <td class="py-2 pr-2 text-right">{{ item.quantity }}</td>
+            <td class="py-2 pr-2 text-right font-semibold">{{ item.quantity }}</td>
             <td class="py-2 text-right">
               {{ formatPrice(item.lineTotal, order.currencyCode) }}
             </td>

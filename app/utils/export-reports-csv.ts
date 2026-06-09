@@ -31,3 +31,23 @@ export function downloadTopProductsExport(params: SalesReportParams = {}) {
     params,
   )
 }
+
+export function downloadMarginReportExport(params: SalesReportParams = {}) {
+  return downloadCsv(
+    '/admin/reports/margin/export',
+    `margen-${new Date().toISOString().slice(0, 10)}.csv`,
+    params,
+  )
+}
+
+export async function downloadInventoryValuationExport() {
+  const response = await useAdminApi().get('/admin/reports/inventory-valuation/export', {
+    responseType: 'blob',
+  })
+  const blob = new Blob([response.data], { type: 'text/csv;charset=utf-8;' })
+  const link = document.createElement('a')
+  link.href = URL.createObjectURL(blob)
+  link.download = `inventario-valorizado-${new Date().toISOString().slice(0, 10)}.csv`
+  link.click()
+  URL.revokeObjectURL(link.href)
+}

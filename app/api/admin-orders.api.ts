@@ -5,8 +5,11 @@ import type {
   OrderDetail,
   OrderSummary,
   RefundOrderPayload,
+  UpdateOrderNotesPayload,
   UpdateOrderPaymentPayload,
+  UpdateOrderShipmentPayload,
   UpdateOrderStatusPayload,
+  UploadOrderPaymentEvidencePayload,
 } from '~/types/admin-orders'
 import type { PaginatedResponse } from '~/types/pagination'
 
@@ -56,6 +59,40 @@ export async function refundAdminOrder(id: string, payload: RefundOrderPayload) 
   const { data } = await useAdminApi().post<OrderDetail>(
     `/admin/orders/${id}/refund`,
     payload,
+  )
+  return data
+}
+
+export async function updateAdminOrderShipment(id: string, payload: UpdateOrderShipmentPayload) {
+  const { data } = await useAdminApi().patch<OrderDetail>(
+    `/admin/orders/${id}/shipment`,
+    payload,
+  )
+  return data
+}
+
+export async function updateAdminOrderNotes(id: string, payload: UpdateOrderNotesPayload) {
+  const { data } = await useAdminApi().patch<OrderDetail>(
+    `/admin/orders/${id}/notes`,
+    payload,
+  )
+  return data
+}
+
+export async function uploadAdminOrderPaymentEvidence(
+  id: string,
+  payload: UploadOrderPaymentEvidencePayload,
+) {
+  const formData = new FormData()
+  formData.append('file', payload.file)
+  formData.append('paymentMethod', payload.paymentMethod)
+  if (payload.amount != null) formData.append('amount', String(payload.amount))
+  if (payload.note) formData.append('note', payload.note)
+
+  const { data } = await useAdminApi().post<OrderDetail>(
+    `/admin/orders/${id}/payment-evidence`,
+    formData,
+    { headers: { 'Content-Type': 'multipart/form-data' } },
   )
   return data
 }

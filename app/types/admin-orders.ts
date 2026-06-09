@@ -17,6 +17,14 @@ export type OrderPaymentStatus =
 
 export type OrderFulfillmentStatus = 'UNFULFILLED' | 'PARTIAL' | 'FULFILLED'
 
+export type OrderPaymentMethod =
+  | 'CASH'
+  | 'BANK_TRANSFER'
+  | 'YAPE'
+  | 'PLIN'
+  | 'CARD'
+  | 'GATEWAY'
+
 export type OrderSource = 'ADMIN' | 'WEB' | 'PHONE'
 
 export type OrderDeliveryMethod = 'SHIPPING' | 'PICKUP'
@@ -56,6 +64,19 @@ export type OrderAddress = {
   department: string | null
   country: string
   postalCode: string | null
+}
+
+export type OrderPaymentEvidence = {
+  id: string
+  paymentMethod: OrderPaymentMethod
+  amount: string | null
+  note: string | null
+  fileName: string | null
+  fileUrl: string | null
+  mimeType: string | null
+  sizeBytes: number | null
+  uploadedByName: string | null
+  createdAt: string
 }
 
 export type OrderStatusHistoryEntry = {
@@ -105,6 +126,11 @@ export type OrderDetail = OrderSummary & {
   pricesIncludeTax: boolean
   internalNotes: string | null
   customerNotes: string | null
+  paymentMethod: OrderPaymentMethod | null
+  trackingNumber: string | null
+  carrier: string | null
+  trackingUrl: string | null
+  shippingNotes: string | null
   confirmedAt: string | null
   shippedAt: string | null
   deliveredAt: string | null
@@ -116,6 +142,26 @@ export type OrderDetail = OrderSummary & {
   items: OrderItem[]
   addresses: OrderAddress[]
   statusHistory: OrderStatusHistoryEntry[]
+  paymentEvidences: OrderPaymentEvidence[]
+}
+
+export type UpdateOrderShipmentPayload = {
+  trackingNumber?: string
+  carrier?: string
+  trackingUrl?: string
+  shippingNotes?: string
+}
+
+export type UpdateOrderNotesPayload = {
+  internalNotes?: string
+  customerNotes?: string
+}
+
+export type UploadOrderPaymentEvidencePayload = {
+  file: File
+  paymentMethod: OrderPaymentMethod
+  amount?: number
+  note?: string
 }
 
 export type ListOrdersParams = {

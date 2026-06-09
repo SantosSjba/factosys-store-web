@@ -12,6 +12,7 @@ import {
   deleteAdminCategoryImage,
   deleteAdminProduct,
   deleteAdminProductImage,
+  importAdminProductsCsv,
   reorderAdminProductImages,
   setAdminProductImagePrimary,
   updateAdminAttribute,
@@ -66,6 +67,14 @@ export function useAdminDeleteProductMutation() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (id: string) => deleteAdminProduct(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: adminQueryKeys.products() }),
+  })
+}
+
+export function useAdminImportProductsMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (csv: string) => importAdminProductsCsv(csv),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: adminQueryKeys.products() }),
   })
 }

@@ -21,6 +21,8 @@ const tabs = computed<UiTabItem[]>(() => [
   { id: 'currencies', label: 'Monedas', icon: 'lucide:circle-dollar-sign', disabled: !can('settings.read') },
   { id: 'taxes', label: 'Impuestos', icon: 'lucide:percent', disabled: !can('settings.read') },
   { id: 'payments', label: 'Pagos y envíos', icon: 'lucide:credit-card', disabled: !can('settings.read') },
+  { id: 'shipping-zones', label: 'Zonas de envío', icon: 'lucide:map', disabled: !can('settings.read') },
+  { id: 'gateways', label: 'Pasarelas', icon: 'lucide:wallet', disabled: !can('settings.read') },
 ])
 
 watch(
@@ -75,6 +77,20 @@ watch(
         <AdminPaymentsShippingPanel v-if="can('settings.read')" />
         <UiAlert v-else variant="warning">
           No tienes permiso para ver pagos y envíos (<code>settings.read</code>).
+        </UiAlert>
+      </template>
+
+      <template #shipping-zones>
+        <AdminShippingZonesPanel v-if="can('settings.read')" />
+        <UiAlert v-else variant="warning">
+          No tienes permiso para ver zonas de envío (<code>settings.read</code>).
+        </UiAlert>
+      </template>
+
+      <template #gateways>
+        <AdminPaymentGatewaysPanel v-if="can('settings.read')" />
+        <UiAlert v-else variant="warning">
+          No tienes permiso para ver pasarelas (<code>settings.read</code>).
         </UiAlert>
       </template>
     </UiTabs>

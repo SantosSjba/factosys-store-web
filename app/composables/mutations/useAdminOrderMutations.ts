@@ -3,16 +3,22 @@ import {
   cancelAdminOrder,
   createAdminOrder,
   refundAdminOrder,
+  updateAdminOrderNotes,
   updateAdminOrderPayment,
+  updateAdminOrderShipment,
   updateAdminOrderStatus,
+  uploadAdminOrderPaymentEvidence,
 } from '~/api/admin-orders.api'
 import { adminQueryKeys } from '~/constants/query-keys'
 import type {
   CancelOrderPayload,
   CreateOrderPayload,
   RefundOrderPayload,
+  UpdateOrderNotesPayload,
   UpdateOrderPaymentPayload,
+  UpdateOrderShipmentPayload,
   UpdateOrderStatusPayload,
+  UploadOrderPaymentEvidencePayload,
 } from '~/types/admin-orders'
 
 function invalidateOrders(queryClient: ReturnType<typeof useQueryClient>, orderId?: string) {
@@ -62,6 +68,33 @@ export function useAdminRefundOrderMutation() {
   return useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: RefundOrderPayload }) =>
       refundAdminOrder(id, payload),
+    onSuccess: (order) => invalidateOrders(queryClient, order.id),
+  })
+}
+
+export function useAdminUpdateOrderShipmentMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: UpdateOrderShipmentPayload }) =>
+      updateAdminOrderShipment(id, payload),
+    onSuccess: (order) => invalidateOrders(queryClient, order.id),
+  })
+}
+
+export function useAdminUpdateOrderNotesMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: UpdateOrderNotesPayload }) =>
+      updateAdminOrderNotes(id, payload),
+    onSuccess: (order) => invalidateOrders(queryClient, order.id),
+  })
+}
+
+export function useAdminUploadOrderPaymentEvidenceMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: UploadOrderPaymentEvidencePayload }) =>
+      uploadAdminOrderPaymentEvidence(id, payload),
     onSuccess: (order) => invalidateOrders(queryClient, order.id),
   })
 }

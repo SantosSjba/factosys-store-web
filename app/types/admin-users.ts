@@ -63,3 +63,15 @@ export type PermissionCatalogItem = {
 export type UpdateRolePermissionsPayload = {
   permissionSlugs: string[]
 }
+
+export type CreateRolePayload = {
+  name: string
+  slug: string
+  description?: string
+  permissionSlugs: string[]
+}
+
+export type UpdateRolePayload = {
+  name?: string
+  description?: string
+}

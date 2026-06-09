@@ -9,6 +9,9 @@ export type AdminNavIconName =
   | 'reports'
   | 'users'
   | 'settings'
+  | 'audit'
+  | 'media'
+  | 'returns'
 
 export const adminNavIcons: Record<AdminNavIconName, string> = {
   dashboard: 'lucide:layout-dashboard',
@@ -21,6 +24,9 @@ export const adminNavIcons: Record<AdminNavIconName, string> = {
   reports: 'lucide:bar-chart-3',
   users: 'lucide:users',
   settings: 'lucide:settings',
+  audit: 'lucide:scroll-text',
+  media: 'lucide:images',
+  returns: 'lucide:undo-2',
 }
 
 export type AdminNavLink = {
@@ -63,6 +69,7 @@ export const adminNavMenu: AdminNavEntry[] = [
       { label: 'Catálogo', to: '/intranet/catalogo', icon: 'catalog', permission: 'products.read' },
       { label: 'Inventario', to: '/intranet/inventario', icon: 'inventory', permission: 'inventory.read' },
       { label: 'Pedidos', to: '/intranet/pedidos', icon: 'orders', permission: 'orders.read' },
+      { label: 'Devoluciones', to: '/intranet/devoluciones', icon: 'returns', permission: 'returns.read' },
     ],
   },
   {
@@ -79,6 +86,8 @@ export const adminNavMenu: AdminNavEntry[] = [
     label: 'Sistema',
     children: [
       { label: 'Usuarios', to: '/intranet/usuarios', icon: 'users', permission: 'users.read' },
+      { label: 'Auditoría', to: '/intranet/auditoria', icon: 'audit', permission: 'audit.read' },
+      { label: 'Medios', to: '/intranet/medios', icon: 'media', permission: 'media.read' },
       { label: 'Configuración', to: '/intranet/configuracion', icon: 'settings', permission: 'settings.read' },
     ],
   },

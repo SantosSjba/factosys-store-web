@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { OrderPaymentStatus, OrderStatus } from '~/types/admin-orders'
+import type { OrderPaymentMethod, OrderPaymentStatus, OrderStatus } from '~/types/admin-orders'
+import { formatPaymentMethod, PAYMENT_METHOD_OPTIONS } from '~/utils/format-payment-method'
 import {
   formatDeliveryMethod,
   formatFulfillmentStatus,
@@ -28,6 +29,9 @@ const { data: order, isPending, refetch } = useAdminOrderQuery(orderIdRef)
 const statusMutation = useAdminUpdateOrderStatusMutation()
 const paymentMutation = useAdminUpdateOrderPaymentMutation()
 const cancelMutation = useAdminCancelOrderMutation()
+const shipmentMutation = useAdminUpdateOrderShipmentMutation()
+const notesMutation = useAdminUpdateOrderNotesMutation()
+const evidenceMutation = useAdminUploadOrderPaymentEvidenceMutation()
 
 const refundOpen = ref(false)
 
@@ -36,19 +40,42 @@ const statusNote = ref('')
 const nextPaymentStatus = ref<OrderPaymentStatus | ''>('')
 const paymentNote = ref('')
 
+const trackingNumber = ref('')
+const carrier = ref('')
+const trackingUrl = ref('')
+const shippingNotes = ref('')
+const internalNotes = ref('')
+const customerNotes = ref('')
+const evidenceFile = ref<File | null>(null)
+const evidenceMethod = ref<OrderPaymentMethod>('BANK_TRANSFER')
+const evidenceAmount = ref<number | ''>('')
+const evidenceNote = ref('')
+
 watch(order, (value) => {
   if (!value) return
   nextStatus.value = ''
   nextPaymentStatus.value = ''
   statusNote.value = ''
   paymentNote.value = ''
+  trackingNumber.value = value.trackingNumber ?? ''
+  carrier.value = value.carrier ?? ''
+  trackingUrl.value = value.trackingUrl ?? ''
+  shippingNotes.value = value.shippingNotes ?? ''
+  internalNotes.value = value.internalNotes ?? ''
+  customerNotes.value = value.customerNotes ?? ''
+  evidenceFile.value = null
+  evidenceAmount.value = ''
+  evidenceNote.value = ''
 })
 
 const isUpdating = computed(
   () =>
     statusMutation.isPending.value ||
     paymentMutation.isPending.value ||
-    cancelMutation.isPending.value,
+    cancelMutation.isPending.value ||
+    shipmentMutation.isPending.value ||
+    notesMutation.isPending.value ||
+    evidenceMutation.isPending.value,
 )
 
 const canCancel = computed(() => {
@@ -100,6 +127,50 @@ async function applyPayment() {
     },
   })
   toast.success('Pago actualizado')
+  await refetch()
+}
+
+async function saveShipment() {
+  if (!order.value) return
+  await shipmentMutation.mutateAsync({
+    id: order.value.id,
+    payload: {
+      trackingNumber: trackingNumber.value.trim() || undefined,
+      carrier: carrier.value.trim() || undefined,
+      trackingUrl: trackingUrl.value.trim() || undefined,
+      shippingNotes: shippingNotes.value.trim() || undefined,
+    },
+  })
+  toast.success('Datos de envío actualizados')
+  await refetch()
+}
+
+async function saveNotes() {
+  if (!order.value) return
+  await notesMutation.mutateAsync({
+    id: order.value.id,
+    payload: {
+      internalNotes: internalNotes.value.trim() || undefined,
+      customerNotes: customerNotes.value.trim() || undefined,
+    },
+  })
+  toast.success('Notas actualizadas')
+  await refetch()
+}
+
+async function uploadEvidence() {
+  if (!order.value || !evidenceFile.value) return
+  await evidenceMutation.mutateAsync({
+    id: order.value.id,
+    payload: {
+      file: evidenceFile.value,
+      paymentMethod: evidenceMethod.value,
+      amount: evidenceAmount.value === '' ? undefined : Number(evidenceAmount.value),
+      note: evidenceNote.value.trim() || undefined,
+    },
+  })
+  toast.success('Comprobante registrado')
+  evidenceFile.value = null
   await refetch()
 }
 
@@ -187,7 +258,132 @@ function formatAddress(address: {
           <AdminDetailCell label="Entregado">
             {{ order.deliveredAt ? formatAdminDateTime(order.deliveredAt) : '—' }}
           </AdminDetailCell>
+          <AdminDetailCell v-if="order.paymentMethod" label="Método de pago">
+            {{ formatPaymentMethod(order.paymentMethod) }}
+          </AdminDetailCell>
+          <AdminDetailCell v-if="order.trackingNumber" label="Tracking">
+            {{ order.trackingNumber }}
+            <span v-if="order.carrier" class="text-admin-muted"> · {{ order.carrier }}</span>
+          </AdminDetailCell>
         </div>
+        <p v-if="order.trackingUrl" class="text-admin-muted mt-2 text-sm">
+          <a :href="order.trackingUrl" target="_blank" rel="noopener" class="underline">
+            Ver seguimiento
+          </a>
+        </p>
+      </AdminFormSection>
+
+      <AdminFormSection
+        v-if="can('orders.write') && order.deliveryMethod === 'SHIPPING'"
+        title="Datos de envío"
+        icon="lucide:package-check"
+      >
+        <div class="grid gap-3 sm:grid-cols-2">
+          <UiInput v-model="trackingNumber" label="Número de tracking" />
+          <UiInput v-model="carrier" label="Transportista" />
+          <UiInput v-model="trackingUrl" label="URL de seguimiento" class="sm:col-span-2" />
+          <UiInput v-model="shippingNotes" label="Notas de envío" class="sm:col-span-2" />
+        </div>
+        <UiButton
+          size="sm"
+          class="mt-3"
+          :loading="shipmentMutation.isPending.value"
+          @click="saveShipment"
+        >
+          Guardar envío
+        </UiButton>
+      </AdminFormSection>
+
+      <AdminFormSection title="Notas" icon="lucide:sticky-note">
+        <div v-if="!can('orders.write')" class="grid gap-3 sm:grid-cols-2">
+          <AdminDetailCell v-if="order.customerNotes" label="Cliente">
+            {{ order.customerNotes }}
+          </AdminDetailCell>
+          <AdminDetailCell v-if="order.internalNotes" label="Internas">
+            {{ order.internalNotes }}
+          </AdminDetailCell>
+          <p
+            v-if="!order.customerNotes && !order.internalNotes"
+            class="text-admin-muted text-sm"
+          >
+            Sin notas registradas.
+          </p>
+        </div>
+        <div v-else class="space-y-3">
+          <UiInput v-model="customerNotes" label="Notas del cliente" />
+          <UiInput v-model="internalNotes" label="Notas internas" />
+          <UiButton size="sm" :loading="notesMutation.isPending.value" @click="saveNotes">
+            Guardar notas
+          </UiButton>
+        </div>
+      </AdminFormSection>
+
+      <AdminFormSection
+        v-if="order.paymentEvidences?.length"
+        title="Comprobantes de pago"
+        icon="lucide:receipt-text"
+      >
+        <div class="space-y-3">
+          <div
+            v-for="evidence in order.paymentEvidences"
+            :key="evidence.id"
+            class="border-admin-line flex flex-wrap items-center justify-between gap-3 rounded-lg border px-3 py-2 text-sm"
+          >
+            <div>
+              <p class="font-medium">{{ formatPaymentMethod(evidence.paymentMethod) }}</p>
+              <p class="text-admin-muted text-xs">
+                {{ formatAdminDateTime(evidence.createdAt) }}
+                <span v-if="evidence.uploadedByName"> · {{ evidence.uploadedByName }}</span>
+              </p>
+              <p v-if="evidence.amount" class="text-xs">
+                {{ formatPrice(evidence.amount, order.currencyCode) }}
+              </p>
+            </div>
+            <a
+              v-if="evidence.fileUrl"
+              :href="evidence.fileUrl"
+              target="_blank"
+              rel="noopener"
+              class="text-admin-primary text-sm underline"
+            >
+              Ver archivo
+            </a>
+          </div>
+        </div>
+      </AdminFormSection>
+
+      <AdminFormSection
+        v-if="can('orders.write')"
+        title="Subir comprobante"
+        icon="lucide:upload"
+      >
+        <div class="grid gap-3 sm:grid-cols-2">
+          <UiSelect
+            v-model="evidenceMethod"
+            label="Método de pago"
+            :options="PAYMENT_METHOD_OPTIONS"
+            class="sm:col-span-2"
+          />
+          <UiInput v-model.number="evidenceAmount" label="Monto" type="number" min="0" step="0.01" />
+          <UiInput v-model="evidenceNote" label="Nota" />
+        </div>
+        <div class="mt-3">
+          <UiFileUpload
+            v-model="evidenceFile"
+            label="Comprobante"
+            accept="image/*,application/pdf"
+            hint="Imagen o PDF, máx. 5 MB"
+          />
+        </div>
+        <UiButton
+          size="sm"
+          class="mt-3"
+          :disabled="!evidenceFile"
+          :loading="evidenceMutation.isPending.value"
+          @click="uploadEvidence"
+        >
+          Subir comprobante
+        </UiButton>
       </AdminFormSection>
 
       <AdminFormSection title="Cliente" icon="lucide:user">

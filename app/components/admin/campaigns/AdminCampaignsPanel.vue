@@ -22,7 +22,20 @@ const slug = ref('')
 const description = ref('')
 const couponId = ref('')
 const selectedBannerIds = ref<string[]>([])
+const startsAt = ref('')
+const expiresAt = ref('')
 const isActive = ref(true)
+
+function toDatetimeLocalValue(iso: string | null) {
+  if (!iso) return ''
+  const date = new Date(iso)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
+
+function fromDatetimeLocalValue(value: string) {
+  return value ? new Date(value).toISOString() : undefined
+}
 
 const columns: UiTableColumn<AdminCampaign>[] = [
   { key: 'name', label: 'Campaña' },
@@ -47,6 +60,8 @@ function openCreate() {
   description.value = ''
   couponId.value = ''
   selectedBannerIds.value = []
+  startsAt.value = ''
+  expiresAt.value = ''
   isActive.value = true
   formError.value = ''
   modalOpen.value = true
@@ -59,6 +74,8 @@ function openEdit(campaign: AdminCampaign) {
   description.value = campaign.description ?? ''
   couponId.value = campaign.couponId ?? ''
   selectedBannerIds.value = [...campaign.bannerIds]
+  startsAt.value = toDatetimeLocalValue(campaign.startsAt)
+  expiresAt.value = toDatetimeLocalValue(campaign.expiresAt)
   isActive.value = campaign.isActive
   formError.value = ''
   modalOpen.value = true
@@ -80,6 +97,8 @@ async function onSubmit() {
     description: description.value.trim() || undefined,
     couponId: couponId.value || undefined,
     bannerIds: selectedBannerIds.value,
+    startsAt: fromDatetimeLocalValue(startsAt.value),
+    expiresAt: fromDatetimeLocalValue(expiresAt.value),
     isActive: isActive.value,
   }
 
@@ -204,6 +223,10 @@ const isSubmitting = computed(
               "
             />
           </div>
+        </div>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <UiInput v-model="startsAt" label="Inicio de vigencia" type="datetime-local" />
+          <UiInput v-model="expiresAt" label="Fin de vigencia" type="datetime-local" />
         </div>
         <UiCheckbox v-model="isActive" label="Campaña activa" />
       </form>

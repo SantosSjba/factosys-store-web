@@ -22,7 +22,20 @@ const subtitle = ref('')
 const linkUrl = ref('')
 const placement = ref<BannerPlacement>('HOME_HERO')
 const sortOrder = ref<number | ''>(0)
+const startsAt = ref('')
+const expiresAt = ref('')
 const isActive = ref(true)
+
+function toDatetimeLocalValue(iso: string | null) {
+  if (!iso) return ''
+  const date = new Date(iso)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
+
+function fromDatetimeLocalValue(value: string) {
+  return value ? new Date(value).toISOString() : undefined
+}
 
 const columns: UiTableColumn<AdminBanner>[] = [
   { key: 'title', label: 'Banner' },
@@ -44,6 +57,8 @@ function openCreate() {
   linkUrl.value = ''
   placement.value = 'HOME_HERO'
   sortOrder.value = 0
+  startsAt.value = ''
+  expiresAt.value = ''
   isActive.value = true
   imageFile.value = null
   formError.value = ''
@@ -57,6 +72,8 @@ function openEdit(banner: AdminBanner) {
   linkUrl.value = banner.linkUrl ?? ''
   placement.value = banner.placement
   sortOrder.value = banner.sortOrder
+  startsAt.value = toDatetimeLocalValue(banner.startsAt)
+  expiresAt.value = toDatetimeLocalValue(banner.expiresAt)
   isActive.value = banner.isActive
   imageFile.value = null
   formError.value = ''
@@ -75,6 +92,8 @@ async function onSubmit() {
           linkUrl: linkUrl.value.trim() || undefined,
           placement: placement.value,
           sortOrder: sortOrder.value === '' ? undefined : Number(sortOrder.value),
+          startsAt: fromDatetimeLocalValue(startsAt.value),
+          expiresAt: fromDatetimeLocalValue(expiresAt.value),
           isActive: isActive.value,
         },
       })
@@ -86,6 +105,8 @@ async function onSubmit() {
         linkUrl: linkUrl.value.trim() || undefined,
         placement: placement.value,
         sortOrder: sortOrder.value === '' ? undefined : Number(sortOrder.value),
+        startsAt: fromDatetimeLocalValue(startsAt.value),
+        expiresAt: fromDatetimeLocalValue(expiresAt.value),
         isActive: isActive.value,
       })
       if (imageFile.value) {
@@ -202,6 +223,8 @@ const isSubmitting = computed(
             <UiInput v-model="linkUrl" label="Enlace" placeholder="https://…" class="sm:col-span-2" />
             <UiSelect v-model="placement" label="Ubicación" :options="placementOptions" />
             <UiInput v-model.number="sortOrder" label="Orden" type="number" min="0" />
+            <UiInput v-model="startsAt" label="Inicio de vigencia" type="datetime-local" />
+            <UiInput v-model="expiresAt" label="Fin de vigencia" type="datetime-local" />
             <UiCheckbox v-model="isActive" label="Banner activo" class="sm:col-span-2" />
           </div>
         </AdminFormSection>

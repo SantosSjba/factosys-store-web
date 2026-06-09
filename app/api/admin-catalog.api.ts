@@ -1,3 +1,4 @@
+import type { CatalogImportResult } from '~/types/admin-reports'
 import type {
   AssignCategoryAttributesPayload,
   CatalogAttribute,
@@ -55,6 +56,21 @@ export async function updateAdminProduct(id: string, payload: UpdateProductPaylo
 export async function deleteAdminProduct(id: string) {
   const { data } = await useAdminApi().delete<{ message: string }>(
     `/admin/catalog/products/${id}`,
+  )
+  return data
+}
+
+export async function exportAdminProductsCsv() {
+  const response = await useAdminApi().get<string>('/admin/catalog/products/export', {
+    responseType: 'text',
+  })
+  return response.data
+}
+
+export async function importAdminProductsCsv(csv: string) {
+  const { data } = await useAdminApi().post<CatalogImportResult>(
+    '/admin/catalog/products/import',
+    { csv },
   )
   return data
 }

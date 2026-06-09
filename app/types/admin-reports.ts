@@ -38,3 +38,38 @@ export type TopProductsReport = {
   range: { from: string; to: string }
   items: TopProductRow[]
 }
+
+export type MarginReport = {
+  range: { from: string; to: string }
+  revenue: string
+  cost: string
+  margin: string
+  marginPercent: string
+  itemsAnalyzed: number
+}
+
+export type InventoryValuationRow = {
+  sku: string
+  productName: string
+  variantName: string | null
+  warehouseName: string
+  quantity: number
+  lowStockThreshold: number | null
+  retailValue: string
+  costValue: string
+}
+
+export type InventoryValuationReport = {
+  currencyCode: string
+  totalUnits: number
+  totalRetailValue: string
+  totalCostValue: string
+  lowStockCount: number
+  items: InventoryValuationRow[]
+}
+
+export type CatalogImportResult = {
+  created: number
+  updated: number
+  errors: string[]
+}

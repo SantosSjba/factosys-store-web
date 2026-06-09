@@ -41,4 +41,13 @@ export const adminQueryKeys = {
   banners: () => [...adminQueryKeys.all, 'banners'] as const,
   campaigns: () => [...adminQueryKeys.all, 'campaigns'] as const,
   loginAudit: () => [...adminQueryKeys.all, 'login-audit'] as const,
+  audit: () => [...adminQueryKeys.all, 'audit'] as const,
+  media: () => [...adminQueryKeys.all, 'media'] as const,
+  returns: () => [...adminQueryKeys.all, 'returns'] as const,
+  return: (id: string) => [...adminQueryKeys.all, 'returns', id] as const,
+  shippingZones: () => [...adminQueryKeys.all, 'shipping-zones'] as const,
+  paymentGateways: () => [...adminQueryKeys.all, 'payment-gateways'] as const,
+  paymentTransactions: (orderId?: string) =>
+    [...adminQueryKeys.all, 'payment-transactions', orderId ?? 'all'] as const,
+  reports: () => [...adminQueryKeys.all, 'reports'] as const,
 }
