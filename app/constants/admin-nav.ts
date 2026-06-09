@@ -4,6 +4,7 @@ export type AdminNavIconName =
   | 'inventory'
   | 'orders'
   | 'customers'
+  | 'coupons'
   | 'users'
   | 'settings'
 
@@ -13,6 +14,7 @@ export const adminNavIcons: Record<AdminNavIconName, string> = {
   inventory: 'lucide:warehouse',
   orders: 'lucide:shopping-bag',
   customers: 'lucide:shopping-cart',
+  coupons: 'lucide:ticket',
   users: 'lucide:users',
   settings: 'lucide:settings',
 }
@@ -22,6 +24,7 @@ export type AdminNavLink = {
   label: string
   to: string
   icon: AdminNavIconName
+  permission?: string
   soon?: boolean
 }
 
@@ -39,23 +42,25 @@ export const adminNavMenu: AdminNavEntry[] = [
     label: 'Dashboard',
     to: '/intranet',
     icon: 'dashboard',
+    permission: 'reports.read',
   },
   {
     type: 'group',
     label: 'Gestión',
     children: [
-      { label: 'Clientes', to: '/intranet/clientes', icon: 'customers' },
-      { label: 'Catálogo', to: '/intranet/catalogo', icon: 'catalog' },
-      { label: 'Inventario', to: '/intranet/inventario', icon: 'inventory' },
-      { label: 'Pedidos', to: '/intranet/pedidos', icon: 'orders' },
+      { label: 'Clientes', to: '/intranet/clientes', icon: 'customers', permission: 'users.read' },
+      { label: 'Catálogo', to: '/intranet/catalogo', icon: 'catalog', permission: 'products.read' },
+      { label: 'Inventario', to: '/intranet/inventario', icon: 'inventory', permission: 'inventory.read' },
+      { label: 'Pedidos', to: '/intranet/pedidos', icon: 'orders', permission: 'orders.read' },
+      { label: 'Cupones', to: '/intranet/cupones', icon: 'coupons', permission: 'coupons.read' },
     ],
   },
   {
     type: 'group',
     label: 'Sistema',
     children: [
-      { label: 'Usuarios', to: '/intranet/usuarios', icon: 'users' },
-      { label: 'Configuración', to: '/intranet/configuracion', icon: 'settings' },
+      { label: 'Usuarios', to: '/intranet/usuarios', icon: 'users', permission: 'users.read' },
+      { label: 'Configuración', to: '/intranet/configuracion', icon: 'settings', permission: 'settings.read' },
     ],
   },
 ]

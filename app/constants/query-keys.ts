@@ -12,6 +12,8 @@ export const adminQueryKeys = {
   permissions: () => [...adminQueryKeys.all, 'permissions'] as const,
   customers: () => [...adminQueryKeys.all, 'customers'] as const,
   customer: (id: string) => [...adminQueryKeys.all, 'customers', id] as const,
+  customerAddresses: (id: string) =>
+    [...adminQueryKeys.all, 'customers', id, 'addresses'] as const,
   products: () => [...adminQueryKeys.all, 'products'] as const,
   product: (id: string) => [...adminQueryKeys.all, 'products', id] as const,
   catalogCategories: () => [...adminQueryKeys.all, 'catalog-categories'] as const,
@@ -34,4 +36,7 @@ export const adminQueryKeys = {
     [...adminQueryKeys.all, 'inventory-warehouses', 'active'] as const,
   orders: () => [...adminQueryKeys.all, 'orders'] as const,
   order: (id: string) => [...adminQueryKeys.all, 'orders', id] as const,
+  dashboard: () => [...adminQueryKeys.all, 'dashboard'] as const,
+  coupons: () => [...adminQueryKeys.all, 'coupons'] as const,
+  loginAudit: () => [...adminQueryKeys.all, 'login-audit'] as const,
 }

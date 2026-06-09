@@ -3,6 +3,7 @@ import type { OrderDetail } from '~/types/admin-orders'
 import type { StoreSettings } from '~/types/admin-settings'
 import {
   formatDeliveryMethod,
+  formatFulfillmentStatus,
   formatOrderStatus,
   formatPaymentStatus,
 } from '~/utils/format-order'
@@ -43,6 +44,7 @@ defineProps<{
           <p>{{ formatOrderStatus(order.status) }}</p>
           <p>{{ formatPaymentStatus(order.paymentStatus) }}</p>
           <p>{{ formatDeliveryMethod(order.deliveryMethod) }}</p>
+          <p>Despacho: {{ formatFulfillmentStatus(order.fulfillmentStatus) }}</p>
           <p v-if="order.warehouseName">Almacén: {{ order.warehouseName }}</p>
         </div>
       </div>

@@ -36,6 +36,7 @@ function onConfirm() {
     :model-value="modelValue"
     :title="title"
     size="sm"
+    elevated
     @update:model-value="emit('update:modelValue', $event)"
   >
     <p class="text-admin-muted text-sm">{{ message }}</p>

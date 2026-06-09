@@ -14,17 +14,36 @@ export type DashboardRecentOrder = {
   createdAt: string
 }
 
+export type DashboardDailyPoint = {
+  date: string
+  orders: number
+  revenue: string
+}
+
+export type DashboardStatsRange = {
+  from: string
+  to: string
+}
+
+export type DashboardStatsParams = {
+  dateFrom?: string
+  dateTo?: string
+}
+
 export type DashboardStats = {
   currencyCode: string
-  ordersToday: number
-  ordersYesterday: number
+  range: DashboardStatsRange
+  ordersInRange: number
+  ordersPreviousRange: number
   ordersTrendPercent: number
-  revenueToday: string
+  revenueInRange: string
+  ordersToday: number
   pendingPaymentOrders: number
   processingOrders: number
   productsActive: number
   staffUsers: number
   lowStockItems: number
+  dailySeries: DashboardDailyPoint[]
   ordersByStatus: Array<{ status: OrderStatus; count: number }>
   recentOrders: DashboardRecentOrder[]
 }

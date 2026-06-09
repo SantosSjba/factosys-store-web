@@ -29,6 +29,12 @@ const tabs = computed<UiTabItem[]>(() => [
     icon: 'lucide:shield',
     disabled: !can('roles.read'),
   },
+  {
+    id: 'audit',
+    label: 'Auditoría de acceso',
+    icon: 'lucide:scroll-text',
+    disabled: !can('users.read'),
+  },
 ])
 
 watch(
@@ -62,6 +68,13 @@ watch(
         <AdminRolesPanel v-if="can('roles.read')" />
         <UiAlert v-else variant="warning">
           No tienes permiso para ver roles (<code>roles.read</code>).
+        </UiAlert>
+      </template>
+
+      <template #audit>
+        <AdminLoginAuditPanel v-if="can('users.read')" />
+        <UiAlert v-else variant="warning">
+          No tienes permiso para ver auditoría (<code>users.read</code>).
         </UiAlert>
       </template>
     </UiTabs>

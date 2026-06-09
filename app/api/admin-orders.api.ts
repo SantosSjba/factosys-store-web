@@ -4,6 +4,7 @@ import type {
   ListOrdersParams,
   OrderDetail,
   OrderSummary,
+  RefundOrderPayload,
   UpdateOrderPaymentPayload,
   UpdateOrderStatusPayload,
 } from '~/types/admin-orders'
@@ -46,6 +47,14 @@ export async function updateAdminOrderPayment(id: string, payload: UpdateOrderPa
 export async function cancelAdminOrder(id: string, payload: CancelOrderPayload = {}) {
   const { data } = await useAdminApi().post<OrderDetail>(
     `/admin/orders/${id}/cancel`,
+    payload,
+  )
+  return data
+}
+
+export async function refundAdminOrder(id: string, payload: RefundOrderPayload) {
+  const { data } = await useAdminApi().post<OrderDetail>(
+    `/admin/orders/${id}/refund`,
     payload,
   )
   return data

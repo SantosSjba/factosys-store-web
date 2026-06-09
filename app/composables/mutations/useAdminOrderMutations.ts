@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import {
   cancelAdminOrder,
   createAdminOrder,
+  refundAdminOrder,
   updateAdminOrderPayment,
   updateAdminOrderStatus,
 } from '~/api/admin-orders.api'
@@ -9,6 +10,7 @@ import { adminQueryKeys } from '~/constants/query-keys'
 import type {
   CancelOrderPayload,
   CreateOrderPayload,
+  RefundOrderPayload,
   UpdateOrderPaymentPayload,
   UpdateOrderStatusPayload,
 } from '~/types/admin-orders'
@@ -51,6 +53,15 @@ export function useAdminCancelOrderMutation() {
   return useMutation({
     mutationFn: ({ id, payload }: { id: string; payload?: CancelOrderPayload }) =>
       cancelAdminOrder(id, payload),
+    onSuccess: (order) => invalidateOrders(queryClient, order.id),
+  })
+}
+
+export function useAdminRefundOrderMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: RefundOrderPayload }) =>
+      refundAdminOrder(id, payload),
     onSuccess: (order) => invalidateOrders(queryClient, order.id),
   })
 }

@@ -1,5 +1,6 @@
 import type {
   CreateCustomerPayload,
+  CustomerSavedAddress,
   StoreCustomer,
   UpdateCustomerPayload,
 } from '~/types/admin-customers'
@@ -29,6 +30,13 @@ export async function createAdminCustomer(payload: CreateCustomerPayload) {
 
 export async function fetchAdminCustomer(id: string) {
   const { data } = await useAdminApi().get<StoreCustomer>(`/admin/customers/${id}`)
+  return data
+}
+
+export async function fetchAdminCustomerAddresses(id: string) {
+  const { data } = await useAdminApi().get<CustomerSavedAddress[]>(
+    `/admin/customers/${id}/addresses`,
+  )
   return data
 }
 

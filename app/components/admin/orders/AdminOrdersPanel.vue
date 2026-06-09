@@ -3,8 +3,10 @@ import type { OrderDeliveryMethod, OrderPaymentStatus, OrderStatus, OrderSummary
 import type { UiTableColumn } from '~/types/ui'
 import {
   formatDeliveryMethod,
+  formatFulfillmentStatus,
   formatOrderStatus,
   formatPaymentStatus,
+  fulfillmentStatusVariant,
   ORDER_STATUS_OPTIONS,
   PAYMENT_STATUS_OPTIONS,
   orderStatusVariant,
@@ -63,6 +65,7 @@ const columns: UiTableColumn<OrderSummary>[] = [
   { key: 'customerName', label: 'Cliente' },
   { key: 'deliveryMethod', label: 'Entrega', width: '9rem' },
   { key: 'status', label: 'Estado', width: '10rem' },
+  { key: 'fulfillmentStatus', label: 'Despacho', width: '9rem' },
   { key: 'paymentStatus', label: 'Pago', width: '9rem' },
   { key: 'total', label: 'Total', width: '8rem' },
   { key: 'createdAt', label: 'Fecha', width: '9rem' },
@@ -162,6 +165,11 @@ onMounted(() => {
         <template #cell-status="{ row }">
           <UiBadge :variant="orderStatusVariant(row.status)">
             {{ formatOrderStatus(row.status) }}
+          </UiBadge>
+        </template>
+        <template #cell-fulfillmentStatus="{ row }">
+          <UiBadge :variant="fulfillmentStatusVariant(row.fulfillmentStatus)">
+            {{ formatFulfillmentStatus(row.fulfillmentStatus) }}
           </UiBadge>
         </template>
         <template #cell-paymentStatus="{ row }">

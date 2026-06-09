@@ -13,11 +13,14 @@ const props = withDefaults(
     size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full'
     closable?: boolean
     tone?: 'admin' | 'store'
+    /** Eleva el modal sobre otros diálogos (confirmaciones, etc.) */
+    elevated?: boolean
   }>(),
   {
     size: 'md',
     closable: true,
     tone: 'admin',
+    elevated: false,
   },
 )
 
@@ -60,6 +63,8 @@ const hasHeader = computed(
 
 const hasFooter = computed(() => Boolean(slots.footer))
 
+const overlayZClass = computed(() => (props.elevated ? 'z-[10050]' : 'z-[10001]'))
+
 function close() {
   if (!props.closable) return
   emit('update:modelValue', false)
@@ -70,7 +75,8 @@ function close() {
   <Teleport to="body">
     <div
       v-if="modelValue"
-      class="fixed inset-0 z-[10001] flex items-center justify-center p-4"
+      class="fixed inset-0 flex items-center justify-center p-4"
+      :class="overlayZClass"
       role="dialog"
       aria-modal="true"
       :aria-label="title || 'Diálogo'"

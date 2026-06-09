@@ -18,7 +18,9 @@ const {
 const createOpen = ref(false)
 const detailOpen = ref(false)
 const editOpen = ref(false)
+const orderDetailOpen = ref(false)
 const selectedCustomer = ref<StoreCustomer | null>(null)
+const selectedOrderId = ref<string | null>(null)
 
 const columns: UiTableColumn<StoreCustomer>[] = [
   { key: 'email', label: 'Correo' },
@@ -42,6 +44,11 @@ function openEdit(customer: StoreCustomer) {
 function openEditFromDetail() {
   detailOpen.value = false
   editOpen.value = true
+}
+
+function openOrderFromCustomer(orderId: string) {
+  selectedOrderId.value = orderId
+  orderDetailOpen.value = true
 }
 
 function suspendCustomer(customer: StoreCustomer) {
@@ -171,6 +178,13 @@ function suspendCustomer(customer: StoreCustomer) {
       v-model="detailOpen"
       :customer="selectedCustomer"
       @edit="openEditFromDetail"
+      @view-order="openOrderFromCustomer"
+    />
+
+    <AdminOrderDetailModal
+      v-if="can('orders.read')"
+      v-model="orderDetailOpen"
+      :order-id="selectedOrderId"
     />
 
     <AdminCustomerEditModal

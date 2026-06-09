@@ -44,6 +44,7 @@ const shippingProvince = ref('')
 const shippingDepartment = ref('')
 const shippingAmount = ref<number | ''>('')
 const discountAmount = ref<number | ''>('')
+const couponCode = ref('')
 
 const lines = ref<LineDraft[]>([createLine()])
 const formError = ref('')
@@ -175,6 +176,7 @@ watch(open, (value) => {
       ? Number(storeSettings.value.flatShippingFee)
       : ''
     discountAmount.value = ''
+    couponCode.value = ''
     lines.value = [createLine()]
     formError.value = ''
   } else {
@@ -277,11 +279,13 @@ async function onSubmit() {
             shippingAmount.value === '' ? undefined : Number(shippingAmount.value),
           discountAmount:
             discountAmount.value === '' ? undefined : Number(discountAmount.value),
+          couponCode: couponCode.value.trim() || undefined,
         }
       : {
           shippingAmount: 0,
           discountAmount:
             discountAmount.value === '' ? undefined : Number(discountAmount.value),
+          couponCode: couponCode.value.trim() || undefined,
         }),
   }
 
@@ -538,9 +542,21 @@ async function onSubmit() {
             min="0"
             step="0.01"
           />
+        </div>
+      </AdminFormSection>
+
+      <AdminFormSection title="Descuentos" icon="lucide:ticket">
+        <div class="grid gap-3 sm:grid-cols-2">
+          <UiInput
+            v-model="couponCode"
+            label="Código de cupón"
+            placeholder="Ej. VERANO20"
+            class="font-mono uppercase"
+            hint="Si usas cupón, reemplaza el descuento manual"
+          />
           <UiInput
             v-model.number="discountAmount"
-            label="Descuento"
+            label="Descuento manual"
             type="number"
             min="0"
             step="0.01"

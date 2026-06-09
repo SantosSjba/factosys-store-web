@@ -169,6 +169,7 @@ export type CreateOrderPayload = {
   deliveryMethod?: OrderDeliveryMethod
   shippingAmount?: number
   discountAmount?: number
+  couponCode?: string
 }
 
 export type UpdateOrderStatusPayload = {
@@ -183,4 +184,13 @@ export type UpdateOrderPaymentPayload = {
 
 export type CancelOrderPayload = {
   reason?: string
+}
+
+export type RefundType = 'full' | 'partial'
+
+export type RefundOrderPayload = {
+  type: RefundType
+  amount?: number
+  note?: string
+  restockItems?: boolean
 }

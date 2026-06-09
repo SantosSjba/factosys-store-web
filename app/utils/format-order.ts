@@ -1,5 +1,6 @@
 import type {
   OrderDeliveryMethod,
+  OrderFulfillmentStatus,
   OrderPaymentStatus,
   OrderStatus,
 } from '~/types/admin-orders'
@@ -64,6 +65,33 @@ export function paymentStatusVariant(status: OrderPaymentStatus) {
   return PAYMENT_STATUS_VARIANTS[status] ?? 'default'
 }
 
+const FULFILLMENT_STATUS_LABELS: Record<OrderFulfillmentStatus, string> = {
+  UNFULFILLED: 'Sin despachar',
+  PARTIAL: 'Despacho parcial',
+  FULFILLED: 'Despachado',
+}
+
+const FULFILLMENT_STATUS_VARIANTS: Record<
+  OrderFulfillmentStatus,
+  'default' | 'info' | 'success' | 'warning' | 'danger'
+> = {
+  UNFULFILLED: 'warning',
+  PARTIAL: 'info',
+  FULFILLED: 'success',
+}
+
+export const OPERATIONAL_ORDER_STATUS_OPTIONS = (
+  Object.entries(ORDER_STATUS_LABELS) as [OrderStatus, string][]
+)
+  .filter(([value]) => value !== 'REFUNDED' && value !== 'CANCELLED')
+  .map(([value, label]) => ({ value, label }))
+
+export const OPERATIONAL_PAYMENT_STATUS_OPTIONS = (
+  Object.entries(PAYMENT_STATUS_LABELS) as [OrderPaymentStatus, string][]
+)
+  .filter(([value]) => value !== 'REFUNDED' && value !== 'PARTIALLY_REFUNDED')
+  .map(([value, label]) => ({ value, label }))
+
 export const ORDER_STATUS_OPTIONS = Object.entries(ORDER_STATUS_LABELS).map(
   ([value, label]) => ({ value, label }),
 )
@@ -71,6 +99,14 @@ export const ORDER_STATUS_OPTIONS = Object.entries(ORDER_STATUS_LABELS).map(
 export const PAYMENT_STATUS_OPTIONS = Object.entries(PAYMENT_STATUS_LABELS).map(
   ([value, label]) => ({ value, label }),
 )
+
+export function formatFulfillmentStatus(status: OrderFulfillmentStatus) {
+  return FULFILLMENT_STATUS_LABELS[status] ?? status
+}
+
+export function fulfillmentStatusVariant(status: OrderFulfillmentStatus) {
+  return FULFILLMENT_STATUS_VARIANTS[status] ?? 'default'
+}
 
 const DELIVERY_METHOD_LABELS: Record<OrderDeliveryMethod, string> = {
   SHIPPING: 'Envío a domicilio',

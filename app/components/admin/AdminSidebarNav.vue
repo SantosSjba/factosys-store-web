@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { adminNavMenu } from '~/constants/admin-nav'
+const { menu: adminNavMenu } = useAdminNavMenu()
 
 defineProps<{
   collapsed?: boolean

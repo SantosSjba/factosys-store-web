@@ -2,10 +2,12 @@
 import type { OrderPaymentStatus, OrderStatus } from '~/types/admin-orders'
 import {
   formatDeliveryMethod,
+  formatFulfillmentStatus,
   formatOrderStatus,
   formatPaymentStatus,
-  ORDER_STATUS_OPTIONS,
-  PAYMENT_STATUS_OPTIONS,
+  fulfillmentStatusVariant,
+  OPERATIONAL_ORDER_STATUS_OPTIONS,
+  OPERATIONAL_PAYMENT_STATUS_OPTIONS,
   orderStatusVariant,
   paymentStatusVariant,
 } from '~/utils/format-order'
@@ -26,6 +28,8 @@ const { data: order, isPending, refetch } = useAdminOrderQuery(orderIdRef)
 const statusMutation = useAdminUpdateOrderStatusMutation()
 const paymentMutation = useAdminUpdateOrderPaymentMutation()
 const cancelMutation = useAdminCancelOrderMutation()
+
+const refundOpen = ref(false)
 
 const nextStatus = ref<OrderStatus | ''>('')
 const statusNote = ref('')
@@ -52,16 +56,21 @@ const canCancel = computed(() => {
   return !['CANCELLED', 'REFUNDED', 'DELIVERED'].includes(order.value.status)
 })
 
-const statusOptions = computed(() => {
-  if (!order.value) return ORDER_STATUS_OPTIONS
-  if (order.value.deliveryMethod === 'PICKUP') {
-    return ORDER_STATUS_OPTIONS.filter(
-      (option) => option.value !== 'SHIPPED',
-    )
-  }
-  return ORDER_STATUS_OPTIONS.filter(
-    (option) => option.value !== 'READY_FOR_PICKUP',
+const canRefund = computed(() => {
+  if (!order.value) return false
+  return (
+    order.value.status === 'DELIVERED' &&
+    ['PAID', 'PARTIALLY_REFUNDED'].includes(order.value.paymentStatus)
   )
+})
+
+const statusOptions = computed(() => {
+  if (!order.value) return OPERATIONAL_ORDER_STATUS_OPTIONS
+  const base = OPERATIONAL_ORDER_STATUS_OPTIONS
+  if (order.value.deliveryMethod === 'PICKUP') {
+    return base.filter((option) => option.value !== 'SHIPPED')
+  }
+  return base.filter((option) => option.value !== 'READY_FOR_PICKUP')
 })
 
 function printOrder() {
@@ -151,6 +160,9 @@ function formatAddress(address: {
         <UiBadge :variant="paymentStatusVariant(order.paymentStatus)">
           {{ formatPaymentStatus(order.paymentStatus) }}
         </UiBadge>
+        <UiBadge :variant="fulfillmentStatusVariant(order.fulfillmentStatus)">
+          {{ formatFulfillmentStatus(order.fulfillmentStatus) }}
+        </UiBadge>
         <UiBadge variant="default">
           {{ formatDeliveryMethod(order.deliveryMethod) }}
         </UiBadge>
@@ -158,6 +170,25 @@ function formatAddress(address: {
           {{ order.warehouseName || 'Sin almacén' }} · {{ formatAdminDateTime(order.createdAt) }}
         </span>
       </div>
+
+      <AdminFormSection title="Seguimiento" icon="lucide:truck">
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <AdminDetailCell label="Despacho">
+            <UiBadge :variant="fulfillmentStatusVariant(order.fulfillmentStatus)">
+              {{ formatFulfillmentStatus(order.fulfillmentStatus) }}
+            </UiBadge>
+          </AdminDetailCell>
+          <AdminDetailCell label="Confirmado">
+            {{ order.confirmedAt ? formatAdminDateTime(order.confirmedAt) : '—' }}
+          </AdminDetailCell>
+          <AdminDetailCell label="Enviado">
+            {{ order.shippedAt ? formatAdminDateTime(order.shippedAt) : '—' }}
+          </AdminDetailCell>
+          <AdminDetailCell label="Entregado">
+            {{ order.deliveredAt ? formatAdminDateTime(order.deliveredAt) : '—' }}
+          </AdminDetailCell>
+        </div>
+      </AdminFormSection>
 
       <AdminFormSection title="Cliente" icon="lucide:user">
         <div class="grid gap-3 sm:grid-cols-2">
@@ -333,7 +364,10 @@ function formatAddress(address: {
             <p class="text-sm font-medium">Cambiar pago</p>
             <UiSelect
               v-model="nextPaymentStatus"
-              :options="[{ label: 'Seleccionar…', value: '' }, ...PAYMENT_STATUS_OPTIONS]"
+              :options="[
+                { label: 'Seleccionar…', value: '' },
+                ...OPERATIONAL_PAYMENT_STATUS_OPTIONS,
+              ]"
               placeholder="Estado de pago"
             />
             <UiInput v-model="paymentNote" placeholder="Nota opcional" />
@@ -356,12 +390,25 @@ function formatAddress(address: {
       :pickup-point="storeSettings && hasPickupPoint(storeSettings) ? storeSettings : null"
     />
 
+    <AdminOrderRefundModal
+      v-model="refundOpen"
+      :order="order"
+      @refunded="refetch"
+    />
+
     <template #footer>
       <UiButton v-if="order" variant="ghost" @click="printOrder">
         <UiIcon name="lucide:printer" :size="16" class="mr-2" />
         Imprimir
       </UiButton>
       <UiButton variant="ghost" @click="open = false">Cerrar</UiButton>
+      <UiButton
+        v-if="can('orders.write') && canRefund"
+        variant="secondary"
+        @click="refundOpen = true"
+      >
+        Reembolsar
+      </UiButton>
       <UiButton
         v-if="can('orders.write') && canCancel"
         variant="secondary"
