@@ -38,5 +38,7 @@ export const adminQueryKeys = {
   order: (id: string) => [...adminQueryKeys.all, 'orders', id] as const,
   dashboard: () => [...adminQueryKeys.all, 'dashboard'] as const,
   coupons: () => [...adminQueryKeys.all, 'coupons'] as const,
+  banners: () => [...adminQueryKeys.all, 'banners'] as const,
+  campaigns: () => [...adminQueryKeys.all, 'campaigns'] as const,
   loginAudit: () => [...adminQueryKeys.all, 'login-audit'] as const,
 }

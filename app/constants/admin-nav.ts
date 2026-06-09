@@ -5,6 +5,8 @@ export type AdminNavIconName =
   | 'orders'
   | 'customers'
   | 'coupons'
+  | 'marketing'
+  | 'reports'
   | 'users'
   | 'settings'
 
@@ -15,6 +17,8 @@ export const adminNavIcons: Record<AdminNavIconName, string> = {
   orders: 'lucide:shopping-bag',
   customers: 'lucide:shopping-cart',
   coupons: 'lucide:ticket',
+  marketing: 'lucide:megaphone',
+  reports: 'lucide:bar-chart-3',
   users: 'lucide:users',
   settings: 'lucide:settings',
 }
@@ -45,6 +49,13 @@ export const adminNavMenu: AdminNavEntry[] = [
     permission: 'reports.read',
   },
   {
+    type: 'link',
+    label: 'Reportes',
+    to: '/intranet/reportes',
+    icon: 'reports',
+    permission: 'reports.read',
+  },
+  {
     type: 'group',
     label: 'Gestión',
     children: [
@@ -52,7 +63,15 @@ export const adminNavMenu: AdminNavEntry[] = [
       { label: 'Catálogo', to: '/intranet/catalogo', icon: 'catalog', permission: 'products.read' },
       { label: 'Inventario', to: '/intranet/inventario', icon: 'inventory', permission: 'inventory.read' },
       { label: 'Pedidos', to: '/intranet/pedidos', icon: 'orders', permission: 'orders.read' },
+    ],
+  },
+  {
+    type: 'group',
+    label: 'Marketing',
+    children: [
       { label: 'Cupones', to: '/intranet/cupones', icon: 'coupons', permission: 'coupons.read' },
+      { label: 'Banners', to: '/intranet/banners', icon: 'marketing', permission: 'marketing.read' },
+      { label: 'Campañas', to: '/intranet/campanas', icon: 'marketing', permission: 'marketing.read' },
     ],
   },
   {

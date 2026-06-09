@@ -11,6 +11,7 @@ const emit = defineEmits<{
 
 const expandedGroups = ref<Record<string, boolean>>({
   Gestión: true,
+  Marketing: true,
   Sistema: true,
 })
 

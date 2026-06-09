@@ -16,6 +16,8 @@ export const PERMISSION_LABELS: Record<string, string> = {
   'reports.read': 'Ver reportes',
   'coupons.read': 'Ver cupones',
   'coupons.write': 'Gestionar cupones',
+  'marketing.read': 'Ver marketing',
+  'marketing.write': 'Gestionar marketing',
 }
 
 export const MODULE_LABELS: Record<string, string> = {
@@ -27,6 +29,7 @@ export const MODULE_LABELS: Record<string, string> = {
   settings: 'Configuración',
   reports: 'Reportes',
   coupons: 'Cupones',
+  marketing: 'Marketing',
 }
 
 export const MODULE_ICONS: Record<string, string> = {
@@ -38,6 +41,7 @@ export const MODULE_ICONS: Record<string, string> = {
   settings: 'lucide:settings',
   reports: 'lucide:bar-chart-3',
   coupons: 'lucide:ticket',
+  marketing: 'lucide:megaphone',
 }
 
 export function formatPermissionLabel(slug: string): string {
