@@ -48,6 +48,7 @@ const props = withDefaults(
           ...getProductDisplayPrice(product),
           imageUrl: product.primaryImageUrl || undefined,
           to: `/productos/${product.slug}`,
+          productId: product.id,
         }"
       />
     </div>

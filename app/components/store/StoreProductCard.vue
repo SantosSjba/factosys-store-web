@@ -7,6 +7,7 @@ const props = defineProps<{
   rating?: number
   badge?: string
   to?: string
+  productId?: string
 }>()
 
 const hasLink = computed(() => Boolean(props.to && props.to !== '#'))
@@ -20,6 +21,11 @@ const hasLink = computed(() => Boolean(props.to && props.to !== '#'))
       class="block"
     >
       <div class="bg-theme-muted relative aspect-square overflow-hidden">
+        <StoreFavoriteButton
+          v-if="productId"
+          :product-id="productId"
+          size="sm"
+        />
         <StoreImage
           v-if="imageUrl"
           :src="imageUrl"

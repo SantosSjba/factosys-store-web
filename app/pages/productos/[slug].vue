@@ -170,10 +170,16 @@ useHead({
             nuestro catálogo o contactarnos para realizar tu pedido.
           </UiAlert>
 
-          <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
             <UiButton disabled aria-describedby="cart-soon-hint">
               Agregar al carrito
             </UiButton>
+            <StoreFavoriteButton
+              v-if="product"
+              :product-id="product.id"
+              size="lg"
+              variant="inline"
+            />
             <NuxtLink to="/productos" class="w-full sm:w-auto">
               <UiButton variant="secondary" class="w-full sm:w-auto">
                 Seguir comprando

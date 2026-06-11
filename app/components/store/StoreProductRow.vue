@@ -52,6 +52,7 @@ function productBadge(product: StoreProduct) {
           imageUrl: product.primaryImageUrl || undefined,
           badge: productBadge(product),
           to: `/productos/${product.slug}`,
+          productId: product.id,
         }"
       />
     </div>

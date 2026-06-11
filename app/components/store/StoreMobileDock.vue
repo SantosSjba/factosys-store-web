@@ -11,11 +11,14 @@ const whatsappUrl = computed(() => {
   return digits ? `https://wa.me/${digits}` : null
 })
 
+const authStore = useAuthStore()
+
 const items = computed(() => {
   const links = [
     { label: 'Inicio', icon: 'lucide:home', to: '/', external: false },
     { label: 'Ofertas', icon: 'lucide:percent', to: '/#ofertas', external: false },
     { label: 'Catálogo', icon: 'lucide:layout-grid', to: '/productos', external: false },
+    { label: 'Favoritos', icon: 'lucide:heart', to: '/favoritos', external: false },
   ]
 
   if (whatsappUrl.value) {
@@ -25,11 +28,11 @@ const items = computed(() => {
       to: whatsappUrl.value,
       external: true,
     })
-  } else {
+  } else if (!authStore.isAuthenticated) {
     links.push({
       label: 'Cuenta',
       icon: 'lucide:user',
-      to: '/cuenta',
+      to: '/login',
       external: false,
     })
   }
@@ -40,6 +43,7 @@ const items = computed(() => {
 function isActive(to: string) {
   if (to === '/') return route.path === '/'
   if (to === '/#ofertas') return route.path === '/'
+  if (to === '/favoritos') return route.path.startsWith('/favoritos')
   if (to.startsWith('http')) return false
   return route.path.startsWith(to)
 }

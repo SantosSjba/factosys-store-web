@@ -10,6 +10,7 @@ const searchQuery = ref('')
 const isMenuOpen = ref(false)
 const isAccountOpen = ref(false)
 const cartCount = useState('store-cart-count', () => 0)
+const { data: favoritesCount } = useStoreFavoritesCountQuery()
 
 const accountMenuRef = ref<HTMLElement | null>(null)
 
@@ -88,8 +89,13 @@ function onSearchSubmit() {
   navigateTo({ path: '/productos', query: { q: query } })
 }
 
-function onFavoritesClick() {
-  toast.info('Favoritos estará disponible pronto.')
+async function onFavoritesClick() {
+  closePanels()
+  if (authStore.isAuthenticated) {
+    await navigateTo('/favoritos')
+    return
+  }
+  await navigateTo({ path: '/login', query: { redirect: '/favoritos' } })
 }
 
 async function handleLogout() {
@@ -199,6 +205,14 @@ watch(
                 >
                   Mi cuenta
                 </NuxtLink>
+                <NuxtLink
+                  to="/favoritos"
+                  class="text-theme hover:bg-theme-muted block px-4 py-2 text-sm"
+                  role="menuitem"
+                  @click="isAccountOpen = false"
+                >
+                  Mis favoritos
+                </NuxtLink>
                 <button
                   type="button"
                   class="text-theme hover:bg-theme-muted block w-full px-4 py-2 text-left text-sm"
@@ -238,8 +252,9 @@ watch(
 
           <UiIconButton
             icon="lucide:heart"
-            ariaLabel="Favoritos (próximamente)"
+            ariaLabel="Mis favoritos"
             size="lg"
+            :badge="favoritesCount && favoritesCount > 0 ? favoritesCount : undefined"
             @click="onFavoritesClick"
           />
 
@@ -361,6 +376,13 @@ watch(
                   @click="isMenuOpen = false"
                 >
                   Mi cuenta
+                </NuxtLink>
+                <NuxtLink
+                  to="/favoritos"
+                  class="hover:bg-theme-muted block rounded-lg px-3 py-2.5"
+                  @click="isMenuOpen = false"
+                >
+                  Mis favoritos
                 </NuxtLink>
                 <button
                   type="button"

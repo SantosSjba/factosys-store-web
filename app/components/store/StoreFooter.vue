@@ -14,6 +14,7 @@ const year = new Date().getFullYear()
 const shopLinks = [
   { label: 'Inicio', to: '/' },
   { label: 'Catálogo', to: '/productos' },
+  { label: 'Mis favoritos', to: '/favoritos' },
   { label: 'Mi cuenta', to: '/cuenta' },
 ]
 

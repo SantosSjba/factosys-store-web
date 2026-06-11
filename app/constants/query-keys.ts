@@ -11,6 +11,9 @@ export const storeQueryKeys = {
   brands: () => [...storeQueryKeys.all, 'brands'] as const,
   orders: () => [...storeQueryKeys.all, 'orders'] as const,
   order: (id: string) => [...storeQueryKeys.all, 'orders', id] as const,
+  favorites: () => [...storeQueryKeys.all, 'favorites'] as const,
+  favoriteIds: () => [...storeQueryKeys.all, 'favorites', 'ids'] as const,
+  favoritesCount: () => [...storeQueryKeys.all, 'favorites', 'count'] as const,
 }
 
 export const adminQueryKeys = {
