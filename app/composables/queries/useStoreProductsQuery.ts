@@ -9,6 +9,7 @@ import type { ListStoreProductsParams, StoreProduct } from '~/types/store'
 
 export function useStoreProductsQuery(
   params: MaybeRefOrGetter<ListStoreProductsParams> = {},
+  options?: { enabled?: MaybeRefOrGetter<boolean> },
 ) {
   const queryParams = computed(() => {
     const raw = toValue(params)
@@ -25,6 +26,9 @@ export function useStoreProductsQuery(
     queryKey: computed(() => [...storeQueryKeys.products(), queryParams.value]),
     queryFn: (): Promise<PaginatedResponse<StoreProduct>> =>
       fetchStoreProducts(queryParams.value),
+    enabled: computed(() =>
+      options?.enabled === undefined ? true : toValue(options.enabled),
+    ),
     staleTime: 60 * 1000,
   })
 }

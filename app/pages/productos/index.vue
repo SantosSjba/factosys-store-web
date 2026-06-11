@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { BreadcrumbItem } from '~/types/ui'
+import { findCategoryBySlug } from '~/utils/store/category-tree'
 
 const route = useRoute()
 const router = useRouter()
@@ -9,26 +10,27 @@ const search = computed(() => String(route.query.q ?? '').trim())
 const categorySlug = computed(() => String(route.query.categoria ?? '').trim())
 const brandId = computed(() => String(route.query.marca ?? '').trim())
 
-const { data: categories } = useStoreCategoriesQuery()
+const { data: categories, isPending: categoriesLoading } = useStoreCategoriesQuery()
 const { data: brands } = useStoreBrandsQuery()
 
-const selectedCategoryId = computed(() => {
+const selectedCategory = computed(() => {
   if (!categorySlug.value || !categories.value) return undefined
-
-  const findBySlug = (
-    nodes: typeof categories.value,
-    slug: string,
-  ): string | undefined => {
-    for (const node of nodes) {
-      if (node.slug === slug) return node.id
-      const childMatch = findBySlug(node.children, slug)
-      if (childMatch) return childMatch
-    }
-    return undefined
-  }
-
-  return findBySlug(categories.value, categorySlug.value)
+  return findCategoryBySlug(categories.value, categorySlug.value)
 })
+
+const selectedCategoryId = computed(() => selectedCategory.value?.id)
+
+const productsQueryEnabled = computed(() => {
+  if (!categorySlug.value) return true
+  return Boolean(categories.value)
+})
+
+const unknownCategorySlug = computed(
+  () =>
+    Boolean(categorySlug.value) &&
+    Boolean(categories.value) &&
+    !selectedCategory.value,
+)
 
 const {
   data: productsPage,
@@ -43,28 +45,17 @@ const {
     categoryId: selectedCategoryId.value,
     brandId: brandId.value || undefined,
   })),
+  { enabled: productsQueryEnabled },
 )
 
 const { data: categoryBanner, isPending: categoryBannerLoading } =
   useStoreBannersQuery('CATEGORY_TOP')
 
-const selectedCategoryName = computed(() => {
-  if (!categorySlug.value || !categories.value) return null
+const selectedCategoryName = computed(
+  () => selectedCategory.value?.name ?? null,
+)
 
-  const findName = (
-    nodes: typeof categories.value,
-    slug: string,
-  ): string | null => {
-    for (const node of nodes) {
-      if (node.slug === slug) return node.name
-      const childName = findName(node.children, slug)
-      if (childName) return childName
-    }
-    return null
-  }
-
-  return findName(categories.value, categorySlug.value)
-})
+const subcategoryFilters = computed(() => selectedCategory.value?.children ?? [])
 
 const selectedBrandName = computed(() => {
   if (!brandId.value || !brands.value) return null
@@ -127,6 +118,17 @@ function setBrandFilter(id: string) {
   router.push({ path: '/productos', query })
 }
 
+function setCategoryFilter(slug: string) {
+  router.push({
+    path: '/productos',
+    query: {
+      ...route.query,
+      categoria: slug,
+      page: undefined,
+    },
+  })
+}
+
 function onPageChange(nextPage: number) {
   router.push({ query: { ...route.query, page: nextPage > 1 ? nextPage : undefined } })
   if (import.meta.client) {
@@ -154,6 +156,33 @@ function onPageChange(nextPage: number) {
       :banners="categoryBanner ?? []"
       :loading="categoryBannerLoading"
     />
+
+    <p
+      v-if="unknownCategorySlug"
+      class="border-theme bg-theme-muted text-theme-muted mb-6 rounded-lg border px-4 py-3 text-sm"
+    >
+      La categoría seleccionada no existe o ya no está disponible.
+    </p>
+
+    <div
+      v-if="subcategoryFilters.length > 0"
+      class="mb-4 flex flex-wrap gap-2"
+    >
+      <button
+        v-for="subcategory in subcategoryFilters"
+        :key="subcategory.id"
+        type="button"
+        class="shrink-0 rounded-full border px-3 py-1.5 text-sm font-medium transition"
+        :class="
+          categorySlug === subcategory.slug
+            ? 'border-brand-accent bg-brand-accent-soft text-brand-accent'
+            : 'border-theme bg-theme-surface text-theme hover:border-brand-accent'
+        "
+        @click="setCategoryFilter(subcategory.slug)"
+      >
+        {{ subcategory.name }}
+      </button>
+    </div>
 
     <div
       v-if="brands?.length || hasActiveFilters"
@@ -198,7 +227,7 @@ function onPageChange(nextPage: number) {
     <template v-else>
       <StoreProductGrid
         :products="productsPage?.items ?? []"
-        :loading="isPending"
+        :loading="isPending || (categoriesLoading && Boolean(categorySlug))"
         :skeleton-count="12"
         empty-message="No encontramos productos con esos filtros"
       >
