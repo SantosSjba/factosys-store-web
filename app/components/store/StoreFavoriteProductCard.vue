@@ -11,12 +11,10 @@ const display = computed(() => getProductDisplayPrice(props.product))
 
 <template>
   <article class="border-theme bg-theme-surface group relative overflow-hidden rounded-xl border shadow-sm transition hover:shadow-md">
-    <div class="absolute right-2 top-2 z-20">
-      <StoreFavoriteButton
-        :product-id="product.id"
-        variant="overlay"
-      />
-    </div>
+    <StoreFavoriteButton
+      :product-id="product.id"
+      variant="overlay"
+    />
 
     <NuxtLink
       :to="`/productos/${product.slug}`"

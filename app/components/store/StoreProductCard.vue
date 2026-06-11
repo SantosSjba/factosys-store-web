@@ -15,15 +15,11 @@ const hasLink = computed(() => Boolean(props.to && props.to !== '#'))
 
 <template>
   <article class="border-theme bg-theme-surface group relative overflow-hidden rounded-xl border shadow-sm transition hover:shadow-md">
-    <div
+    <StoreFavoriteButton
       v-if="productId"
-      class="absolute right-2 top-2 z-20"
-    >
-      <StoreFavoriteButton
-        :product-id="productId"
-        size="sm"
-      />
-    </div>
+      :product-id="productId"
+      size="sm"
+    />
 
     <NuxtLink
       v-if="hasLink"

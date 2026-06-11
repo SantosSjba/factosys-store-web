@@ -27,7 +27,7 @@ const iconClass = computed(() =>
 
 const buttonClass = computed(() => {
   if (props.variant === 'overlay') {
-    return 'bg-theme-surface/90 hover:bg-theme-surface border-theme rounded-full border shadow-sm backdrop-blur-sm'
+    return 'bg-theme-surface/90 hover:bg-theme-surface border-theme absolute right-2 top-2 z-10 rounded-full border shadow-sm backdrop-blur-sm'
   }
   if (props.showLabel) {
     return 'border-theme bg-theme-surface hover:bg-theme-muted rounded-lg border px-4 py-2.5 text-sm font-semibold shadow-sm'
