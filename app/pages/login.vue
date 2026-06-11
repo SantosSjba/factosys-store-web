@@ -30,6 +30,13 @@ const verifyEmailLink = computed(() => ({
   query: pendingEmail.value ? { email: pendingEmail.value } : {},
 }))
 
+useStoreSeo({
+  title: 'Iniciar sesión',
+  noindex: true,
+})
+
+const isDev = import.meta.dev
+
 onMounted(() => {
   if (pendingEmail.value) {
     setValues({ email: pendingEmail.value, password: '' })
@@ -81,7 +88,7 @@ onMounted(() => {
       </UiButton>
     </form>
 
-    <p class="mt-4 text-center text-sm text-slate-600">
+    <p class="text-theme-muted mt-4 text-center text-sm">
       ¿No verificaste tu correo?
       <NuxtLink
         :to="verifyEmailLink"
@@ -91,27 +98,24 @@ onMounted(() => {
       </NuxtLink>
     </p>
 
-    <p class="mt-4 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-600">
+    <p
+      v-if="isDev"
+      class="text-theme-muted bg-theme-muted mt-4 rounded-lg px-3 py-2 text-xs"
+    >
       Tienda (dev): <strong>cliente@factosys.store</strong> / Cliente123!
     </p>
 
-    <div class="mt-6 space-y-3 border-t border-slate-100 pt-6 text-center text-sm">
-      <a
-        :href="authStore.googleAuthUrl"
-        class="flex w-full items-center justify-center gap-3 rounded-lg border border-slate-300 bg-white px-4 py-2.5 font-medium text-slate-800 shadow-sm transition hover:bg-slate-50"
-      >
-        <UiIcon name="logos:google-icon" :size="20" />
-        Continuar con Google
-      </a>
-      <p class="text-slate-600">
+    <div class="border-theme mt-6 space-y-3 border-t pt-6 text-center text-sm">
+      <AuthGoogleButton :href="authStore.googleAuthUrl" />
+      <p class="text-theme-muted">
         ¿No tienes cuenta?
         <NuxtLink to="/registro" class="text-brand-accent-deep font-semibold hover:underline">
           Regístrate
         </NuxtLink>
       </p>
-      <p class="text-slate-500">
+      <p class="text-theme-muted text-xs">
         ¿Personal de Factosys?
-        <NuxtLink to="/intranet/login" class="font-semibold text-violet-700 hover:underline">
+        <NuxtLink to="/intranet/login" class="text-brand-accent-deep font-semibold hover:underline">
           Acceso intranet
         </NuxtLink>
       </p>

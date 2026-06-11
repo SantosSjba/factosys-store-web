@@ -27,7 +27,7 @@ function profileToUser(profile: StoreProfile): AuthUser {
     userType: profile.userType,
     firstName: profile.firstName,
     lastName: profile.lastName,
-    roles: mapProfileRoleSlugs(profile.roles),
+    roles: ['customer'],
   }
 }
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-defineProps<{
+const props = defineProps<{
   title: string
   price: number
   compareAt?: number
@@ -8,17 +8,24 @@ defineProps<{
   badge?: string
   to?: string
 }>()
+
+const hasLink = computed(() => Boolean(props.to && props.to !== '#'))
 </script>
 
 <template>
   <article class="border-theme bg-theme-surface group overflow-hidden rounded-xl border shadow-sm transition hover:shadow-md">
-    <NuxtLink :to="to || '#'" class="block">
+    <component
+      :is="hasLink ? 'NuxtLink' : 'div'"
+      :to="hasLink ? to : undefined"
+      class="block"
+    >
       <div class="bg-theme-muted relative aspect-square overflow-hidden">
-        <img
+        <StoreImage
           v-if="imageUrl"
           :src="imageUrl"
           :alt="title"
-          class="h-full w-full object-cover transition group-hover:scale-105"
+          img-class="motion-safe:transition h-full w-full motion-safe:group-hover:scale-105"
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
         />
         <div
           v-else
@@ -33,12 +40,19 @@ defineProps<{
         >
           {{ badge }}
         </UiBadge>
+        <UiBadge
+          v-else-if="compareAt && compareAt > price"
+          variant="primary"
+          class="absolute left-2 top-2 normal-case"
+        >
+          Oferta
+        </UiBadge>
       </div>
-      <div class="space-y-2 p-4">
-        <h3 class="text-theme line-clamp-2 text-sm font-medium">{{ title }}</h3>
+      <div class="space-y-2 p-3 sm:p-4">
+        <h3 class="text-theme line-clamp-2 text-sm font-medium leading-snug">{{ title }}</h3>
         <UiRating v-if="rating !== undefined" :value="rating" :show-value="false" />
         <UiPrice :price="price" :compare-at="compareAt" />
       </div>
-    </NuxtLink>
+    </component>
   </article>
 </template>

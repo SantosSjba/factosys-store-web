@@ -22,7 +22,7 @@ const { resetForm, setValues, createSubmitHandler, withMutationPending } = useAp
     firstName: '',
     lastName: '',
     phone: '',
-    status: 'ACTIVE' as StaffUser['status'],
+    status: 'ACTIVE' as 'ACTIVE' | 'SUSPENDED',
     password: '',
     roleSlugs: [] as string[],
   },
@@ -38,11 +38,14 @@ const statusOptions = [
 const roleOptions = computed(() => mapRoleOptions(props.roles))
 
 function loadUser(user: StaffUser) {
+  const status: 'ACTIVE' | 'SUSPENDED' =
+    user.status === 'SUSPENDED' ? 'SUSPENDED' : 'ACTIVE'
+
   setValues({
     firstName: user.firstName ?? '',
     lastName: user.lastName ?? '',
     phone: user.phone ?? '',
-    status: user.status,
+    status,
     password: '',
     roleSlugs: user.roles.map((role) => role.slug),
   })

@@ -6,6 +6,9 @@ export function formatAdminDate(value: string) {
   })
 }
 
+/** Fecha legible para la tienda pública (mismo formato que admin). */
+export const formatStoreDate = formatAdminDate
+
 export function formatAdminDateTime(value: string | null | undefined) {
   if (!value) return '—'
   return new Date(value).toLocaleString('es-PE', {

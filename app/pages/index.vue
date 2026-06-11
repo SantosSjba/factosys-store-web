@@ -1,51 +1,151 @@
 <script setup lang="ts">
-const config = useRuntimeConfig()
-const authStore = useAuthStore()
+import { isProductOnSale } from '~/utils/store/product'
+
+const { data: settings } = useStoreSettingsQuery()
+const {
+  data: banners,
+  isPending: bannersLoading,
+  isError: bannersError,
+  refetch: refetchBanners,
+} = useStoreBannersQuery('HOME_HERO')
+const {
+  data: secondaryBanners,
+  isPending: secondaryLoading,
+} = useStoreBannersQuery('HOME_SECONDARY')
+const { data: categories, isPending: categoriesLoading } = useStoreCategoriesQuery()
+const { data: brands, isPending: brandsLoading } = useStoreBrandsQuery()
+const {
+  data: productsPage,
+  isPending: productsLoading,
+  isError: productsError,
+  refetch: refetchProducts,
+} = useStoreProductsQuery({
+  page: 1,
+  limit: 8,
+})
+const { data: catalogPage, isPending: catalogLoading } = useStoreProductsQuery({
+  page: 1,
+  limit: 24,
+})
+
+const storeName = computed(
+  () => settings.value?.storeName ?? 'Factosys Store',
+)
+
+const offerProducts = computed(() =>
+  (catalogPage.value?.items ?? []).filter(isProductOnSale).slice(0, 12),
+)
+
+const showOffersSection = computed(
+  () => catalogLoading.value || offerProducts.value.length > 0,
+)
+
+const showcaseCategories = computed(() => (categories.value ?? []).slice(0, 3))
+
+useStoreSeo(
+  computed(() => ({
+    title: storeName.value,
+    description:
+      settings.value?.storeTagline?.trim() ||
+      `Tecnología con envío a todo el Perú. Compra online en ${storeName.value}.`,
+  })),
+)
 </script>
 
 <template>
-  <section class="mx-auto max-w-6xl px-4 py-16">
-    <div class="rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-700 p-10 text-white shadow-lg">
-      <p class="text-sm font-semibold uppercase tracking-wide text-indigo-100">
-        E-Commerce Tech Store
-      </p>
-      <h1 class="mt-2 text-4xl font-bold">{{ config.public.appName }}</h1>
-      <p class="mt-4 max-w-2xl text-indigo-100">
-        Frontend Nuxt 4 conectado a la API NestJS. Autenticación de cliente:
-        registro, verificación de correo, login y Google OAuth.
-      </p>
-      <div class="mt-8 flex flex-wrap gap-3">
-        <NuxtLink v-if="!authStore.isAuthenticated" to="/registro">
-          <UiButton>Crear cuenta</UiButton>
-        </NuxtLink>
-        <NuxtLink v-else to="/cuenta">
-          <UiButton>Ir a mi cuenta</UiButton>
-        </NuxtLink>
-        <NuxtLink to="/login">
-          <UiButton variant="secondary">Iniciar sesión</UiButton>
-        </NuxtLink>
-      </div>
-    </div>
+  <div class="pb-16 md:pb-0">
+    <StoreHeroCarousel
+      :banners="banners ?? []"
+      :loading="bannersLoading"
+      :store-name="storeName"
+      :store-tagline="settings?.storeTagline"
+    />
 
-    <div class="mt-10 grid gap-4 md:grid-cols-3">
-      <article class="rounded-xl border border-slate-200 bg-white p-5">
-        <h2 class="font-semibold text-slate-900">API</h2>
-        <p class="mt-2 text-sm text-slate-600">
-          Base: {{ config.public.apiBaseUrl }}
-        </p>
-      </article>
-      <article class="rounded-xl border border-slate-200 bg-white p-5">
-        <h2 class="font-semibold text-slate-900">Registro</h2>
-        <p class="mt-2 text-sm text-slate-600">
-          POST /store/auth/register y verificación en /verify-email
-        </p>
-      </article>
-      <article class="rounded-xl border border-slate-200 bg-white p-5">
-        <h2 class="font-semibold text-slate-900">Google</h2>
-        <p class="mt-2 text-sm text-slate-600">
-          OAuth vía GET /store/auth/google
-        </p>
-      </article>
-    </div>
-  </section>
+    <StorePeruValueBar />
+
+    <UiErrorState
+      v-if="bannersError"
+      title="No pudimos cargar los banners"
+      class="mx-auto max-w-7xl px-4 py-6"
+      @retry="refetchBanners()"
+    />
+
+    <StoreHomeSection
+      v-if="showOffersSection"
+      section-id="ofertas"
+      title="Ofertas imperdibles"
+      description="Los precios más bajos · Aprovecha hoy"
+      action-label="Ver todo el catálogo"
+      action-to="/productos"
+      flash
+    >
+      <StoreProductRow
+        :products="offerProducts"
+        :loading="catalogLoading"
+        :skeleton-count="6"
+      >
+        <template #empty>
+          Pronto tendremos ofertas para ti.
+        </template>
+      </StoreProductRow>
+    </StoreHomeSection>
+
+    <StoreTrustBar />
+
+    <StoreCategoryGrid
+      :categories="categories ?? []"
+      :loading="categoriesLoading"
+    />
+
+    <StoreSecondaryBanners
+      :banners="secondaryBanners ?? []"
+      :loading="secondaryLoading"
+    />
+
+    <StoreHomeSection
+      title="Lo más pedido"
+      :description="`Tecnología seleccionada en ${storeName}`"
+      action-label="Ver todos"
+      action-to="/productos"
+    >
+      <UiErrorState
+        v-if="productsError"
+        title="No pudimos cargar los productos"
+        @retry="refetchProducts()"
+      />
+
+      <StoreProductGrid
+        v-else
+        :products="productsPage?.items ?? []"
+        :loading="productsLoading"
+        :skeleton-count="8"
+        empty-message="Pronto tendremos productos destacados para ti"
+      >
+        <template #empty-action>
+          <NuxtLink to="/productos">
+            <UiButton>Explorar catálogo</UiButton>
+          </NuxtLink>
+        </template>
+      </StoreProductGrid>
+    </StoreHomeSection>
+
+    <StoreBrandStrip
+      :brands="brands ?? []"
+      :loading="brandsLoading"
+    />
+
+    <StoreCategoryShowcase
+      v-for="category in showcaseCategories"
+      :key="category.id"
+      :category-id="category.id"
+      :category-name="category.name"
+      :category-slug="category.slug"
+    />
+
+    <StorePromoCta />
+
+    <StorePaymentTrust />
+
+    <StoreSupportCta />
+  </div>
 </template>

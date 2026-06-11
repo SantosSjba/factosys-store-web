@@ -2,6 +2,7 @@
 import { fetchAdminCustomers } from '~/api/admin-customers.api'
 import { fetchAdminOrders } from '~/api/admin-orders.api'
 import { fetchAdminProducts } from '~/api/admin-catalog.api'
+import type { StoreCustomer } from '~/types/admin-customers'
 
 type SearchResult = {
   id: string
@@ -18,6 +19,17 @@ const isOpen = ref(false)
 const inputRef = ref<HTMLInputElement | null>(null)
 
 let debounceTimer: ReturnType<typeof setTimeout> | undefined
+
+function formatCustomerLabel(customer: StoreCustomer) {
+  const name = [customer.firstName, customer.lastName].filter(Boolean).join(' ')
+  return name || customer.email
+}
+
+function onSearchBlur() {
+  setTimeout(() => {
+    isOpen.value = false
+  }, 150)
+}
 
 async function runSearch(term: string) {
   const q = term.trim()
@@ -155,7 +167,7 @@ onUnmounted(() => {
         autocomplete="off"
         class="border-admin-line bg-admin-surface text-admin placeholder:text-admin-muted w-full rounded-lg border py-2 pl-10 pr-16 text-sm focus:border-[var(--admin-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--admin-primary)]"
         @focus="isOpen = results.length > 0"
-        @blur="setTimeout(() => { isOpen = false }, 150)"
+        @blur="onSearchBlur"
       />
       <kbd
         class="border-admin-line bg-admin-card text-admin-muted pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded border px-1.5 py-0.5 text-[10px] sm:inline"

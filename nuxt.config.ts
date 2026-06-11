@@ -56,7 +56,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
 
-  modules: ['@pinia/nuxt', '@nuxtjs/tailwindcss'],
+  modules: ['@pinia/nuxt', '@nuxtjs/tailwindcss', '@nuxt/image', '@vueuse/nuxt'],
 
   tailwindcss: {
     configPath: 'tailwind.config.ts',
@@ -146,11 +146,18 @@ export default defineNuxtConfig({
     port: 3001,
   },
 
+  image: {
+    quality: 80,
+    format: ['webp'],
+  },
+
   app: {
     head: {
+      htmlAttrs: { lang: 'es' },
       title: 'Factosys Store',
       meta: [
         { name: 'description', content: 'Tienda en línea Factosys' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
       ],
       script: [
         {

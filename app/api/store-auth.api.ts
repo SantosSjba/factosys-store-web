@@ -13,7 +13,7 @@ export async function registerStoreUser(
   const { data } = await useApi().post<RegisterResponse>(
     '/store/auth/register',
     payload,
-    { auth: false },
+    { withAuth: false },
   )
   return data
 }
@@ -24,7 +24,7 @@ export async function verifyStoreEmail(
   const { data } = await useApi().post<AuthTokensResponse>(
     '/store/auth/verify-email',
     payload,
-    { auth: false },
+    { withAuth: false },
   )
   return data
 }
@@ -35,7 +35,7 @@ export async function resendStoreVerification(
   const { data } = await useApi().post<ResendVerificationResponse>(
     '/store/auth/resend-verification',
     { email },
-    { auth: false },
+    { withAuth: false },
   )
   return data
 }
@@ -46,16 +46,18 @@ export async function loginStoreUser(
   const { data } = await useApi().post<AuthTokensResponse>(
     '/store/auth/login',
     payload,
-    { auth: false },
+    { withAuth: false },
   )
   return data
 }
 
-export async function refreshStoreSession(refreshToken: string) {
+export async function refreshStoreSession(
+  refreshToken: string,
+): Promise<AuthTokensResponse> {
   const { data } = await useApi().post<AuthTokensResponse>(
     '/store/auth/refresh',
     { refreshToken },
-    { auth: false, skipRefresh: true },
+    { withAuth: false, skipRefresh: true },
   )
   return data
 }
@@ -64,7 +66,7 @@ export async function logoutStoreSession(refreshToken: string) {
   const { data } = await useApi().post<{ message: string }>(
     '/store/auth/logout',
     { refreshToken },
-    { auth: false },
+    { withAuth: false },
   )
   return data
 }

@@ -1,8 +1,14 @@
 <script setup lang="ts">
-defineProps<{
-  modelValue: string
-  placeholder?: string
-}>()
+const props = withDefaults(
+  defineProps<{
+    modelValue?: string
+    placeholder?: string
+    ariaLabel?: string
+  }>(),
+  { modelValue: '', ariaLabel: 'Buscar productos' },
+)
+
+const inputValue = computed(() => props.modelValue ?? '')
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
@@ -15,8 +21,9 @@ const emit = defineEmits<{
     class="border-brand-cyan-focus border-store-line bg-theme-surface flex w-full items-center overflow-hidden rounded-full border shadow-sm"
   >
     <input
-      :value="modelValue"
+      :value="inputValue"
       type="search"
+      :aria-label="ariaLabel"
       class="text-theme placeholder:text-theme-muted min-w-0 flex-1 border-0 bg-transparent px-4 py-2.5 text-sm focus:outline-none focus:ring-0"
       :placeholder="placeholder"
       autocomplete="off"

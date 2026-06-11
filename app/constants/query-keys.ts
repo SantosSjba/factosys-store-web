@@ -1,6 +1,16 @@
 export const storeQueryKeys = {
   all: ['store'] as const,
   profile: () => [...storeQueryKeys.all, 'profile'] as const,
+  addresses: () => [...storeQueryKeys.all, 'addresses'] as const,
+  settings: () => [...storeQueryKeys.all, 'settings'] as const,
+  banners: (placement = 'HOME_HERO') =>
+    [...storeQueryKeys.all, 'banners', placement] as const,
+  products: () => [...storeQueryKeys.all, 'products'] as const,
+  product: (slug: string) => [...storeQueryKeys.all, 'products', slug] as const,
+  categories: () => [...storeQueryKeys.all, 'categories'] as const,
+  brands: () => [...storeQueryKeys.all, 'brands'] as const,
+  orders: () => [...storeQueryKeys.all, 'orders'] as const,
+  order: (id: string) => [...storeQueryKeys.all, 'orders', id] as const,
 }
 
 export const adminQueryKeys = {

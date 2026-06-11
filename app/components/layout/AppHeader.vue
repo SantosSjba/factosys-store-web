@@ -1,17 +1,57 @@
 <script setup lang="ts">
-const config = useRuntimeConfig()
 const route = useRoute()
 const authStore = useAuthStore()
+const toast = useToast()
+
+const { data: settings } = useStoreSettingsQuery()
+const { data: categories, isPending: categoriesLoading } = useStoreCategoriesQuery()
 
 const searchQuery = ref('')
 const isMenuOpen = ref(false)
 const isAccountOpen = ref(false)
 const cartCount = useState('store-cart-count', () => 0)
 
-const greetingName = computed(() => {
-  if (!authStore.isAuthenticated || !authStore.user) {
-    return null
+const accountMenuRef = ref<HTMLElement | null>(null)
+
+const bodyScrollLocked = import.meta.client
+  ? useScrollLock(document.body)
+  : ref(false)
+
+const storeName = computed(
+  () => settings.value?.storeName ?? useRuntimeConfig().public.appName,
+)
+
+const promoMessage = computed(() => {
+  const parts: string[] = []
+  const minDays = settings.value?.handlingDaysMin
+  const maxDays = settings.value?.handlingDaysMax
+  if (minDays != null && maxDays != null) {
+    parts.push(`Despacho en ${minDays}–${maxDays} días hábiles`)
   }
+  const min = settings.value?.freeShippingMinAmount
+  if (min && Number.parseFloat(min) > 0) {
+    const symbol = settings.value?.currency.symbol ?? 'S/'
+    parts.push(`envío gratis desde ${symbol} ${min}`)
+  }
+  if (parts.length > 0) {
+    const first = parts[0] ?? ''
+    const second = parts[1]
+    const lead = first ? `${first.charAt(0).toUpperCase()}${first.slice(1)}` : ''
+    return second ? `${lead} · ${second}` : lead
+  }
+  return 'Envíos a Lima y provincias · Compra segura'
+})
+
+const supportHref = computed(() => {
+  const email = settings.value?.company.supportEmail
+  if (email) return `mailto:${email}`
+  const phone = settings.value?.company.supportPhone
+  if (phone) return `tel:${phone.replace(/\s/g, '')}`
+  return '/productos'
+})
+
+const greetingName = computed(() => {
+  if (!authStore.isAuthenticated || !authStore.user) return null
   const parts = [authStore.user.firstName, authStore.user.lastName].filter(Boolean)
   return parts.length > 0 ? parts.join(' ') : authStore.user.email.split('@')[0]
 })
@@ -20,12 +60,21 @@ const accountLabel = computed(() =>
   greetingName.value ? `Hola, ${greetingName.value}` : 'Hola, Inicia sesión',
 )
 
-const subnavLinks = [
-  { label: 'Ofertas del día', to: '/' },
-  { label: 'Vende en Factosys', to: '#' },
-  { label: 'Venta telefónica', to: '#' },
-  { label: 'Ayuda', to: '#' },
-]
+const activeCategorySlug = computed(() =>
+  route.path === '/productos' && typeof route.query.categoria === 'string'
+    ? route.query.categoria
+    : undefined,
+)
+
+const subnavLinks = computed(() => [
+  { label: 'Ofertas del día', to: '/#ofertas' },
+  { label: 'Catálogo', to: '/productos' },
+  {
+    label: 'Ayuda',
+    to: supportHref.value,
+    external: supportHref.value.startsWith('http') || supportHref.value.startsWith('mailto:') || supportHref.value.startsWith('tel:'),
+  },
+])
 
 function closePanels() {
   isMenuOpen.value = false
@@ -33,7 +82,14 @@ function closePanels() {
 }
 
 function onSearchSubmit() {
-  if (!searchQuery.value.trim()) return
+  const query = searchQuery.value.trim()
+  if (!query) return
+  closePanels()
+  navigateTo({ path: '/productos', query: { q: query } })
+}
+
+function onFavoritesClick() {
+  toast.info('Favoritos estará disponible pronto.')
 }
 
 async function handleLogout() {
@@ -42,34 +98,51 @@ async function handleLogout() {
   await navigateTo('/')
 }
 
+watch(isMenuOpen, (open) => {
+  bodyScrollLocked.value = open
+})
+
+onKeyStroke('Escape', () => {
+  if (isMenuOpen.value || isAccountOpen.value) closePanels()
+})
+
+onClickOutside(accountMenuRef, () => {
+  isAccountOpen.value = false
+})
+
+watch(() => route.path, () => closePanels())
+
+function readSearchQueryParam(value: unknown): string {
+  if (typeof value === 'string') return value
+  if (Array.isArray(value) && typeof value[0] === 'string') return value[0]
+  return ''
+}
+
 watch(
-  () => route.path,
-  () => closePanels(),
+  () => route.query.q,
+  (value) => {
+    searchQuery.value = readSearchQueryParam(value)
+  },
+  { immediate: true },
 )
 </script>
 
 <template>
   <header class="bg-theme-header sticky top-0 z-40 shadow-sm">
-    <!-- Franja promocional -->
     <div
       class="border-store-promo-bar bg-store-promo-bar text-store-promo-bar border-b text-center text-xs font-medium sm:text-sm"
     >
       <div class="mx-auto max-w-7xl px-4 py-2">
-        <p class="truncate">
-          Envío gratis en compras seleccionadas ·
-          <NuxtLink to="/" class="underline hover:no-underline">Ver ofertas</NuxtLink>
-          <span class="mx-2 hidden sm:inline">|</span>
-          <NuxtLink to="/intranet" class="hidden underline hover:no-underline sm:inline">
-            Acceso intranet
-          </NuxtLink>
+        <p class="truncate sm:whitespace-normal">
+          {{ promoMessage }} ·
+          <NuxtLink to="/productos" class="underline hover:no-underline">Ver ofertas</NuxtLink>
         </p>
       </div>
     </div>
 
-    <!-- Fila principal -->
     <div class="border-theme border-b">
       <div
-        class="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:gap-4 sm:py-4 lg:gap-6"
+        class="mx-auto flex max-w-7xl items-center gap-2 px-3 py-3 sm:gap-4 sm:px-4 sm:py-4 lg:gap-6"
       >
         <BrandLogo />
 
@@ -77,6 +150,7 @@ watch(
           type="button"
           class="text-theme hover:bg-theme-muted hidden shrink-0 items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium lg:flex"
           :aria-expanded="isMenuOpen"
+          aria-controls="store-category-menu"
           @click="isMenuOpen = !isMenuOpen"
         >
           <UiIcon name="lucide:menu" :size="20" />
@@ -90,33 +164,37 @@ watch(
         >
           <UiSearchInput
             v-model="searchQuery"
-            :placeholder="`Buscar en ${config.public.appName}`"
+            :placeholder="`Buscar en ${storeName}`"
+            :aria-label="`Buscar productos en ${storeName}`"
             @submit="onSearchSubmit"
           />
         </form>
 
-        <div class="flex shrink-0 items-center gap-1 sm:gap-2">
-          <ThemeToggle />
+        <div class="flex shrink-0 items-center gap-0.5 sm:gap-1">
+          <ThemeToggle class="hidden sm:inline-flex" />
 
-          <div class="relative hidden sm:block">
+          <div ref="accountMenuRef" class="relative hidden sm:block">
             <button
               type="button"
-              class="text-theme hover:bg-theme-muted flex items-center gap-1 rounded-lg px-2 py-1.5 text-left text-sm"
+              class="text-theme hover:bg-theme-muted flex max-w-[10rem] items-center gap-1 rounded-lg px-2 py-1.5 text-left text-sm lg:max-w-[11rem]"
               :aria-expanded="isAccountOpen"
+              aria-haspopup="true"
               @click="isAccountOpen = !isAccountOpen"
             >
-              <span class="max-w-[9rem] truncate font-medium">{{ accountLabel }}</span>
+              <span class="truncate font-medium">{{ accountLabel }}</span>
               <UiIcon name="lucide:chevron-down" :size="16" class="text-theme-muted shrink-0" />
             </button>
 
             <div
               v-if="isAccountOpen"
               class="border-theme bg-theme-dropdown absolute right-0 top-full z-50 mt-1 w-48 rounded-lg border py-1 shadow-lg"
+              role="menu"
             >
               <template v-if="authStore.isAuthenticated">
                 <NuxtLink
                   to="/cuenta"
                   class="text-theme hover:bg-theme-muted block px-4 py-2 text-sm"
+                  role="menuitem"
                   @click="isAccountOpen = false"
                 >
                   Mi cuenta
@@ -124,6 +202,7 @@ watch(
                 <button
                   type="button"
                   class="text-theme hover:bg-theme-muted block w-full px-4 py-2 text-left text-sm"
+                  role="menuitem"
                   @click="handleLogout"
                 >
                   Cerrar sesión
@@ -133,6 +212,7 @@ watch(
                 <NuxtLink
                   to="/login"
                   class="text-theme hover:bg-theme-muted block px-4 py-2 text-sm"
+                  role="menuitem"
                   @click="isAccountOpen = false"
                 >
                   Iniciar sesión
@@ -140,6 +220,7 @@ watch(
                 <NuxtLink
                   to="/registro"
                   class="text-theme hover:bg-theme-muted block px-4 py-2 text-sm"
+                  role="menuitem"
                   @click="isAccountOpen = false"
                 >
                   Crear cuenta
@@ -155,27 +236,34 @@ watch(
             Mi cuenta
           </NuxtLink>
 
-          <UiIconButton icon="lucide:heart" ariaLabel="Favoritos" size="lg" />
+          <UiIconButton
+            icon="lucide:heart"
+            ariaLabel="Favoritos (próximamente)"
+            size="lg"
+            @click="onFavoritesClick"
+          />
 
           <UiIconButton
             icon="lucide:shopping-cart"
-            ariaLabel="Carrito de compras"
+            ariaLabel="Carrito de compras (próximamente)"
             size="lg"
-            :badge="cartCount"
+            :badge="cartCount > 0 ? cartCount : undefined"
+            disabled
           />
 
           <UiIconButton
             icon="lucide:menu"
-            ariaLabel="Abrir menú"
+            ariaLabel="Abrir menú de categorías"
             size="lg"
             class="lg:hidden"
+            :aria-expanded="isMenuOpen"
+            aria-controls="store-category-menu"
             @click="isMenuOpen = !isMenuOpen"
           />
         </div>
       </div>
     </div>
 
-    <!-- Subnavegación -->
     <div class="bg-store-subnav border-store-line hidden border-b sm:block">
       <div
         class="text-theme mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-2 text-sm"
@@ -183,94 +271,109 @@ watch(
         <button
           type="button"
           class="hover:text-brand-accent flex items-center gap-1.5 font-medium"
+          aria-controls="store-category-menu"
+          :aria-expanded="isMenuOpen"
+          @click="isMenuOpen = true"
         >
-          <UiIcon name="lucide:map-pin" :size="16" />
-          Ingresa tu ubicación
+          <UiIcon name="lucide:layout-grid" :size="16" />
+          Categorías
         </button>
 
-        <nav class="flex flex-wrap items-center justify-end gap-4 lg:gap-6">
-          <NuxtLink
-            v-for="link in subnavLinks"
-            :key="link.label"
-            :to="link.to"
-            class="hover:text-brand-accent whitespace-nowrap hover:underline"
-          >
-            {{ link.label }}
-          </NuxtLink>
+        <nav class="flex flex-wrap items-center justify-end gap-4 lg:gap-6" aria-label="Enlaces rápidos">
+          <template v-for="link in subnavLinks" :key="link.label">
+            <a
+              v-if="link.external"
+              :href="link.to"
+              class="hover:text-brand-accent whitespace-nowrap hover:underline"
+            >
+              {{ link.label }}
+            </a>
+            <NuxtLink
+              v-else
+              :to="link.to"
+              class="hover:text-brand-accent whitespace-nowrap hover:underline"
+            >
+              {{ link.label }}
+            </NuxtLink>
+          </template>
         </nav>
       </div>
     </div>
 
-    <!-- Panel menú lateral (shell) -->
     <Teleport to="body">
       <div
         v-if="isMenuOpen"
-        class="fixed inset-0 z-50 lg:hidden"
+        class="fixed inset-0 z-50"
         role="dialog"
         aria-modal="true"
         aria-label="Menú de categorías"
       >
         <button
           type="button"
-          class="absolute inset-0 bg-black/40"
+          class="absolute inset-0 bg-black/40 backdrop-blur-[1px]"
           aria-label="Cerrar menú"
           @click="isMenuOpen = false"
         />
         <aside
-          class="bg-theme-surface absolute left-0 top-0 flex h-full w-[min(20rem,85vw)] flex-col shadow-xl"
+          id="store-category-menu"
+          class="bg-theme-surface absolute left-0 top-0 flex h-full w-[min(20rem,88vw)] flex-col shadow-xl lg:w-[min(24rem,90vw)]"
         >
           <div class="border-theme flex items-center justify-between border-b px-4 py-4">
             <span class="text-theme font-semibold">Categorías</span>
             <UiIconButton
               icon="lucide:x"
-              ariaLabel="Cerrar"
+              ariaLabel="Cerrar menú"
               @click="isMenuOpen = false"
             />
           </div>
-          <nav class="text-theme flex-1 overflow-y-auto p-4 text-sm">
-            <p class="text-theme-muted mb-3 text-xs font-semibold uppercase tracking-wide">
-              Próximamente
+          <nav class="text-theme flex-1 overflow-y-auto p-4 text-sm" aria-label="Categorías de productos">
+            <div v-if="categoriesLoading" class="space-y-2">
+              <UiSkeleton
+                v-for="index in 6"
+                :key="index"
+                tone="store"
+                height="2.5rem"
+                rounded="lg"
+              />
+            </div>
+            <StoreCategoryMenu
+              v-else-if="categories?.length"
+              :categories="categories"
+              :active-slug="activeCategorySlug"
+              :on-navigate="closePanels"
+            />
+            <p v-else class="text-theme-muted text-sm">
+              No hay categorías disponibles.
             </p>
-            <ul class="space-y-1">
-              <li
-                v-for="category in ['Tecnología', 'Hogar', 'Moda', 'Deportes', 'Ofertas']"
-                :key="category"
-              >
-                <button
-                  type="button"
-                  class="hover:bg-theme-muted w-full rounded-lg px-3 py-2.5 text-left"
-                >
-                  {{ category }}
-                </button>
-              </li>
-            </ul>
-            <div class="border-theme mt-6 border-t pt-4 sm:hidden">
+            <div class="border-theme mt-6 space-y-1 border-t pt-4 sm:hidden">
               <NuxtLink
                 v-if="!authStore.isAuthenticated"
                 to="/login"
-                class="hover:bg-theme-muted block rounded-lg px-3 py-2"
+                class="hover:bg-theme-muted block rounded-lg px-3 py-2.5"
                 @click="isMenuOpen = false"
               >
                 Iniciar sesión
               </NuxtLink>
-              <NuxtLink
-                v-else
-                to="/cuenta"
-                class="hover:bg-theme-muted block rounded-lg px-3 py-2"
-                @click="isMenuOpen = false"
-              >
-                Mi cuenta
-              </NuxtLink>
+              <template v-else>
+                <NuxtLink
+                  to="/cuenta"
+                  class="hover:bg-theme-muted block rounded-lg px-3 py-2.5"
+                  @click="isMenuOpen = false"
+                >
+                  Mi cuenta
+                </NuxtLink>
+                <button
+                  type="button"
+                  class="text-theme hover:bg-theme-muted block w-full rounded-lg px-3 py-2.5 text-left"
+                  @click="handleLogout"
+                >
+                  Cerrar sesión
+                </button>
+              </template>
             </div>
           </nav>
         </aside>
       </div>
     </Teleport>
-
-    <div
-      v-if="isAccountOpen"
-      class="fixed inset-0 z-30 hidden sm:block"
-      @click="isAccountOpen = false"
-    />
   </header>
 </template>

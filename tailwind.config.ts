@@ -1,8 +1,11 @@
+import typography from '@tailwindcss/typography'
+
 /**
  * Tailwind — layout y utilidades estándar.
  * La paleta de colores vive en app/assets/css/tokens.css (variables CSS globales).
  */
 export default {
+  plugins: [typography],
   safelist: [
     'text-brand-facto',
     'text-brand-sys',

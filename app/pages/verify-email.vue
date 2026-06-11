@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { useField } from 'vee-validate'
-import { resendVerificationSchema, verifyEmailSchema } from '~/utils/validation/schemas'
+import {
+  resendVerificationSchema,
+  verifyEmailFormSchema,
+} from '~/utils/validation/schemas'
 
 definePageMeta({
   layout: 'auth',
@@ -10,6 +13,7 @@ const route = useRoute()
 const toast = useToast()
 const verifyMutation = useStoreVerifyEmailMutation()
 const resendMutation = useStoreResendVerificationMutation()
+const { data: settings } = useStoreSettingsQuery()
 
 const verified = ref(false)
 const devCode = ref('')
@@ -29,6 +33,8 @@ function getQueryString(value: unknown): string | undefined {
 
 const source = computed(() => getQueryString(route.query.source) ?? '')
 
+const requiresTermsAcceptance = computed(() => source.value === 'google')
+
 const isPendingRegistration = computed(
   () =>
     route.query.pendingVerification === '1' ||
@@ -40,22 +46,33 @@ const {
   setValues,
   withMutationPending,
 } = useApiForm({
-  schema: verifyEmailSchema,
+  schema: verifyEmailFormSchema,
   initialValues: {
     email: '',
     code: '',
+    acceptTerms: false,
   },
 })
 
 const { value: emailValue } = useField<string>('email')
+const { value: acceptTerms } = useField<boolean>('acceptTerms')
+const acceptTermsError = ref<string | undefined>()
 
 const isSubmitting = withMutationPending(verifyMutation)
 const isResending = computed(() => resendMutation.isPending.value)
+
+useStoreSeo({
+  title: 'Verificar correo',
+  noindex: true,
+})
+
+const isDev = import.meta.dev
 
 async function submitVerification(payload: {
   token?: string
   email?: string
   code?: string
+  acceptTerms?: boolean
 }) {
   try {
     await verifyMutation.mutateAsync(payload)
@@ -71,9 +88,19 @@ async function submitVerification(payload: {
 
 const onSubmit = createVerifySubmit(
   async (values) => {
+    if (requiresTermsAcceptance.value && !values.acceptTerms) {
+      acceptTermsError.value = 'Debes aceptar los términos y condiciones.'
+      toast.warning('Debes aceptar los términos y condiciones para continuar.')
+      return
+    }
+
+    acceptTermsError.value = undefined
     await submitVerification({
       email: values.email,
       code: values.code,
+      ...(requiresTermsAcceptance.value
+        ? { acceptTerms: values.acceptTerms }
+        : {}),
     })
   },
   { invalidMessage: 'Ingresa tu correo y el código de 6 dígitos.' },
@@ -136,12 +163,20 @@ onMounted(async () => {
   >
     <div
       v-if="isAutoVerifying && verifyMutation.isPending && !verified"
-      class="text-center text-sm text-slate-600"
+      class="flex flex-col items-center gap-3 py-4"
+      role="status"
+      aria-live="polite"
     >
-      Verificando tu cuenta…
+      <UiIcon name="lucide:loader-circle" :size="28" class="text-brand-accent animate-spin" />
+      <p class="text-theme-muted text-sm">Verificando tu cuenta…</p>
     </div>
 
-    <UiAlert v-else-if="verified" variant="success">
+    <UiAlert
+      v-else-if="verified"
+      variant="success"
+      role="status"
+      aria-live="polite"
+    >
       ¡Cuenta verificada! Redirigiendo a tu perfil…
     </UiAlert>
 
@@ -165,50 +200,92 @@ onMounted(async () => {
       </UiAlert>
 
       <form class="space-y-4" @submit.prevent="onSubmit">
-      <UiFormField
-        name="email"
-        label="Correo electrónico"
-        type="email"
-        autocomplete="email"
-        required
-      />
-      <UiFormField
-        name="code"
-        label="Código de verificación"
-        autocomplete="one-time-code"
-        hint="Código de 6 dígitos enviado a tu correo"
-        maxlength="6"
-        required
-      />
+        <UiFormField
+          name="email"
+          label="Correo electrónico"
+          type="email"
+          autocomplete="email"
+          required
+        />
+        <UiFormField
+          name="code"
+          label="Código de verificación"
+          autocomplete="one-time-code"
+          hint="Código de 6 dígitos enviado a tu correo"
+          maxlength="6"
+          required
+        />
 
-      <UiButton type="submit" class="w-full" :loading="isSubmitting">
-        Verificar cuenta
-      </UiButton>
+        <div v-if="requiresTermsAcceptance" class="space-y-1">
+          <label class="flex cursor-pointer items-start gap-3">
+            <input
+              type="checkbox"
+              class="border-store-line text-brand-accent mt-0.5 h-4 w-4 shrink-0 rounded focus:ring-[var(--brand-cyan)]"
+              :class="acceptTermsError && 'border-red-500'"
+              :checked="acceptTerms ?? false"
+              @change="acceptTerms = ($event.target as HTMLInputElement).checked"
+            />
+            <span class="text-theme text-sm">
+              Acepto los
+              <a
+                v-if="settings?.termsUrl"
+                :href="settings.termsUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-brand-accent-deep font-semibold hover:underline"
+                @click.stop
+              >
+                términos y condiciones
+              </a>
+              <span v-else>términos y condiciones</span>
+              y la
+              <a
+                v-if="settings?.privacyPolicyUrl"
+                :href="settings.privacyPolicyUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-brand-accent-deep font-semibold hover:underline"
+                @click.stop
+              >
+                política de privacidad
+              </a>
+              <span v-else>política de privacidad</span>.
+            </span>
+          </label>
+          <UiFieldMessage :error="acceptTermsError" />
+        </div>
 
-      <UiButton
-        type="button"
-        variant="ghost"
-        class="w-full"
-        :loading="isResending"
-        @click="onResend"
-      >
-        Reenviar código
-      </UiButton>
+        <UiButton type="submit" class="w-full" :loading="isSubmitting">
+          Verificar cuenta
+        </UiButton>
 
-      <p v-if="devCode" class="text-center text-xs text-slate-500">
-        Código de desarrollo:
-        <button
+        <UiButton
           type="button"
-          class="font-mono font-semibold underline"
-          @click="setValues({ code: devCode })"
+          variant="ghost"
+          class="w-full"
+          :loading="isResending"
+          @click="onResend"
         >
-          {{ devCode }}
-        </button>
-      </p>
+          Reenviar código
+        </UiButton>
+
+        <p
+          v-if="isDev && devCode"
+          class="text-theme-muted text-center text-xs"
+        >
+          Código de desarrollo:
+          <button
+            type="button"
+            class="font-mono font-semibold underline"
+            @click="setValues({ code: devCode })"
+          >
+            {{ devCode }}
+          </button>
+        </p>
       </form>
     </template>
 
-    <p class="mt-6 text-center text-sm text-slate-600">
+    <p class="text-theme-muted mt-6 text-center text-sm">
       <NuxtLink
         :to="{
           path: '/login',

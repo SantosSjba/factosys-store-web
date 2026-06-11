@@ -1,6 +1,6 @@
-import type { StoreProfile } from '~/types/auth'
+import type { AdminProfile } from '~/types/auth'
 
 export async function fetchAdminProfile() {
-  const { data } = await useAdminApi().get<StoreProfile>('/admin/users/me')
+  const { data } = await useAdminApi().get<AdminProfile>('/admin/users/me')
   return data
 }

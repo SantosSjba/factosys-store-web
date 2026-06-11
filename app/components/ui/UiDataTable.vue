@@ -17,6 +17,12 @@ const props = withDefaults(
     rowKey: 'id' as keyof T & string,
   },
 )
+
+function getRowKey(row: T, index: number): string {
+  const key = (props.rowKey ?? 'id') as keyof T
+  const value = row[key]
+  return value == null ? String(index) : String(value)
+}
 </script>
 
 <template>
@@ -53,7 +59,7 @@ const props = withDefaults(
         <tbody>
           <tr
             v-for="(row, index) in rows"
-            :key="String(row[rowKey] ?? index)"
+            :key="getRowKey(row, index)"
             class="border-theme hover:bg-theme-muted border-b transition last:border-b-0"
           >
             <td

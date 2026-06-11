@@ -116,3 +116,45 @@ const DELIVERY_METHOD_LABELS: Record<OrderDeliveryMethod, string> = {
 export function formatDeliveryMethod(method: OrderDeliveryMethod) {
   return DELIVERY_METHOD_LABELS[method] ?? method
 }
+
+function formatLongDate(value: string) {
+  return new Date(value).toLocaleDateString('es-PE', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  })
+}
+
+export function formatOrderDeliveryCaption(order: {
+  status: OrderStatus
+  deliveryMethod: OrderDeliveryMethod
+  deliveredAt: string | null
+  shippedAt: string | null
+  createdAt: string
+}) {
+  if (order.status === 'DELIVERED' && order.deliveredAt) {
+    return `Entregado el ${formatLongDate(order.deliveredAt)}`
+  }
+
+  if (order.status === 'SHIPPED' && order.shippedAt) {
+    return `Enviado el ${formatLongDate(order.shippedAt)}`
+  }
+
+  if (order.status === 'READY_FOR_PICKUP') {
+    return 'Listo para recoger en tienda'
+  }
+
+  if (order.status === 'CANCELLED') {
+    return 'Pedido cancelado'
+  }
+
+  if (order.status === 'REFUNDED') {
+    return 'Pedido reembolsado'
+  }
+
+  if (order.deliveryMethod === 'PICKUP') {
+    return 'Recojo en tienda'
+  }
+
+  return `Compra del ${formatLongDate(order.createdAt)}`
+}

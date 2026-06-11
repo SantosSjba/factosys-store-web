@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useField } from 'vee-validate'
 import { registerSchema } from '~/utils/validation/schemas'
 
 definePageMeta({
@@ -7,6 +8,7 @@ definePageMeta({
 })
 
 const registerMutation = useStoreRegisterMutation()
+const { data: settings } = useStoreSettingsQuery()
 
 const { createSubmitHandler, withMutationPending } = useApiForm({
   schema: registerSchema,
@@ -15,8 +17,12 @@ const { createSubmitHandler, withMutationPending } = useApiForm({
     password: '',
     firstName: '',
     lastName: '',
+    acceptTerms: false,
   },
 })
+
+const { value: acceptTerms, errorMessage: acceptTermsError } =
+  useField<boolean>('acceptTerms')
 
 const isSubmitting = withMutationPending(registerMutation)
 
@@ -38,6 +44,11 @@ const onSubmit = createSubmitHandler(
     invalidMessage: 'Completa los campos obligatorios correctamente.',
   },
 )
+
+useStoreSeo({
+  title: 'Crear cuenta',
+  noindex: true,
+})
 </script>
 
 <template>
@@ -66,12 +77,51 @@ const onSubmit = createSubmitHandler(
         required
       />
 
+      <div class="space-y-1">
+        <label class="flex cursor-pointer items-start gap-3">
+          <input
+            type="checkbox"
+            class="border-store-line text-brand-accent mt-0.5 h-4 w-4 shrink-0 rounded focus:ring-[var(--brand-cyan)]"
+            :class="acceptTermsError && 'border-red-500'"
+            :checked="acceptTerms ?? false"
+            @change="acceptTerms = ($event.target as HTMLInputElement).checked"
+          />
+          <span class="text-theme text-sm">
+            Acepto los
+            <a
+              v-if="settings?.termsUrl"
+              :href="settings.termsUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-brand-accent-deep font-semibold hover:underline"
+              @click.stop
+            >
+              términos y condiciones
+            </a>
+            <span v-else>términos y condiciones</span>
+            y la
+            <a
+              v-if="settings?.privacyPolicyUrl"
+              :href="settings.privacyPolicyUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-brand-accent-deep font-semibold hover:underline"
+              @click.stop
+            >
+              política de privacidad
+            </a>
+            <span v-else>política de privacidad</span>.
+          </span>
+        </label>
+        <UiFieldMessage :error="acceptTermsError" />
+      </div>
+
       <UiButton type="submit" class="w-full" :loading="isSubmitting">
         Registrarme
       </UiButton>
     </form>
 
-    <p class="mt-6 text-center text-sm text-slate-600">
+    <p class="text-theme-muted mt-6 text-center text-sm">
       ¿Ya tienes cuenta?
       <NuxtLink to="/login" class="text-brand-accent-deep font-semibold hover:underline">
         Inicia sesión

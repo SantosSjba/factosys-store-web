@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/vue-query'
 import { fetchAdminProfile } from '~/api/admin-profile.api'
 import { adminQueryKeys } from '~/constants/query-keys'
-import type { AuthTokensResponse, StoreProfile } from '~/types/auth'
+import type { AdminProfile, AuthTokensResponse } from '~/types/auth'
 
-function profileToUser(profile: StoreProfile): AuthTokensResponse['user'] {
+function profileToUser(profile: AdminProfile): AuthTokensResponse['user'] {
   return {
     id: profile.id,
     email: profile.email,

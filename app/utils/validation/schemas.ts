@@ -37,7 +37,11 @@ const personFieldsSchema = z.object({
   phone: optionalText,
 })
 
-export const registerSchema = personFieldsSchema.omit({ phone: true })
+export const registerSchema = personFieldsSchema.omit({ phone: true }).extend({
+  acceptTerms: z.boolean().refine((value) => value === true, {
+    message: 'Debes aceptar los términos y condiciones.',
+  }),
+})
 
 export const createCustomerSchema = personFieldsSchema
 
@@ -46,6 +50,23 @@ export const createStaffUserSchema = personFieldsSchema.extend({
     .array(z.string())
     .min(1, 'Selecciona al menos un rol.'),
 })
+
+export const updateStoreProfileSchema = z
+  .object({
+    firstName: optionalText,
+    lastName: optionalText,
+    phone: optionalText,
+    password: optionalPassword,
+    confirmPassword: optionalPassword,
+  })
+  .refine(
+    (values) =>
+      !values.password || values.password === values.confirmPassword,
+    {
+      message: 'Las contraseñas no coinciden.',
+      path: ['confirmPassword'],
+    },
+  )
 
 export const updateCustomerSchema = z.object({
   firstName: optionalText,
@@ -77,6 +98,10 @@ export const verifyEmailSchema = z.object({
     .string({ message: 'El código es obligatorio.' })
     .trim()
     .regex(/^\d{6}$/, 'El código debe tener 6 dígitos.'),
+})
+
+export const verifyEmailFormSchema = verifyEmailSchema.extend({
+  acceptTerms: z.boolean().optional(),
 })
 
 export const resendVerificationSchema = z.object({

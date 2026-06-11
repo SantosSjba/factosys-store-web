@@ -156,4 +156,12 @@
   .text-admin-muted {
     color: var(--admin-text-muted);
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    .motion-safe\:transition,
+    .motion-safe\:group-hover\:scale-105 {
+      transition: none !important;
+      transform: none !important;
+    }
+  }
 }

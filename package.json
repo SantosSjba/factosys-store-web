@@ -14,10 +14,12 @@
   "dependencies": {
     "@iconify/vue": "^5.0.1",
     "@iconscout/unicons": "^4.2.0",
+    "@nuxt/image": "^2.0.0",
     "@nuxtjs/tailwindcss": "^6.14.0",
     "@pinia/nuxt": "^0.11.3",
     "@tanstack/vue-query": "^5.100.14",
     "@vee-validate/zod": "^4.15.1",
+    "@vueuse/nuxt": "^14.3.0",
     "axios": "^1.16.1",
     "filepond": "^4.32.12",
     "filepond-plugin-file-validate-size": "^2.2.8",
@@ -34,6 +36,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",
+    "@tailwindcss/typography": "^0.5.20",
     "@types/node": "^25.9.1"
   }
 }

@@ -24,7 +24,7 @@ export function createAxiosClient(tokenAccessor: TokenAccessor): AxiosInstance {
 
   client.interceptors.request.use((request) => {
     const cfg = request as ApiAxiosRequestConfig
-    const useAuth = cfg.auth !== false
+    const useAuth = cfg.withAuth !== false
     const accessToken = tokenAccessor.getAccessToken()
 
     if (useAuth && accessToken) {
@@ -42,7 +42,7 @@ export function createAxiosClient(tokenAccessor: TokenAccessor): AxiosInstance {
       if (
         error.response?.status === 401 &&
         originalRequest &&
-        originalRequest.auth !== false &&
+        originalRequest.withAuth !== false &&
         !originalRequest.skipRefresh &&
         !originalRequest._retry &&
         tokenAccessor.getRefreshToken()

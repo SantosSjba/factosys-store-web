@@ -1,3 +1,4 @@
+import type { z } from 'zod'
 import type {
   AttributeDataType,
   AttributeScope,
@@ -6,6 +7,7 @@ import type {
   ProductType,
   UpdateProductPayload,
 } from '~/types/admin-catalog'
+import { productFormSchema } from '~/utils/validation/schemas'
 
 export type ProductVariantFormRow = {
   id?: string
@@ -33,26 +35,7 @@ export type EnrichedCategoryAttribute = {
   options: string[]
 }
 
-export type ProductFormValues = {
-  name: string
-  slug: string
-  shortDescription: string
-  description: string
-  primaryCategoryId: string
-  brandId: string
-  status: 'DRAFT' | 'ACTIVE' | 'ARCHIVED'
-  productType: ProductType
-  categoryIds: string[]
-  metaTitle: string
-  metaDescription: string
-  tagsText: string
-  sku: string
-  barcode: string
-  price: number
-  compareAtPrice?: number
-  cost?: number
-  weight?: number
-}
+export type ProductFormValues = z.infer<typeof productFormSchema>
 
 export const emptyProductFormValues: ProductFormValues = {
   name: '',
@@ -152,8 +135,9 @@ export function validateProductFormInput(
   variantAttributes: EnrichedCategoryAttribute[],
 ): string | null {
   if (values.productType === 'SIMPLE') {
-    if (!values.sku.trim()) return 'Ingresa el SKU del producto.'
-    if (Number.isNaN(values.price) || values.price < 0) {
+    if (!values.sku?.trim()) return 'Ingresa el SKU del producto.'
+    const price = values.price ?? Number.NaN
+    if (Number.isNaN(price) || price < 0) {
       return 'Ingresa un precio válido.'
     }
   } else {
@@ -197,9 +181,9 @@ function buildVariantsPayload(
     return [
       {
         id: variants[0]?.id,
-        sku: values.sku.trim(),
-        barcode: values.barcode.trim() || undefined,
-        price: values.price,
+        sku: values.sku?.trim() ?? '',
+        barcode: values.barcode?.trim() || undefined,
+        price: values.price ?? 0,
         compareAtPrice: values.compareAtPrice,
         cost: values.cost,
         weight: values.weight,
@@ -229,22 +213,22 @@ export function buildCreateProductPayload(
   variants: ProductVariantFormRow[],
   productAttributeValues: Record<string, string>,
 ): CreateProductPayload {
-  const secondaryCategoryIds = values.categoryIds.filter(
+  const secondaryCategoryIds = (values.categoryIds ?? []).filter(
     (id) => id && id !== values.primaryCategoryId,
   )
 
   return {
     name: values.name.trim(),
-    slug: values.slug.trim() || undefined,
-    shortDescription: values.shortDescription.trim() || undefined,
-    description: values.description.trim() || undefined,
+    slug: values.slug?.trim() || undefined,
+    shortDescription: values.shortDescription?.trim() || undefined,
+    description: values.description?.trim() || undefined,
     primaryCategoryId: values.primaryCategoryId,
     brandId: values.brandId || undefined,
     productType: values.productType,
     status: values.status,
-    metaTitle: values.metaTitle.trim() || undefined,
-    metaDescription: values.metaDescription.trim() || undefined,
-    tags: parseTagsText(values.tagsText),
+    metaTitle: values.metaTitle?.trim() || undefined,
+    metaDescription: values.metaDescription?.trim() || undefined,
+    tags: parseTagsText(values.tagsText ?? ''),
     categoryIds: secondaryCategoryIds,
     attributeValues: toAttributeValuePayload(productAttributeValues),
     variants: buildVariantsPayload(values, variants),

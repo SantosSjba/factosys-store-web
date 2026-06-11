@@ -1,9 +1,27 @@
 <script setup lang="ts">
 import type { BreadcrumbItem } from '~/types/ui'
 
-defineProps<{
-  items: BreadcrumbItem[]
-}>()
+const props = withDefaults(
+  defineProps<{
+    items: BreadcrumbItem[]
+    tone?: 'admin' | 'store'
+  }>(),
+  { tone: 'admin' },
+)
+
+const linkClass = computed(() =>
+  props.tone === 'admin'
+    ? 'text-admin-muted hover:text-admin transition'
+    : 'text-theme-muted hover:text-theme transition',
+)
+
+const currentClass = computed(() =>
+  props.tone === 'admin' ? 'text-admin font-medium' : 'text-theme font-medium',
+)
+
+const separatorClass = computed(() =>
+  props.tone === 'admin' ? 'text-admin-muted' : 'text-theme-muted',
+)
 </script>
 
 <template>
@@ -18,19 +36,19 @@ defineProps<{
           v-if="index > 0"
           name="lucide:chevron-right"
           :size="14"
-          class="text-admin-muted shrink-0"
+          :class="separatorClass"
+          class="shrink-0"
         />
         <NuxtLink
           v-if="item.to && index < items.length - 1"
           :to="item.to"
-          class="text-admin-muted hover:text-admin transition"
+          :class="linkClass"
         >
           {{ item.label }}
         </NuxtLink>
         <span
           v-else
-          class="text-admin font-medium"
-          :class="index < items.length - 1 ? 'text-admin-muted font-normal' : ''"
+          :class="currentClass"
         >
           {{ item.label }}
         </span>

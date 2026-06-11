@@ -158,7 +158,7 @@ const onSubmit = createSubmitHandler(
       Cargando producto…
     </div>
 
-    <UiAlert v-else-if="isError" variant="danger">
+    <UiAlert v-else-if="isError" variant="error">
       No se pudo cargar el producto.
     </UiAlert>
 

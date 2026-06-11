@@ -5,7 +5,8 @@ import {
   refreshAdminSession,
 } from '~/api/admin-auth.api'
 import { fetchAdminProfile } from '~/api/admin-profile.api'
-import type { AuthTokensResponse, LoginPayload, StoreProfile } from '~/types/auth'
+import type { AdminProfile, AuthTokensResponse, LoginPayload } from '~/types/auth'
+import { mapProfileRoleSlugs } from '~/utils/format-roles'
 
 const ACCESS_COOKIE = 'fs_admin_access_token'
 const REFRESH_COOKIE = 'fs_admin_refresh_token'
@@ -21,7 +22,7 @@ export const useAdminAuthStore = defineStore('admin-auth', () => {
   })
 
   const user = ref<AuthTokensResponse['user'] | null>(null)
-  const profile = ref<StoreProfile | null>(null)
+  const profile = ref<AdminProfile | null>(null)
 
   const isAuthenticated = computed(
     () => Boolean(accessToken.value && user.value),
@@ -75,7 +76,7 @@ export const useAdminAuthStore = defineStore('admin-auth', () => {
         userType: profile.value.userType,
         firstName: profile.value.firstName,
         lastName: profile.value.lastName,
-        roles: profile.value.roles,
+        roles: mapProfileRoleSlugs(profile.value.roles),
       }
     }
     return profile.value
