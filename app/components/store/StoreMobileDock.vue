@@ -12,13 +12,21 @@ const whatsappUrl = computed(() => {
 })
 
 const authStore = useAuthStore()
+const { data: cartCount } = useStoreCartCountQuery()
 
 const items = computed(() => {
   const links = [
-    { label: 'Inicio', icon: 'lucide:home', to: '/', external: false },
-    { label: 'Ofertas', icon: 'lucide:percent', to: '/#ofertas', external: false },
-    { label: 'Catálogo', icon: 'lucide:layout-grid', to: '/productos', external: false },
-    { label: 'Favoritos', icon: 'lucide:heart', to: '/favoritos', external: false },
+    { label: 'Inicio', icon: 'lucide:home', to: '/', external: false, badge: undefined as number | undefined },
+    { label: 'Ofertas', icon: 'lucide:percent', to: '/#ofertas', external: false, badge: undefined },
+    { label: 'Catálogo', icon: 'lucide:layout-grid', to: '/productos', external: false, badge: undefined },
+    {
+      label: 'Carrito',
+      icon: 'lucide:shopping-cart',
+      to: '/carrito',
+      external: false,
+      badge: cartCount.value && cartCount.value > 0 ? cartCount.value : undefined,
+    },
+    { label: 'Favoritos', icon: 'lucide:heart', to: '/favoritos', external: false, badge: undefined },
   ]
 
   if (whatsappUrl.value) {
@@ -27,6 +35,7 @@ const items = computed(() => {
       icon: 'lucide:message-circle',
       to: whatsappUrl.value,
       external: true,
+      badge: undefined,
     })
   } else if (!authStore.isAuthenticated) {
     links.push({
@@ -34,6 +43,7 @@ const items = computed(() => {
       icon: 'lucide:user',
       to: '/login',
       external: false,
+      badge: undefined,
     })
   }
 
@@ -43,6 +53,7 @@ const items = computed(() => {
 function isActive(to: string) {
   if (to === '/') return route.path === '/'
   if (to === '/#ofertas') return route.path === '/'
+  if (to === '/carrito') return route.path.startsWith('/carrito')
   if (to === '/favoritos') return route.path.startsWith('/favoritos')
   if (to.startsWith('http')) return false
   return route.path.startsWith(to)
@@ -70,10 +81,18 @@ function isActive(to: string) {
         <NuxtLink
           v-else
           :to="item.to"
-          class="text-theme-muted flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-lg px-1 py-2 text-[10px] font-medium transition"
+          class="text-theme-muted relative flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-lg px-1 py-2 text-[10px] font-medium transition"
           :class="isActive(item.to) && 'text-brand-accent'"
         >
-          <UiIcon :name="item.icon" :size="20" />
+          <span class="relative">
+            <UiIcon :name="item.icon" :size="20" />
+            <span
+              v-if="item.badge"
+              class="bg-brand-accent absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold text-white"
+            >
+              {{ item.badge > 99 ? '99+' : item.badge }}
+            </span>
+          </span>
           <span class="truncate">{{ item.label }}</span>
         </NuxtLink>
       </template>

@@ -4,8 +4,9 @@ const props = withDefaults(
     modelValue: number
     min?: number
     max?: number
+    disabled?: boolean
   }>(),
-  { min: 1, max: 99 },
+  { min: 1, max: 99, disabled: false },
 )
 
 const emit = defineEmits<{
@@ -22,11 +23,14 @@ function increment() {
 </script>
 
 <template>
-  <div class="border-theme inline-flex items-center overflow-hidden rounded-lg border">
+  <div
+    class="border-theme inline-flex items-center overflow-hidden rounded-lg border"
+    :class="disabled && 'pointer-events-none opacity-60'"
+  >
     <button
       type="button"
       class="text-theme hover:bg-theme-muted px-3 py-2 transition disabled:opacity-40"
-      :disabled="modelValue <= min"
+      :disabled="disabled || modelValue <= min"
       aria-label="Disminuir cantidad"
       @click="decrement"
     >
@@ -38,7 +42,7 @@ function increment() {
     <button
       type="button"
       class="text-theme hover:bg-theme-muted px-3 py-2 transition disabled:opacity-40"
-      :disabled="modelValue >= max"
+      :disabled="disabled || modelValue >= max"
       aria-label="Aumentar cantidad"
       @click="increment"
     >

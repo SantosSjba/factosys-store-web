@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { AuthUser } from '~/types/auth'
+
 const route = useRoute()
 const authStore = useAuthStore()
 const toast = useToast()
@@ -9,8 +11,8 @@ const { data: categories, isPending: categoriesLoading } = useStoreCategoriesQue
 const searchQuery = ref('')
 const isMenuOpen = ref(false)
 const isAccountOpen = ref(false)
-const cartCount = useState('store-cart-count', () => 0)
 const { data: favoritesCount } = useStoreFavoritesCountQuery()
+const { data: cartCount } = useStoreCartCountQuery()
 
 const accountMenuRef = ref<HTMLElement | null>(null)
 
@@ -51,15 +53,28 @@ const supportHref = computed(() => {
   return '/productos'
 })
 
+const authUserState = useState<AuthUser | null>('store-auth-user')
+
 const greetingName = computed(() => {
-  if (!authStore.isAuthenticated || !authStore.user) return null
-  const parts = [authStore.user.firstName, authStore.user.lastName].filter(Boolean)
-  return parts.length > 0 ? parts.join(' ') : authStore.user.email.split('@')[0]
+  const currentUser = authStore.user ?? authUserState.value
+  if (!currentUser || !authStore.isAuthenticated) return null
+  const parts = [currentUser.firstName, currentUser.lastName].filter(Boolean)
+  return parts.length > 0 ? parts.join(' ') : currentUser.email.split('@')[0]
 })
 
 const accountLabel = computed(() =>
   greetingName.value ? `Hola, ${greetingName.value}` : 'Hola, Inicia sesión',
 )
+
+const favoritesBadge = computed(() => {
+  const count = favoritesCount.value
+  return count != null && count > 0 ? count : undefined
+})
+
+const cartBadge = computed(() => {
+  const count = cartCount.value
+  return count != null && count > 0 ? count : undefined
+})
 
 const activeCategorySlug = computed(() =>
   route.path === '/productos' && typeof route.query.categoria === 'string'
@@ -96,6 +111,15 @@ async function onFavoritesClick() {
     return
   }
   await navigateTo({ path: '/login', query: { redirect: '/favoritos' } })
+}
+
+async function onCartClick() {
+  closePanels()
+  if (authStore.isAuthenticated) {
+    await navigateTo('/carrito')
+    return
+  }
+  await navigateTo({ path: '/login', query: { redirect: '/carrito' } })
 }
 
 async function handleLogout() {
@@ -207,6 +231,15 @@ watch(
                   Mi cuenta
                 </NuxtLink>
                 <NuxtLink
+                  to="/carrito"
+                  class="text-theme hover:bg-theme-muted flex items-center gap-2 px-4 py-2 text-sm"
+                  role="menuitem"
+                  @click="isAccountOpen = false"
+                >
+                  <UiIcon name="lucide:shopping-cart" :size="16" class="text-theme-muted shrink-0" />
+                  Mi carrito
+                </NuxtLink>
+                <NuxtLink
                   to="/favoritos"
                   class="text-theme hover:bg-theme-muted flex items-center gap-2 px-4 py-2 text-sm"
                   role="menuitem"
@@ -260,16 +293,16 @@ watch(
             icon="lucide:heart"
             ariaLabel="Mis favoritos"
             size="lg"
-            :badge="favoritesCount && favoritesCount > 0 ? favoritesCount : undefined"
+            :badge="favoritesBadge"
             @click="onFavoritesClick"
           />
 
           <UiIconButton
             icon="lucide:shopping-cart"
-            ariaLabel="Carrito de compras (próximamente)"
+            ariaLabel="Carrito de compras"
             size="lg"
-            :badge="cartCount > 0 ? cartCount : undefined"
-            disabled
+            :badge="cartBadge"
+            @click="onCartClick"
           />
 
           <UiIconButton

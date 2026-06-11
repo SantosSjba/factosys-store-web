@@ -8,10 +8,9 @@ export default defineNuxtRouteMiddleware(async (to) => {
     })
   }
 
-  if (import.meta.server) return
+  await ensureStoreSession(authStore)
 
-  const isValid = await ensureStoreSession(authStore)
-  if (!isValid) {
+  if (!authStore.isAuthenticated && import.meta.client) {
     return navigateTo({
       path: '/login',
       query: { redirect: to.fullPath },

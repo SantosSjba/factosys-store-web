@@ -52,11 +52,25 @@ function noopVeeValidateDevtools() {
   }
 }
 
+const apiProxyTarget =
+  process.env.NUXT_API_PROXY_TARGET || 'https://127.0.0.1:3000'
+
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
 
   modules: ['@pinia/nuxt', '@nuxtjs/tailwindcss', '@nuxt/image', '@vueuse/nuxt'],
+
+  // SSR en dev: mismo proxy /api que el navegador (API suele ir con DEV_HTTPS=true).
+  nitro: {
+    devProxy: {
+      '/api': {
+        target: apiProxyTarget,
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
 
   tailwindcss: {
     configPath: 'tailwind.config.ts',
@@ -126,7 +140,7 @@ export default defineNuxtConfig({
       strictPort: true,
       proxy: {
         '/api': {
-          target: process.env.NUXT_API_PROXY_TARGET || 'http://127.0.0.1:3000',
+          target: apiProxyTarget,
           changeOrigin: true,
           secure: false,
         },
@@ -137,7 +151,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || '/api',
-      apiOrigin: process.env.NUXT_API_PROXY_TARGET || 'http://127.0.0.1:3000',
+      apiOrigin: apiProxyTarget,
       appName: process.env.NUXT_PUBLIC_APP_NAME || 'Factosys Store',
     },
   },

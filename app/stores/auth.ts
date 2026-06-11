@@ -1,4 +1,6 @@
+import { useQueryClient } from '@tanstack/vue-query'
 import { defineStore } from 'pinia'
+import { storeQueryKeys } from '~/constants/query-keys'
 import {
   loginStoreUser,
   logoutStoreSession,
@@ -16,9 +18,15 @@ import type {
   StoreProfile,
   VerifyEmailPayload,
 } from '~/types/auth'
+import { parseApiError } from '~/utils/parse-api-error'
 
 const ACCESS_COOKIE = 'fs_access_token'
 const REFRESH_COOKIE = 'fs_refresh_token'
+
+function isAuthFailure(error: unknown) {
+  const apiError = parseApiError(error)
+  return apiError.statusCode === 401 || apiError.statusCode === 403
+}
 
 function profileToUser(profile: StoreProfile): AuthUser {
   return {
@@ -35,14 +43,24 @@ export const useAuthStore = defineStore('auth', () => {
   const accessToken = useCookie<string | null>(ACCESS_COOKIE, {
     maxAge: 60 * 60 * 24 * 7,
     sameSite: 'lax',
+    path: '/',
   })
   const refreshToken = useCookie<string | null>(REFRESH_COOKIE, {
     maxAge: 60 * 60 * 24 * 30,
     sameSite: 'lax',
+    path: '/',
   })
+
+  let refreshPromise: Promise<AuthTokensResponse> | null = null
+  let hydratePromise: Promise<void> | null = null
 
   const user = ref<AuthUser | null>(null)
   const profile = ref<StoreProfile | null>(null)
+  const authUserState = useState<AuthUser | null>('store-auth-user', () => null)
+
+  function syncAuthUserState() {
+    authUserState.value = user.value
+  }
 
   const isAuthenticated = computed(
     () => Boolean(accessToken.value && user.value),
@@ -52,6 +70,7 @@ export const useAuthStore = defineStore('auth', () => {
     accessToken.value = tokens.accessToken
     refreshToken.value = tokens.refreshToken
     user.value = tokens.user
+    syncAuthUserState()
   }
 
   function clearSession() {
@@ -59,6 +78,7 @@ export const useAuthStore = defineStore('auth', () => {
     refreshToken.value = null
     user.value = null
     profile.value = null
+    syncAuthUserState()
   }
 
   async function register(payload: RegisterPayload) {
@@ -82,9 +102,21 @@ export const useAuthStore = defineStore('auth', () => {
     if (!refreshToken.value) {
       throw new Error('No hay sesión activa')
     }
-    const tokens = await refreshStoreSession(refreshToken.value)
-    setSession(tokens)
-    return tokens
+
+    if (refreshPromise) {
+      return refreshPromise
+    }
+
+    refreshPromise = refreshStoreSession(refreshToken.value)
+      .then((tokens) => {
+        setSession(tokens)
+        return tokens
+      })
+      .finally(() => {
+        refreshPromise = null
+      })
+
+    return refreshPromise
   }
 
   async function logout() {
@@ -96,11 +128,17 @@ export const useAuthStore = defineStore('auth', () => {
       }
     }
     clearSession()
+
+    if (import.meta.client) {
+      const queryClient = useQueryClient()
+      queryClient.removeQueries({ queryKey: storeQueryKeys.all })
+    }
   }
 
   async function fetchProfile() {
     profile.value = await fetchStoreProfile()
     user.value = profileToUser(profile.value)
+    syncAuthUserState()
     return profile.value
   }
 
@@ -111,21 +149,57 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function hydrateFromTokens() {
-    if (!accessToken.value) return
-    try {
-      await fetchProfile()
-    } catch {
-      if (refreshToken.value) {
+    if (user.value) {
+      syncAuthUserState()
+      return
+    }
+
+    if (!user.value && authUserState.value) {
+      user.value = authUserState.value
+      return
+    }
+    if (!accessToken.value && !refreshToken.value) return
+
+    if (hydratePromise) {
+      return hydratePromise
+    }
+
+    hydratePromise = (async () => {
+      if (!accessToken.value && refreshToken.value) {
+        try {
+          await refreshSession()
+        } catch {
+          clearSession()
+          return
+        }
+      }
+
+      if (!accessToken.value) return
+
+      try {
+        await fetchProfile()
+      } catch (error) {
+        if (!isAuthFailure(error)) {
+          return
+        }
+
+        if (!refreshToken.value) {
+          clearSession()
+          return
+        }
+
         try {
           await refreshSession()
           await fetchProfile()
         } catch {
           clearSession()
         }
-      } else {
-        clearSession()
       }
-    }
+    })().finally(() => {
+      hydratePromise = null
+    })
+
+    return hydratePromise
   }
 
   const googleAuthUrl = computed(() => {

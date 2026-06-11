@@ -263,20 +263,8 @@ useHead({
             <span class="text-theme font-medium">{{ selectedVariant.sku }}</span>
           </div>
 
-          <UiAlert variant="info">
-            El carrito estará disponible muy pronto. Mientras tanto, puedes explorar
-            nuestro catálogo o contactarnos para realizar tu pedido.
-          </UiAlert>
-
           <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-            <UiButton
-              disabled
-              icon="lucide:shopping-cart"
-              aria-describedby="cart-soon-hint"
-              class="sm:min-w-[12rem]"
-            >
-              Agregar al carrito
-            </UiButton>
+            <StoreAddToCartButton :variant-id="selectedVariantId" />
             <StoreFavoriteButton
               :product-id="product.id"
               size="lg"
@@ -293,9 +281,6 @@ useHead({
               </UiButton>
             </NuxtLink>
           </div>
-          <p id="cart-soon-hint" class="text-theme-muted text-xs">
-            Función de carrito en desarrollo.
-          </p>
 
           <StoreProductPurchaseHighlights />
 

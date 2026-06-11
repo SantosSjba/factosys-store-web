@@ -1,4 +1,5 @@
 import axios, { type AxiosInstance } from 'axios'
+import https from 'node:https'
 import type { ApiAxiosRequestConfig } from '~/types/axios'
 import { parseApiError } from '~/utils/parse-api-error'
 
@@ -9,17 +10,51 @@ type TokenAccessor = {
   clearSession: () => void
 }
 
-export function createAxiosClient(tokenAccessor: TokenAccessor): AxiosInstance {
+function resolveApiBaseUrl() {
   const config = useRuntimeConfig()
+  const apiPath = config.public.apiBaseUrl.replace(/\/$/, '')
+
+  if (apiPath.startsWith('http')) return apiPath
+
+  if (import.meta.server) {
+    const event = useRequestEvent()
+    const host = event?.node.req.headers.host
+
+    if (host) {
+      const forwardedProto = event?.node.req.headers['x-forwarded-proto']
+      const proto =
+        typeof forwardedProto === 'string' ? forwardedProto.split(',')[0] : 'http'
+
+      return `${proto}://${host}${apiPath.startsWith('/') ? apiPath : `/${apiPath}`}`
+    }
+
+    const origin = String(config.public.apiOrigin || '').replace(/\/$/, '')
+    if (origin) {
+      return `${origin}${apiPath.startsWith('/') ? apiPath : `/${apiPath}`}`
+    }
+  }
+
+  return apiPath
+}
+
+function resolveHttpsAgent(baseURL: string) {
+  if (!import.meta.server || !baseURL.startsWith('https://')) return undefined
+
+  return new https.Agent({ rejectUnauthorized: false })
+}
+
+export function createAxiosClient(tokenAccessor: TokenAccessor): AxiosInstance {
   let refreshPromise: Promise<void> | null = null
+  const baseURL = resolveApiBaseUrl()
 
   const client = axios.create({
-    baseURL: config.public.apiBaseUrl.replace(/\/$/, ''),
+    baseURL,
     timeout: 30_000,
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',
     },
+    httpsAgent: resolveHttpsAgent(baseURL),
   })
 
   client.interceptors.request.use((request) => {
@@ -65,8 +100,11 @@ export function createAxiosClient(tokenAccessor: TokenAccessor): AxiosInstance {
           }
           return client(originalRequest)
         } catch (retryError) {
-          tokenAccessor.clearSession()
-          return Promise.reject(parseApiError(retryError))
+          const apiError = parseApiError(retryError)
+          if (apiError.statusCode === 401 || apiError.statusCode === 403) {
+            tokenAccessor.clearSession()
+          }
+          return Promise.reject(apiError)
         }
       }
 

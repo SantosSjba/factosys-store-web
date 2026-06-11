@@ -24,7 +24,7 @@ export function useStoreFavoritesQuery(
   return useQuery<PaginatedResponse<StoreFavoriteItem>>({
     queryKey: computed(() => [...storeQueryKeys.favorites(), queryParams.value]),
     queryFn: () => fetchStoreFavorites(queryParams.value),
-    enabled: computed(() => Boolean(authStore.accessToken)),
+    enabled: computed(() => authStore.isAuthenticated),
     staleTime: 30 * 1000,
   })
 }
@@ -35,9 +35,8 @@ export function useStoreFavoriteIdsQuery() {
   return useQuery<string[]>({
     queryKey: storeQueryKeys.favoriteIds(),
     queryFn: () => fetchStoreFavoriteIds(),
-    enabled: computed(() => Boolean(authStore.accessToken)),
+    enabled: computed(() => authStore.isAuthenticated),
     staleTime: 30 * 1000,
-    initialData: () => [],
   })
 }
 
@@ -47,8 +46,7 @@ export function useStoreFavoritesCountQuery() {
   return useQuery<number>({
     queryKey: storeQueryKeys.favoritesCount(),
     queryFn: () => fetchStoreFavoritesCount(),
-    enabled: computed(() => Boolean(authStore.accessToken)),
+    enabled: computed(() => authStore.isAuthenticated),
     staleTime: 30 * 1000,
-    initialData: 0,
   })
 }
