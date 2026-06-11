@@ -11,7 +11,9 @@ export type StoreCartLineItem = {
   compareAtPrice: number | null
   lineSubtotal: number
   imageUrl: string | null
+  availableQuantity: number
   maxQuantity: number
+  hasStockIssue?: boolean
 }
 
 export type StoreCart = {

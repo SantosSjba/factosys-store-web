@@ -40,7 +40,10 @@ const dashboardRange = computed<DashboardStatsParams>(() => {
   return buildPresetRange(7)
 })
 
-const { data: stats, isPending: statsPending } = useAdminDashboardQuery(dashboardRange)
+const { data: stats, isPending: statsPending } = useAdminDashboardQuery(
+  dashboardRange,
+  { refetchInterval: 45_000 },
+)
 const isMounted = ref(false)
 
 onMounted(() => {
@@ -64,6 +67,21 @@ const trendLabel = computed(() => {
 })
 
 const trendUp = computed(() => (stats.value?.ordersTrendPercent ?? 0) >= 0)
+
+const onlineCustomersLabel = computed(() => {
+  const online = stats.value?.onlineCustomers
+  if (!online?.available) return '—'
+  return String(online.count)
+})
+
+const onlineCustomersHint = computed(() => {
+  const online = stats.value?.onlineCustomers
+  if (!online) return ''
+  if (!online.available) {
+    return 'Activa Redis para ver clientes en línea'
+  }
+  return `Con actividad en los últimos ${online.windowMinutes} min`
+})
 
 const rangeLabel = computed(() => {
   if (!stats.value?.range) return ''
@@ -131,7 +149,7 @@ function setPreset(preset: RangePreset) {
         Cargando métricas…
       </div>
 
-      <div v-else-if="stats" class="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div v-else-if="stats" class="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <AdminStatCard
           label="Pedidos en rango"
           :value="String(stats.ordersInRange)"
@@ -157,6 +175,12 @@ function setPreset(preset: RangePreset) {
           :value="String(stats.ordersToday)"
           :hint="`${stats.productsActive} productos activos`"
           icon="users"
+        />
+        <AdminStatCard
+          label="Clientes en línea"
+          :value="onlineCustomersLabel"
+          :hint="onlineCustomersHint"
+          icon="customers"
         />
       </div>
 

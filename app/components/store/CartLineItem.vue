@@ -7,6 +7,8 @@ const props = defineProps<{
   compareAtPrice?: number | null
   quantity: number
   maxQuantity?: number
+  availableQuantity?: number
+  hasStockIssue?: boolean
   imageUrl?: string | null
   loading?: boolean
   currency?: string
@@ -59,10 +61,23 @@ const displayTitle = computed(() => {
 
       <UiPrice
         :price="price"
-        :compare-at="compareAtPrice"
+        :compare-at="compareAtPrice ?? undefined"
         :currency="currency"
         class="mt-1"
       />
+
+      <p
+        v-if="hasStockIssue"
+        class="mt-1 text-xs text-amber-700 dark:text-amber-300"
+      >
+        Solo {{ availableQuantity ?? 0 }} disponible(s). Ajusta la cantidad antes de pagar.
+      </p>
+      <p
+        v-else-if="availableQuantity === 0"
+        class="mt-1 text-xs text-red-600"
+      >
+        Sin stock disponible.
+      </p>
 
       <div class="mt-3 flex flex-wrap items-center justify-between gap-2">
         <UiQuantityStepper

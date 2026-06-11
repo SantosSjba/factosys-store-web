@@ -67,17 +67,11 @@ const freeShippingHint = computed(() => {
         />
       </div>
 
-      <UiButton
-        disabled
-        icon="lucide:credit-card"
-        class="w-full"
-        aria-describedby="checkout-soon-hint"
-      >
-        Ir a pagar
-      </UiButton>
-      <p id="checkout-soon-hint" class="text-theme-muted text-center text-xs">
-        El checkout estará disponible muy pronto.
-      </p>
+      <NuxtLink to="/checkout" class="block">
+        <UiButton icon="lucide:credit-card" class="w-full">
+          Ir a pagar
+        </UiButton>
+      </NuxtLink>
 
       <UiButton
         variant="secondary"

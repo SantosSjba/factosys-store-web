@@ -71,7 +71,7 @@ useStoreSeo({
           rounded="lg"
         />
       </div>
-      <UiSkeleton tone="store" height="16rem" rounded="2xl" />
+      <UiSkeleton tone="store" height="16rem" rounded="lg" />
     </div>
 
     <UiErrorState
@@ -108,6 +108,8 @@ useStoreSeo({
           :compare-at-price="item.compareAtPrice"
           :quantity="item.quantity"
           :max-quantity="item.maxQuantity"
+          :available-quantity="item.availableQuantity"
+          :has-stock-issue="item.hasStockIssue"
           :image-url="item.imageUrl"
           :currency="cart.currencyCode"
           :loading="updatingVariantId === item.variantId"

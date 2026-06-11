@@ -4,6 +4,7 @@ import type { DashboardStatsParams } from '~/types/admin-dashboard'
 
 export function useAdminDashboardQuery(
   range: MaybeRefOrGetter<DashboardStatsParams> = {},
+  options?: { refetchInterval?: number | false },
 ) {
   const adminAuth = useAdminAuthStore()
   const { can } = useAdminPermissions()
@@ -25,5 +26,6 @@ export function useAdminDashboardQuery(
       return can('reports.read')
     }),
     staleTime: 60_000,
+    refetchInterval: options?.refetchInterval ?? false,
   })
 }

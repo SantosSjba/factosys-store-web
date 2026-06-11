@@ -16,6 +16,9 @@ export const storeQueryKeys = {
   favoritesCount: () => [...storeQueryKeys.all, 'favorites', 'count'] as const,
   cart: () => [...storeQueryKeys.all, 'cart'] as const,
   cartCount: () => [...storeQueryKeys.all, 'cart', 'count'] as const,
+  checkoutSettings: () => [...storeQueryKeys.all, 'checkout', 'settings'] as const,
+  checkoutQuote: (params: unknown) =>
+    [...storeQueryKeys.all, 'checkout', 'quote', params] as const,
 }
 
 export const adminQueryKeys = {

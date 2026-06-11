@@ -30,6 +30,12 @@ export type DashboardStatsParams = {
   dateTo?: string
 }
 
+export type DashboardOnlineCustomers = {
+  count: number
+  available: boolean
+  windowMinutes: number
+}
+
 export type DashboardStats = {
   currencyCode: string
   range: DashboardStatsRange
@@ -43,6 +49,7 @@ export type DashboardStats = {
   productsActive: number
   staffUsers: number
   lowStockItems: number
+  onlineCustomers: DashboardOnlineCustomers
   dailySeries: DashboardDailyPoint[]
   ordersByStatus: Array<{ status: OrderStatus; count: number }>
   recentOrders: DashboardRecentOrder[]

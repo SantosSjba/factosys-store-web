@@ -18,6 +18,7 @@ import type {
   StoreProfile,
   VerifyEmailPayload,
 } from '~/types/auth'
+import { isAccessTokenExpiringSoon } from '~/utils/jwt'
 import { parseApiError } from '~/utils/parse-api-error'
 
 const ACCESS_COOKIE = 'fs_access_token'
@@ -96,6 +97,14 @@ export const useAuthStore = defineStore('auth', () => {
     const tokens = await loginStoreUser(payload)
     setSession(tokens)
     return tokens
+  }
+
+  async function ensureFreshAccessToken(skewMs = 120_000) {
+    if (!accessToken.value || !refreshToken.value) return
+
+    if (!isAccessTokenExpiringSoon(accessToken.value, skewMs)) return
+
+    await refreshSession()
   }
 
   async function refreshSession(): Promise<AuthTokensResponse> {
@@ -225,6 +234,7 @@ export const useAuthStore = defineStore('auth', () => {
     verifyEmail,
     login,
     refreshSession,
+    ensureFreshAccessToken,
     logout,
     fetchProfile,
     setTokensFromCallback,
