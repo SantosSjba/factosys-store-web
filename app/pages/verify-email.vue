@@ -255,7 +255,7 @@ onMounted(async () => {
           <UiFieldMessage :error="acceptTermsError" />
         </div>
 
-        <UiButton type="submit" class="w-full" :loading="isSubmitting">
+        <UiButton type="submit" class="w-full" icon="lucide:badge-check" :loading="isSubmitting">
           Verificar cuenta
         </UiButton>
 
@@ -263,6 +263,7 @@ onMounted(async () => {
           type="button"
           variant="ghost"
           class="w-full"
+          icon="lucide:mail"
           :loading="isResending"
           @click="onResend"
         >

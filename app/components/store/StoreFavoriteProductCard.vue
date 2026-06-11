@@ -11,20 +11,23 @@ const display = computed(() => getProductDisplayPrice(props.product))
 
 <template>
   <article class="border-theme bg-theme-surface group relative overflow-hidden rounded-xl border shadow-sm transition hover:shadow-md">
-    <StoreFavoriteButton
-      :product-id="product.id"
-      variant="overlay"
-    />
+    <div class="absolute right-2 top-2 z-20">
+      <StoreFavoriteButton
+        :product-id="product.id"
+        variant="overlay"
+      />
+    </div>
 
     <NuxtLink
       :to="`/productos/${product.slug}`"
-      class="block"
+      class="relative z-0 block"
     >
       <div class="bg-theme-muted relative aspect-square overflow-hidden">
         <StoreImage
           v-if="product.primaryImageUrl"
           :src="product.primaryImageUrl"
           :alt="product.name"
+          click-through
           img-class="motion-safe:transition h-full w-full motion-safe:group-hover:scale-105"
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
         />

@@ -83,7 +83,7 @@ onMounted(() => {
         required
       />
 
-      <UiButton type="submit" class="w-full" :loading="isSubmitting">
+      <UiButton type="submit" class="w-full" icon="lucide:log-in" :loading="isSubmitting">
         Entrar
       </UiButton>
     </form>

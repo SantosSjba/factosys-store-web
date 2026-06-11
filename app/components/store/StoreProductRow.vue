@@ -13,6 +13,13 @@ defineProps<{
   skeletonCount?: number
 }>()
 
+const {
+  onPointerDown,
+  onPointerMove,
+  onPointerUp,
+  onClickCapture,
+} = usePointerClickIntent()
+
 function productBadge(product: StoreProduct) {
   if (!isProductOnSale(product)) return undefined
   const { price, compareAt } = getProductDisplayPrice(product)
@@ -39,6 +46,11 @@ function productBadge(product: StoreProduct) {
   <div
     v-else-if="products.length > 0"
     class="relative -mx-4 flex gap-3 overflow-x-auto px-4 pb-1 snap-x snap-mandatory scroll-smooth sm:gap-4"
+    @pointerdown="onPointerDown"
+    @pointermove="onPointerMove"
+    @pointerup="onPointerUp"
+    @pointercancel="onPointerUp"
+    @click.capture="onClickCapture"
   >
     <div
       v-for="product in products"

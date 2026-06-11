@@ -114,7 +114,7 @@ const onSubmit = createSubmitHandler(
     </UiAlert>
 
     <div class="flex flex-col gap-3 sm:flex-row">
-      <UiButton type="submit" :loading="isSubmitting">
+      <UiButton type="submit" icon="lucide:save" :loading="isSubmitting">
         Guardar cambios
       </UiButton>
     </div>

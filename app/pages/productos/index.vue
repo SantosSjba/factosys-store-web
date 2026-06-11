@@ -203,7 +203,7 @@ function onPageChange(nextPage: number) {
         empty-message="No encontramos productos con esos filtros"
       >
         <template #empty-action>
-          <UiButton variant="secondary" @click="clearFilters">
+          <UiButton variant="secondary" icon="lucide:filter-x" @click="clearFilters">
             Limpiar filtros
           </UiButton>
         </template>

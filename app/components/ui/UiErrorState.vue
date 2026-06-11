@@ -23,7 +23,7 @@ const emit = defineEmits<{
           'No pudimos cargar la información. Intenta de nuevo en unos segundos.'
       }}
     </p>
-    <UiButton class="mt-5" variant="secondary" @click="emit('retry')">
+    <UiButton class="mt-5" variant="secondary" icon="lucide:refresh-cw" @click="emit('retry')">
       Reintentar
     </UiButton>
   </div>

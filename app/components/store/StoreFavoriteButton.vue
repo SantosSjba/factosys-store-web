@@ -4,10 +4,12 @@ const props = withDefaults(
     productId: string
     size?: 'sm' | 'md' | 'lg'
     variant?: 'overlay' | 'inline'
+    showLabel?: boolean
   }>(),
   {
     size: 'md',
     variant: 'overlay',
+    showLabel: false,
   },
 )
 
@@ -25,10 +27,17 @@ const iconClass = computed(() =>
 
 const buttonClass = computed(() => {
   if (props.variant === 'overlay') {
-    return 'bg-theme-surface/90 hover:bg-theme-surface border-theme absolute right-2 top-2 z-10 rounded-full border shadow-sm backdrop-blur-sm'
+    return 'bg-theme-surface/90 hover:bg-theme-surface border-theme rounded-full border shadow-sm backdrop-blur-sm'
+  }
+  if (props.showLabel) {
+    return 'border-theme bg-theme-surface hover:bg-theme-muted rounded-lg border px-4 py-2.5 text-sm font-semibold shadow-sm'
   }
   return 'border-theme bg-theme-surface hover:bg-theme-muted rounded-full border shadow-sm'
 })
+
+const labelText = computed(() =>
+  isFavorite.value ? 'En favoritos' : 'Agregar a favoritos',
+)
 
 const sizeClass = computed(() => {
   if (props.size === 'sm') return 'p-1.5'
@@ -47,16 +56,17 @@ const iconSize = computed(() => {
   <button
     type="button"
     class="inline-flex items-center justify-center transition focus:outline-none focus:ring-2 focus:ring-[var(--brand-cyan)] disabled:opacity-60"
-    :class="[buttonClass, sizeClass]"
+    :class="[buttonClass, sizeClass, showLabel && 'gap-2']"
     :disabled="isPending"
-    :aria-label="isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'"
+    :aria-label="showLabel ? undefined : isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'"
     :aria-pressed="isFavorite"
-    @click.stop.prevent="toggleFavorite"
+    @click.stop="toggleFavorite"
   >
     <UiIcon
       :name="iconName"
       :size="iconSize"
       :class="iconClass"
     />
+    <span v-if="showLabel" class="text-theme">{{ labelText }}</span>
   </button>
 </template>

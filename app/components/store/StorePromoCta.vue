@@ -46,7 +46,7 @@ const subline = computed(() => {
         </p>
       </div>
       <NuxtLink to="/productos" class="w-full sm:w-auto">
-        <UiButton class="w-full sm:w-auto">
+        <UiButton class="w-full sm:w-auto" icon="lucide:layout-grid">
           Ir al catálogo
         </UiButton>
       </NuxtLink>

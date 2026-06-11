@@ -1,21 +1,83 @@
 <script setup lang="ts">
-import { getDefaultVariant, getProductDisplayPrice } from '~/utils/store/product'
+import {
+  findCategorySlug,
+  getActiveVariants,
+  getDefaultVariant,
+  getDiscountPercent,
+  getProductDisplayPrice,
+  getProductImages,
+  getVariantDisplayPrice,
+} from '~/utils/store/product'
 
 const route = useRoute()
 const slug = computed(() => String(route.params.slug))
 
 const { data: product, isPending, isError, refetch } = useStoreProductQuery(slug)
 const { data: settings } = useStoreSettingsQuery()
+const { data: categories } = useStoreCategoriesQuery()
 
-const displayPrice = computed(() =>
-  product.value ? getProductDisplayPrice(product.value) : null,
+const selectedVariantId = ref<string | null>(null)
+
+const activeVariants = computed(() =>
+  product.value ? getActiveVariants(product.value) : [],
 )
 
-const defaultVariant = computed(() =>
-  product.value ? getDefaultVariant(product.value) : null,
+const selectedVariant = computed(() => {
+  if (!product.value) return null
+
+  if (selectedVariantId.value) {
+    return (
+      activeVariants.value.find(
+        (variant) => variant.id === selectedVariantId.value,
+      ) ?? getDefaultVariant(product.value)
+    )
+  }
+
+  return getDefaultVariant(product.value)
+})
+
+watch(
+  product,
+  (value) => {
+    if (!value) {
+      selectedVariantId.value = null
+      return
+    }
+    selectedVariantId.value = getDefaultVariant(value)?.id ?? null
+  },
+  { immediate: true },
 )
+
+const displayImages = computed(() =>
+  product.value
+    ? getProductImages(product.value, selectedVariant.value?.id)
+    : [],
+)
+
+const displayPrice = computed(() => {
+  if (selectedVariant.value) {
+    return getVariantDisplayPrice(selectedVariant.value)
+  }
+  return product.value ? getProductDisplayPrice(product.value) : null
+})
+
+const discountPercent = computed(() => {
+  if (!displayPrice.value?.compareAt) return 0
+  return getDiscountPercent(displayPrice.value.price, displayPrice.value.compareAt)
+})
 
 const currencyCode = computed(() => settings.value?.currency.code ?? 'PEN')
+
+const categoryCatalogUrl = computed(() => {
+  if (!product.value || !categories.value) return '/productos'
+  const categorySlug = findCategorySlug(
+    categories.value,
+    product.value.primaryCategoryId,
+  )
+  return categorySlug
+    ? `/productos?categoria=${categorySlug}`
+    : '/productos'
+})
 
 const breadcrumbs = computed(() => {
   if (!product.value) {
@@ -28,9 +90,27 @@ const breadcrumbs = computed(() => {
   return [
     { label: 'Inicio', to: '/' },
     { label: 'Catálogo', to: '/productos' },
-    { label: product.value.primaryCategoryName },
+    {
+      label: product.value.primaryCategoryName,
+      to: categoryCatalogUrl.value,
+    },
     { label: product.value.name },
   ]
+})
+
+const { data: relatedProductsPage } = useStoreProductsQuery(
+  computed(() => ({
+    page: 1,
+    limit: 8,
+    categoryId: product.value?.primaryCategoryId,
+  })),
+)
+
+const relatedProducts = computed(() => {
+  if (!product.value || !relatedProductsPage.value) return []
+  return relatedProductsPage.value.items.filter(
+    (item) => item.id !== product.value?.id,
+  )
 })
 
 useStoreSeo(
@@ -40,7 +120,7 @@ useStoreSeo(
       product.value?.metaDescription ||
       product.value?.shortDescription ||
       undefined,
-    image: product.value?.primaryImageUrl,
+    image: displayImages.value[0]?.url || product.value?.primaryImageUrl,
   })),
 )
 
@@ -51,8 +131,8 @@ const productJsonLd = computed(() => {
     '@type': 'Product',
     name: product.value.name,
     description: product.value.shortDescription || product.value.description,
-    image: product.value.primaryImageUrl,
-    sku: defaultVariant.value?.sku,
+    image: displayImages.value.map((image) => image.url),
+    sku: selectedVariant.value?.sku,
     brand: product.value.brandName
       ? { '@type': 'Brand', name: product.value.brandName }
       : undefined,
@@ -104,11 +184,11 @@ useHead({
     >
       <template #action>
         <div class="flex flex-wrap justify-center gap-3">
-          <UiButton variant="secondary" @click="refetch()">
+          <UiButton variant="secondary" icon="lucide:refresh-cw" @click="refetch()">
             Reintentar
           </UiButton>
           <NuxtLink to="/productos">
-            <UiButton>Volver al catálogo</UiButton>
+            <UiButton icon="lucide:layout-grid">Volver al catálogo</UiButton>
           </NuxtLink>
         </div>
       </template>
@@ -116,31 +196,43 @@ useHead({
 
     <article
       v-else
-      class="space-y-6"
+      class="space-y-8 sm:space-y-10"
     >
       <UiBreadcrumb :items="breadcrumbs" tone="store" />
 
-      <div class="grid gap-6 lg:grid-cols-2 lg:gap-10">
+      <div class="grid gap-6 lg:grid-cols-2 lg:items-start lg:gap-10">
         <StoreProductGallery
-          :images="product.images"
+          :images="displayImages"
           :product-name="product.name"
           :primary-url="product.primaryImageUrl"
         />
 
-        <div class="space-y-5 sm:space-y-6">
+        <div class="lg:sticky lg:top-24 lg:space-y-5 lg:self-start sm:space-y-6">
           <div>
-            <p
-              v-if="product.brandName"
-              class="text-theme-muted text-xs font-medium uppercase tracking-wide sm:text-sm"
-            >
-              {{ product.brandName }}
-            </p>
+            <div class="flex flex-wrap items-center gap-2">
+              <p
+                v-if="product.brandName"
+                class="text-theme-muted text-xs font-medium uppercase tracking-wide sm:text-sm"
+              >
+                {{ product.brandName }}
+              </p>
+              <UiBadge
+                v-if="discountPercent > 0"
+                variant="danger"
+                class="normal-case"
+              >
+                -{{ discountPercent }}%
+              </UiBadge>
+            </div>
             <h1 class="text-theme mt-1 text-2xl font-bold sm:text-3xl lg:text-4xl">
               {{ product.name }}
             </h1>
-            <p class="text-theme-muted mt-2 text-sm">
+            <NuxtLink
+              :to="categoryCatalogUrl"
+              class="text-theme-muted hover:text-brand-accent-deep mt-2 inline-block text-sm transition"
+            >
               {{ product.primaryCategoryName }}
-            </p>
+            </NuxtLink>
           </div>
 
           <UiPrice
@@ -157,12 +249,18 @@ useHead({
             {{ product.shortDescription }}
           </p>
 
+          <StoreProductVariantPicker
+            v-if="activeVariants.length > 1 && selectedVariantId"
+            v-model="selectedVariantId"
+            :variants="activeVariants"
+          />
+
           <div
-            v-if="defaultVariant?.sku"
+            v-if="selectedVariant?.sku"
             class="text-theme-muted text-sm"
           >
             SKU:
-            <span class="text-theme font-medium">{{ defaultVariant.sku }}</span>
+            <span class="text-theme font-medium">{{ selectedVariant.sku }}</span>
           </div>
 
           <UiAlert variant="info">
@@ -171,17 +269,26 @@ useHead({
           </UiAlert>
 
           <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-            <UiButton disabled aria-describedby="cart-soon-hint">
+            <UiButton
+              disabled
+              icon="lucide:shopping-cart"
+              aria-describedby="cart-soon-hint"
+              class="sm:min-w-[12rem]"
+            >
               Agregar al carrito
             </UiButton>
             <StoreFavoriteButton
-              v-if="product"
               :product-id="product.id"
               size="lg"
               variant="inline"
+              show-label
             />
             <NuxtLink to="/productos" class="w-full sm:w-auto">
-              <UiButton variant="secondary" class="w-full sm:w-auto">
+              <UiButton
+                variant="secondary"
+                icon="lucide:store"
+                class="w-full sm:w-auto"
+              >
                 Seguir comprando
               </UiButton>
             </NuxtLink>
@@ -189,6 +296,8 @@ useHead({
           <p id="cart-soon-hint" class="text-theme-muted text-xs">
             Función de carrito en desarrollo.
           </p>
+
+          <StoreProductPurchaseHighlights />
 
           <div
             v-if="settings?.returnsPolicyUrl || settings?.warrantyPolicyUrl"
@@ -213,20 +322,31 @@ useHead({
               Garantía del producto
             </a>
           </div>
-
-          <div
-            v-if="product.description"
-            class="border-theme border-t pt-6"
-          >
-            <h2 class="text-theme text-lg font-semibold">Descripción</h2>
-            <div
-              class="text-theme-muted prose prose-sm prose-slate mt-3 max-w-none dark:prose-invert sm:prose-base"
-            >
-              <p class="whitespace-pre-line">{{ product.description }}</p>
-            </div>
-          </div>
         </div>
       </div>
+
+      <div
+        v-if="product.description"
+        class="border-theme border-t pt-8"
+      >
+        <h2 class="text-theme text-lg font-semibold sm:text-xl">
+          Descripción del producto
+        </h2>
+        <div class="text-theme-muted mt-4 max-w-3xl text-sm leading-relaxed sm:text-base">
+          <p class="whitespace-pre-line">{{ product.description }}</p>
+        </div>
+      </div>
+
+      <StoreHomeSection
+        v-if="relatedProducts.length > 0"
+        title="También te puede interesar"
+        description="Productos relacionados de la misma categoría"
+        action-label="Ver catálogo"
+        :action-to="categoryCatalogUrl"
+        muted
+      >
+        <StoreProductRow :products="relatedProducts" />
+      </StoreHomeSection>
     </article>
   </section>
 </template>

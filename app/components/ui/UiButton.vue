@@ -8,12 +8,15 @@ const props = withDefaults(
     variant?: 'primary' | 'secondary' | 'ghost'
     disabled?: boolean
     loading?: MaybeRef<boolean>
+    icon?: string
+    iconPosition?: 'start' | 'end'
   }>(),
   {
     type: 'button',
     variant: 'primary',
     disabled: false,
     loading: false,
+    iconPosition: 'start',
   },
 )
 
@@ -33,8 +36,25 @@ const isLoading = computed(() => toValue(props.loading))
     }"
     :disabled="disabled || isLoading"
   >
-    <span :class="isLoading ? 'invisible' : undefined">
+    <span
+      class="inline-flex items-center justify-center gap-2"
+      :class="isLoading ? 'invisible' : undefined"
+    >
+      <UiIcon
+        v-if="icon && iconPosition === 'start'"
+        :name="icon"
+        :size="16"
+        class="shrink-0"
+        aria-hidden="true"
+      />
       <slot />
+      <UiIcon
+        v-if="icon && iconPosition === 'end'"
+        :name="icon"
+        :size="16"
+        class="shrink-0"
+        aria-hidden="true"
+      />
     </span>
     <span
       v-if="isLoading"

@@ -123,7 +123,7 @@ useStoreSeo(
       >
         <template #empty-action>
           <NuxtLink to="/productos">
-            <UiButton>Explorar catálogo</UiButton>
+            <UiButton icon="lucide:layout-grid">Explorar catálogo</UiButton>
           </NuxtLink>
         </template>
       </StoreProductGrid>

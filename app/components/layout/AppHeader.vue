@@ -199,44 +199,49 @@ watch(
               <template v-if="authStore.isAuthenticated">
                 <NuxtLink
                   to="/cuenta"
-                  class="text-theme hover:bg-theme-muted block px-4 py-2 text-sm"
+                  class="text-theme hover:bg-theme-muted flex items-center gap-2 px-4 py-2 text-sm"
                   role="menuitem"
                   @click="isAccountOpen = false"
                 >
+                  <UiIcon name="lucide:user" :size="16" class="text-theme-muted shrink-0" />
                   Mi cuenta
                 </NuxtLink>
                 <NuxtLink
                   to="/favoritos"
-                  class="text-theme hover:bg-theme-muted block px-4 py-2 text-sm"
+                  class="text-theme hover:bg-theme-muted flex items-center gap-2 px-4 py-2 text-sm"
                   role="menuitem"
                   @click="isAccountOpen = false"
                 >
+                  <UiIcon name="lucide:heart" :size="16" class="text-theme-muted shrink-0" />
                   Mis favoritos
                 </NuxtLink>
                 <button
                   type="button"
-                  class="text-theme hover:bg-theme-muted block w-full px-4 py-2 text-left text-sm"
+                  class="text-theme hover:bg-theme-muted flex w-full items-center gap-2 px-4 py-2 text-left text-sm"
                   role="menuitem"
                   @click="handleLogout"
                 >
+                  <UiIcon name="lucide:log-out" :size="16" class="text-theme-muted shrink-0" />
                   Cerrar sesión
                 </button>
               </template>
               <template v-else>
                 <NuxtLink
                   to="/login"
-                  class="text-theme hover:bg-theme-muted block px-4 py-2 text-sm"
+                  class="text-theme hover:bg-theme-muted flex items-center gap-2 px-4 py-2 text-sm"
                   role="menuitem"
                   @click="isAccountOpen = false"
                 >
+                  <UiIcon name="lucide:log-in" :size="16" class="text-theme-muted shrink-0" />
                   Iniciar sesión
                 </NuxtLink>
                 <NuxtLink
                   to="/registro"
-                  class="text-theme hover:bg-theme-muted block px-4 py-2 text-sm"
+                  class="text-theme hover:bg-theme-muted flex items-center gap-2 px-4 py-2 text-sm"
                   role="menuitem"
                   @click="isAccountOpen = false"
                 >
+                  <UiIcon name="lucide:user-plus" :size="16" class="text-theme-muted shrink-0" />
                   Crear cuenta
                 </NuxtLink>
               </template>
@@ -245,8 +250,9 @@ watch(
 
           <NuxtLink
             to="/cuenta"
-            class="text-theme hover:bg-theme-muted hidden rounded-lg px-2 py-1.5 text-sm font-medium md:inline"
+            class="text-theme hover:bg-theme-muted hidden items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium md:inline-flex"
           >
+            <UiIcon name="lucide:user" :size="16" class="text-theme-muted" />
             Mi cuenta
           </NuxtLink>
 
@@ -364,31 +370,35 @@ watch(
               <NuxtLink
                 v-if="!authStore.isAuthenticated"
                 to="/login"
-                class="hover:bg-theme-muted block rounded-lg px-3 py-2.5"
+                class="hover:bg-theme-muted flex items-center gap-2 rounded-lg px-3 py-2.5"
                 @click="isMenuOpen = false"
               >
+                <UiIcon name="lucide:log-in" :size="16" class="text-theme-muted shrink-0" />
                 Iniciar sesión
               </NuxtLink>
               <template v-else>
                 <NuxtLink
                   to="/cuenta"
-                  class="hover:bg-theme-muted block rounded-lg px-3 py-2.5"
+                  class="hover:bg-theme-muted flex items-center gap-2 rounded-lg px-3 py-2.5"
                   @click="isMenuOpen = false"
                 >
+                  <UiIcon name="lucide:user" :size="16" class="text-theme-muted shrink-0" />
                   Mi cuenta
                 </NuxtLink>
                 <NuxtLink
                   to="/favoritos"
-                  class="hover:bg-theme-muted block rounded-lg px-3 py-2.5"
+                  class="hover:bg-theme-muted flex items-center gap-2 rounded-lg px-3 py-2.5"
                   @click="isMenuOpen = false"
                 >
+                  <UiIcon name="lucide:heart" :size="16" class="text-theme-muted shrink-0" />
                   Mis favoritos
                 </NuxtLink>
                 <button
                   type="button"
-                  class="text-theme hover:bg-theme-muted block w-full rounded-lg px-3 py-2.5 text-left"
+                  class="text-theme hover:bg-theme-muted flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left"
                   @click="handleLogout"
                 >
+                  <UiIcon name="lucide:log-out" :size="16" class="text-theme-muted shrink-0" />
                   Cerrar sesión
                 </button>
               </template>

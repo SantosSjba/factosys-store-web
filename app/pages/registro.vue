@@ -116,7 +116,7 @@ useStoreSeo({
         <UiFieldMessage :error="acceptTermsError" />
       </div>
 
-      <UiButton type="submit" class="w-full" :loading="isSubmitting">
+      <UiButton type="submit" class="w-full" icon="lucide:user-plus" :loading="isSubmitting">
         Registrarme
       </UiButton>
     </form>

@@ -68,11 +68,11 @@ async function checkAgain() {
       </div>
 
       <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
-        <UiButton :loading="isFetching" @click="checkAgain">
+        <UiButton icon="lucide:refresh-cw" :loading="isFetching" @click="checkAgain">
           Reintentar
         </UiButton>
         <NuxtLink to="/intranet">
-          <UiButton variant="secondary" class="w-full sm:w-auto">
+          <UiButton variant="secondary" icon="lucide:shield" class="w-full sm:w-auto">
             Acceso intranet
           </UiButton>
         </NuxtLink>

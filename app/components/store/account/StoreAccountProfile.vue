@@ -57,11 +57,16 @@ const emit = defineEmits<{
 
         <div class="flex flex-col gap-3">
           <NuxtLink to="/productos">
-            <UiButton variant="secondary" class="w-full">
+            <UiButton variant="secondary" icon="lucide:store" class="w-full">
               Seguir comprando
             </UiButton>
           </NuxtLink>
-          <UiButton variant="ghost" class="w-full" @click="emit('logout')">
+          <UiButton
+            variant="ghost"
+            icon="lucide:log-out"
+            class="w-full"
+            @click="emit('logout')"
+          >
             Cerrar sesión
           </UiButton>
         </div>

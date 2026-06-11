@@ -194,7 +194,7 @@ useStoreSeo(
         </div>
 
         <NuxtLink to="/cuenta?tab=compras">
-          <UiButton variant="secondary" class="w-full">
+          <UiButton variant="secondary" icon="lucide:arrow-left" class="w-full">
             Volver a mis compras
           </UiButton>
         </NuxtLink>

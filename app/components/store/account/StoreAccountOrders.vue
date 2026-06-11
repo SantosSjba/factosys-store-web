@@ -35,10 +35,10 @@ const orders = computed(() => ordersPage.value?.items ?? [])
 const totalOrders = computed(() => ordersPage.value?.meta.total ?? 0)
 const totalPages = computed(() => ordersPage.value?.meta.totalPages ?? 1)
 
-const filters: Array<{ id: OrderFilter; label: string }> = [
-  { id: 'all', label: 'Todos' },
-  { id: 'active', label: 'En curso' },
-  { id: 'delivered', label: 'Entregados' },
+const filters: Array<{ id: OrderFilter; label: string; icon: string }> = [
+  { id: 'all', label: 'Todos', icon: 'lucide:list' },
+  { id: 'active', label: 'En curso', icon: 'lucide:truck' },
+  { id: 'delivered', label: 'Entregados', icon: 'lucide:package-check' },
 ]
 </script>
 
@@ -62,7 +62,7 @@ const filters: Array<{ id: OrderFilter; label: string }> = [
           v-for="item in filters"
           :key="item.id"
           type="button"
-          class="rounded-full px-3 py-1.5 text-xs font-medium transition sm:text-sm"
+          class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition sm:text-sm"
           :class="
             filter === item.id
               ? 'bg-brand-accent text-white shadow-sm'
@@ -70,6 +70,7 @@ const filters: Array<{ id: OrderFilter; label: string }> = [
           "
           @click="filter = item.id"
         >
+          <UiIcon :name="item.icon" :size="14" />
           {{ item.label }}
         </button>
       </div>
@@ -108,7 +109,7 @@ const filters: Array<{ id: OrderFilter; label: string }> = [
     >
       <template #action>
         <NuxtLink to="/productos">
-          <UiButton>Explorar catálogo</UiButton>
+          <UiButton icon="lucide:layout-grid">Explorar catálogo</UiButton>
         </NuxtLink>
       </template>
     </UiEmptyState>
