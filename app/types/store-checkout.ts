@@ -28,6 +28,7 @@ export type StoreCheckoutPaymentSettings = {
 }
 
 export type StoreCheckoutSettings = {
+  guestCheckoutEnabled: boolean
   minOrderAmount: number | null
   freeShippingMinAmount: number | null
   flatShippingFee: number | null
@@ -95,10 +96,18 @@ export type StoreCheckoutShippingAddressPayload = {
   country?: string
 }
 
+export type StoreGuestContactPayload = {
+  email: string
+  firstName?: string
+  lastName?: string
+  phone?: string
+}
+
 export type StorePlaceOrderPayload = StoreCheckoutQuotePayload & {
   paymentMethod: OrderPaymentMethod
   customerNotes?: string
   shippingAddress?: StoreCheckoutShippingAddressPayload
+  guestContact?: StoreGuestContactPayload
 }
 
 export type StorePlaceOrderResult = StoreOrderDetail

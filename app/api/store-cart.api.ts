@@ -41,3 +41,8 @@ export async function clearStoreCart() {
   const { data } = await useApi().delete<StoreCart>('/store/cart')
   return data
 }
+
+export async function mergeStoreGuestCart() {
+  const { data } = await useApi().post<StoreCart>('/store/cart/merge-guest')
+  return data
+}

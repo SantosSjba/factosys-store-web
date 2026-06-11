@@ -6,6 +6,7 @@ import { parseApiError } from '~/utils/parse-api-error'
 type TokenAccessor = {
   getAccessToken: () => string | null | undefined
   getRefreshToken: () => string | null | undefined
+  getGuestCartToken?: () => string | null | undefined
   refreshSession: () => Promise<void>
   clearSession: () => void
 }
@@ -64,6 +65,11 @@ export function createAxiosClient(tokenAccessor: TokenAccessor): AxiosInstance {
 
     if (useAuth && accessToken) {
       request.headers.set('Authorization', `Bearer ${accessToken}`)
+    } else {
+      const guestCartToken = tokenAccessor.getGuestCartToken?.()?.trim()
+      if (guestCartToken) {
+        request.headers.set('X-Guest-Cart-Token', guestCartToken)
+      }
     }
 
     return request

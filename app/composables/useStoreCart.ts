@@ -3,6 +3,8 @@ export function useStoreCart() {
   const router = useRouter()
   const route = useRoute()
   const toast = useToast()
+  const { data: settings } = useStoreSettingsQuery()
+  const guestCart = useGuestCartToken()
 
   const addMutation = useAddStoreCartItemMutation()
   const updateMutation = useUpdateStoreCartItemMutation()
@@ -16,28 +18,36 @@ export function useStoreCart() {
     })
   }
 
+  function canUseGuestCart() {
+    return Boolean(settings.value?.guestCheckoutEnabled)
+  }
+
+  async function ensureCartAccess() {
+    if (authStore.isAuthenticated) return true
+
+    if (!canUseGuestCart()) {
+      await requireAuth()
+      return false
+    }
+
+    guestCart.ensure()
+    return true
+  }
+
   async function addToCart(variantId: string, quantity = 1) {
     if (!variantId) return
-
-    if (!authStore.isAuthenticated) {
-      await requireAuth()
-      return
-    }
+    if (!(await ensureCartAccess())) return
 
     await addMutation.mutateAsync({ variantId, quantity })
   }
 
   async function updateQuantity(variantId: string, quantity: number) {
-    if (!authStore.isAuthenticated) {
-      await requireAuth()
-      return
-    }
-
+    if (!(await ensureCartAccess())) return
     await updateMutation.mutateAsync({ variantId, quantity })
   }
 
   async function removeFromCart(variantId: string) {
-    if (!authStore.isAuthenticated) return
+    if (!(await ensureCartAccess())) return
     await removeMutation.mutateAsync(variantId)
   }
 
@@ -50,5 +60,6 @@ export function useStoreCart() {
     removeFromCart,
     isAdding,
     isUpdating,
+    canUseGuestCart,
   }
 }

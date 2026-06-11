@@ -4,23 +4,23 @@ import { storeQueryKeys } from '~/constants/query-keys'
 import type { StoreCart } from '~/types/store-cart'
 
 export function useStoreCartQuery() {
-  const authStore = useAuthStore()
+  const canUseCart = useCanUseStoreCart()
 
   return useQuery<StoreCart>({
     queryKey: storeQueryKeys.cart(),
     queryFn: fetchStoreCart,
-    enabled: computed(() => authStore.isAuthenticated),
+    enabled: canUseCart,
     staleTime: 30_000,
   })
 }
 
 export function useStoreCartCountQuery() {
-  const authStore = useAuthStore()
+  const canUseCart = useCanUseStoreCart()
 
   return useQuery<number>({
     queryKey: storeQueryKeys.cartCount(),
     queryFn: fetchStoreCartCount,
-    enabled: computed(() => authStore.isAuthenticated),
+    enabled: canUseCart,
     staleTime: 30_000,
   })
 }

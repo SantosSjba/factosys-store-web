@@ -5,12 +5,19 @@ import type { CustomerSavedAddress } from '~/types/admin-customers'
 import type { StoreCheckoutQuote } from '~/types/store-checkout'
 
 definePageMeta({
-  middleware: 'auth',
+  middleware: 'store-access',
 })
 
 const router = useRouter()
 const toast = useToast()
 const authStore = useAuthStore()
+const isGuestCheckout = computed(() => !authStore.isAuthenticated)
+const guestCart = useGuestCartToken()
+
+const guestEmail = ref('')
+const guestFirstName = ref('')
+const guestLastName = ref('')
+const guestPhone = ref('')
 
 const { data: cart, isPending: cartPending } = useStoreCartQuery()
 const { data: checkoutSettings, isPending: settingsPending } =
@@ -182,9 +189,15 @@ const pickupPoint = computed(() => checkoutSettings.value?.pickup)
 
 const canSubmit = computed(() => {
   if (!quote.value?.canPlaceOrder) return false
+
+  if (isGuestCheckout.value && !guestEmail.value.trim()) {
+    return false
+  }
+
   if (deliveryMethod.value === 'PICKUP') {
     return Boolean(paymentMethod.value)
   }
+
   return Boolean(
     addressLine1.value.trim() &&
       district.value.trim() &&
@@ -192,6 +205,12 @@ const canSubmit = computed(() => {
       department.value.trim() &&
       paymentMethod.value,
   )
+})
+
+onMounted(() => {
+  if (isGuestCheckout.value && checkoutSettings.value?.guestCheckoutEnabled) {
+    guestCart.ensure()
+  }
 })
 
 async function onSubmit() {
@@ -203,18 +222,38 @@ async function onSubmit() {
   }
 
   try {
-    await authStore.ensureFreshAccessToken()
+    if (!isGuestCheckout.value) {
+      await authStore.ensureFreshAccessToken()
+    } else {
+      guestCart.ensure()
+    }
+
+    const contactFirstName = isGuestCheckout.value
+      ? guestFirstName.value
+      : firstName.value
+    const contactLastName = isGuestCheckout.value
+      ? guestLastName.value
+      : lastName.value
+    const contactPhone = isGuestCheckout.value ? guestPhone.value : phone.value
 
     const order = await placeOrderMutation.mutateAsync({
       ...quoteParams.value,
       paymentMethod: paymentMethod.value,
       customerNotes: customerNotes.value.trim() || undefined,
+      guestContact: isGuestCheckout.value
+        ? {
+            email: guestEmail.value.trim(),
+            firstName: guestFirstName.value.trim() || undefined,
+            lastName: guestLastName.value.trim() || undefined,
+            phone: guestPhone.value.trim() || undefined,
+          }
+        : undefined,
       shippingAddress:
         deliveryMethod.value === 'SHIPPING'
           ? {
-              firstName: firstName.value.trim() || undefined,
-              lastName: lastName.value.trim() || undefined,
-              phone: phone.value.trim() || undefined,
+              firstName: contactFirstName.trim() || undefined,
+              lastName: contactLastName.trim() || undefined,
+              phone: contactPhone.trim() || undefined,
               addressLine1: addressLine1.value.trim(),
               addressLine2: addressLine2.value.trim() || undefined,
               district: district.value.trim(),
@@ -226,6 +265,16 @@ async function onSubmit() {
     })
 
     toast.success(`Pedido ${order.orderNumber} registrado correctamente.`)
+
+    if (isGuestCheckout.value) {
+      guestCart.clear()
+      await router.push({
+        path: '/checkout/gracias',
+        query: { order: order.orderNumber },
+      })
+      return
+    }
+
     await router.push(`/cuenta/pedidos/${order.id}`)
   } catch (error) {
     submitError.value = useApiErrorMessage(error)
@@ -263,6 +312,49 @@ useStoreSeo({
       class="grid gap-8 lg:grid-cols-[1fr_minmax(18rem,22rem)] lg:items-start"
     >
       <div class="space-y-6">
+        <section
+          v-if="isGuestCheckout"
+          class="border-theme bg-theme-surface rounded-2xl border p-5 shadow-sm"
+        >
+          <h2 class="text-theme mb-1 text-lg font-semibold">Tus datos</h2>
+          <p class="text-theme-muted mb-4 text-sm">
+            Compra como invitado. Te enviaremos la confirmación por correo.
+          </p>
+          <div class="grid gap-4 sm:grid-cols-2">
+            <UiInput
+              v-model="guestEmail"
+              label="Correo electrónico"
+              type="email"
+              required
+              class="sm:col-span-2"
+              autocomplete="email"
+            />
+            <UiInput
+              v-model="guestFirstName"
+              label="Nombres"
+              autocomplete="given-name"
+            />
+            <UiInput
+              v-model="guestLastName"
+              label="Apellidos"
+              autocomplete="family-name"
+            />
+            <UiInput
+              v-model="guestPhone"
+              label="Celular"
+              class="sm:col-span-2"
+              autocomplete="tel"
+            />
+          </div>
+          <p class="text-theme-muted mt-3 text-xs">
+            ¿Ya tienes cuenta?
+            <NuxtLink to="/login" class="text-[var(--brand-cyan)] hover:underline">
+              Inicia sesión
+            </NuxtLink>
+            para ver tus pedidos en un solo lugar.
+          </p>
+        </section>
+
         <section class="border-theme bg-theme-surface rounded-2xl border p-5 shadow-sm">
           <h2 class="text-theme mb-4 text-lg font-semibold">Entrega</h2>
           <UiRadioGroup
@@ -308,7 +400,7 @@ useStoreSeo({
           </p>
 
           <div
-            v-if="savedAddresses?.length"
+            v-if="!isGuestCheckout && savedAddresses?.length"
             class="mb-4 space-y-2"
           >
             <p class="text-theme text-sm font-medium">Direcciones guardadas</p>
@@ -330,23 +422,25 @@ useStoreSeo({
           </div>
 
           <div class="grid gap-4 sm:grid-cols-2">
-            <UiInput
-              v-model="firstName"
-              label="Nombres"
-              autocomplete="given-name"
-            />
-            <UiInput
-              v-model="lastName"
-              label="Apellidos"
-              autocomplete="family-name"
-            />
-            <UiInput
-              v-model="phone"
-              label="Celular"
-              autocomplete="tel"
-              class="sm:col-span-2"
-              hint="9 dígitos, idealmente con código +51"
-            />
+            <template v-if="!isGuestCheckout">
+              <UiInput
+                v-model="firstName"
+                label="Nombres"
+                autocomplete="given-name"
+              />
+              <UiInput
+                v-model="lastName"
+                label="Apellidos"
+                autocomplete="family-name"
+              />
+              <UiInput
+                v-model="phone"
+                label="Celular"
+                autocomplete="tel"
+                class="sm:col-span-2"
+                hint="9 dígitos, idealmente con código +51"
+              />
+            </template>
             <UiInput
               v-model="addressLine1"
               label="Dirección"

@@ -10,10 +10,13 @@ let clientSingleton: AxiosInstance | null = null
 export function useApi(): AxiosInstance {
   const authStore = useAuthStore()
 
+  const guestCart = useGuestCartToken()
+
   const createClient = () =>
     createAxiosClient({
       getAccessToken: () => authStore.accessToken,
       getRefreshToken: () => authStore.refreshToken,
+      getGuestCartToken: () => guestCart.token.value,
       refreshSession: async () => {
         await authStore.refreshSession()
       },

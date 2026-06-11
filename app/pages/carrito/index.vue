@@ -1,6 +1,16 @@
 <script setup lang="ts">
 definePageMeta({
-  middleware: 'auth',
+  middleware: 'store-access',
+})
+
+const authStore = useAuthStore()
+const { data: settings } = useStoreSettingsQuery()
+const guestCart = useGuestCartToken()
+
+onMounted(() => {
+  if (!authStore.isAuthenticated && settings.value?.guestCheckoutEnabled) {
+    guestCart.ensure()
+  }
 })
 
 const {
