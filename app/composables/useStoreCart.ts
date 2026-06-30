@@ -38,17 +38,29 @@ export function useStoreCart() {
     if (!variantId) return
     if (!(await ensureCartAccess())) return
 
-    await addMutation.mutateAsync({ variantId, quantity })
+    try {
+      await addMutation.mutateAsync({ variantId, quantity })
+    } catch {
+      // El mutation ya muestra el toast en onError.
+    }
   }
 
   async function updateQuantity(variantId: string, quantity: number) {
     if (!(await ensureCartAccess())) return
-    await updateMutation.mutateAsync({ variantId, quantity })
+    try {
+      await updateMutation.mutateAsync({ variantId, quantity })
+    } catch {
+      // El mutation ya muestra el toast en onError.
+    }
   }
 
   async function removeFromCart(variantId: string) {
     if (!(await ensureCartAccess())) return
-    await removeMutation.mutateAsync(variantId)
+    try {
+      await removeMutation.mutateAsync(variantId)
+    } catch {
+      // El mutation ya muestra el toast en onError.
+    }
   }
 
   const isAdding = computed(() => addMutation.isPending.value)
