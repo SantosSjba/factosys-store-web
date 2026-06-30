@@ -44,13 +44,20 @@ function resolveHttpsAgent(baseURL: string) {
   return new https.Agent({ rejectUnauthorized: false })
 }
 
+function resolveDefaultTimeoutMs() {
+  const config = useRuntimeConfig()
+  const raw = Number(config.public.apiTimeoutMs)
+  return Number.isFinite(raw) && raw > 0 ? raw : 120_000
+}
+
 export function createAxiosClient(tokenAccessor: TokenAccessor): AxiosInstance {
   let refreshPromise: Promise<void> | null = null
   const baseURL = resolveApiBaseUrl()
+  const defaultTimeoutMs = resolveDefaultTimeoutMs()
 
   const client = axios.create({
     baseURL,
-    timeout: 30_000,
+    timeout: defaultTimeoutMs,
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',
@@ -60,6 +67,9 @@ export function createAxiosClient(tokenAccessor: TokenAccessor): AxiosInstance {
 
   client.interceptors.request.use((request) => {
     const cfg = request as ApiAxiosRequestConfig
+    if (cfg.timeoutMs != null) {
+      request.timeout = cfg.timeoutMs
+    }
     const useAuth = cfg.withAuth !== false
     const accessToken = tokenAccessor.getAccessToken()
 

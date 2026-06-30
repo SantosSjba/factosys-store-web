@@ -11,6 +11,18 @@ export function parseApiError(error: unknown): ApiError {
       return new ApiError(error.response.data)
     }
 
+    if (isTimeoutError(error)) {
+      return new ApiError({
+        statusCode: error.response?.status ?? 504,
+        code: 'REQUEST_TIMEOUT',
+        message:
+          'La operación tardó demasiado. Verifica tu conexión e intenta de nuevo.',
+        details: null,
+        timestamp: new Date().toISOString(),
+        path: error.config?.url ?? '',
+      })
+    }
+
     return new ApiError({
       statusCode: error.response?.status ?? 500,
       code: 'UNKNOWN_ERROR',

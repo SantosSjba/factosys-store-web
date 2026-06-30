@@ -7,6 +7,8 @@ export type ApiAxiosRequestConfig = InternalAxiosRequestConfig & {
   skipRefresh?: boolean
   /** Marca interna de reintento tras refresh. */
   _retry?: boolean
+  /** Timeout HTTP en ms (sobreescribe el default del cliente). */
+  timeoutMs?: number
 }
 
 declare module 'axios' {
@@ -14,5 +16,6 @@ declare module 'axios' {
     withAuth?: boolean
     skipRefresh?: boolean
     _retry?: boolean
+    timeoutMs?: number
   }
 }
