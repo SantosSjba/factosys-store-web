@@ -5,8 +5,12 @@
     <p class="font-medium">Modo prueba de Mercado Pago</p>
     <ul class="mt-2 list-disc space-y-1 pl-5 leading-relaxed">
       <li>
-        Usa el correo <strong>test@testuser.com</strong> en el formulario de
-        pago (requerido por Mercado Pago en pruebas).
+        El correo de pago es <strong>test@testuser.com</strong> (lo aplicamos
+        automáticamente; no uses tu correo real en el formulario de tarjeta).
+      </li>
+      <li>
+        En <code>.env</code> deben estar las credenciales de la pestaña
+        <strong>Prueba</strong> de Mercado Pago (no las de producción).
       </li>
       <li>
         Tarjeta de prueba: <strong>5031 7557 3453 0604</strong> · CVV

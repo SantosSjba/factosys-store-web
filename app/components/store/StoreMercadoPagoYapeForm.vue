@@ -85,6 +85,11 @@ async function onPay() {
 
 <template>
   <div class="space-y-4">
+    <StoreMercadoPagoPayerEmailNotice
+      :payer-email="payerEmail"
+      :is-test-mode="isTestMode"
+    />
+
     <p class="text-theme-muted text-sm">
       Paga con Yape mediante Checkout API de Mercado Pago (sin salir de la tienda).
     </p>

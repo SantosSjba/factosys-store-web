@@ -46,6 +46,9 @@ async function initCardForm() {
         amount: props.amount,
         payer: {
           email: mpPayerEmail.value,
+          ...(props.isTestMode
+            ? { identification: { type: 'DNI', number: '123456789' } }
+            : {}),
         },
       },
       customization: {
@@ -72,10 +75,7 @@ async function initCardForm() {
               paymentMethodId: formData.payment_method_id,
               paymentMethodType: additionalData?.paymentTypeId,
               installments: formData.installments || 1,
-              payerEmail: resolveMercadoPagoPayerEmail(
-                formData.payer.email || props.payerEmail,
-                props.isTestMode,
-              ),
+              payerEmail: mpPayerEmail.value,
               payerIdentification: formData.payer.identification,
               idempotencyKey: crypto.randomUUID(),
             })
@@ -95,14 +95,13 @@ async function initCardForm() {
             const message =
               result.statusDetail ??
               'No pudimos procesar el pago. Verifica los datos e intenta de nuevo.'
-            toast.error(message)
             emit('error', message)
-            throw new Error(message)
+            toast.error(message)
+            return
           } catch (error) {
             const message = useApiErrorMessage(error)
-            toast.error(message)
             emit('error', message)
-            throw error instanceof Error ? error : new Error(message)
+            toast.error(message)
           }
         },
       },
@@ -124,6 +123,11 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="space-y-4">
+    <StoreMercadoPagoPayerEmailNotice
+      :payer-email="payerEmail"
+      :is-test-mode="isTestMode"
+    />
+
     <p class="text-theme-muted text-sm">
       Paga con tarjeta de crédito o débito mediante Checkout API de Mercado Pago
       (formulario seguro en tu tienda, sin redirección).

@@ -9,11 +9,12 @@ export default defineNuxtRouteMiddleware(async (to) => {
     if (authStore.isAuthenticated) return
   }
 
-  const guestToken = useCookie('fs_guest_cart')
-
-  const settings = await nuxtApp.runWithContext(() =>
-    fetchStorePublicSettings(),
-  )
+  let settings
+  try {
+    settings = await nuxtApp.runWithContext(() => fetchStorePublicSettings())
+  } catch {
+    return
+  }
 
   if (settings.guestCheckoutEnabled) {
     return

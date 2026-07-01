@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useQueryClient } from '@tanstack/vue-query'
 import { useMercadoPagoPaymentContextQuery } from '~/composables/queries/useMercadoPagoPaymentContextQuery'
 import { storeQueryKeys } from '~/constants/query-keys'
 
