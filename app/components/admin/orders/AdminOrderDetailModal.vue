@@ -26,6 +26,11 @@ const { data: storeSettings } = useAdminStoreSettingsQuery()
 const orderIdRef = computed(() => (open.value ? props.orderId : null))
 const { data: order, isPending, refetch } = useAdminOrderQuery(orderIdRef)
 
+const { data: paymentTransactions } = useAdminPaymentTransactionsQuery(
+  computed(() => (order.value?.paymentMethod === 'GATEWAY' ? order.value.id : undefined)),
+)
+const gatewayTransaction = computed(() => paymentTransactions.value?.[0] ?? null)
+
 const statusMutation = useAdminUpdateOrderStatusMutation()
 const paymentMutation = useAdminUpdateOrderPaymentMutation()
 const cancelMutation = useAdminCancelOrderMutation()
@@ -270,6 +275,42 @@ function formatAddress(address: {
           <a :href="order.trackingUrl" target="_blank" rel="noopener" class="underline">
             Ver seguimiento
           </a>
+        </p>
+      </AdminFormSection>
+
+      <AdminFormSection
+        v-if="order.paymentMethod === 'GATEWAY'"
+        title="Pago con Mercado Pago"
+        icon="lucide:landmark"
+      >
+        <div v-if="gatewayTransaction" class="grid gap-3 sm:grid-cols-2">
+          <AdminDetailCell label="ID de orden en Mercado Pago">
+            <code class="text-xs">{{ gatewayTransaction.externalId ?? '—' }}</code>
+          </AdminDetailCell>
+          <AdminDetailCell label="Estado de la transacción">
+            <UiBadge
+              :variant="
+                gatewayTransaction.status === 'COMPLETED'
+                  ? 'success'
+                  : gatewayTransaction.status === 'FAILED'
+                    ? 'danger'
+                    : gatewayTransaction.status === 'REFUNDED'
+                      ? 'info'
+                      : 'warning'
+              "
+            >
+              {{ gatewayTransaction.status }}
+            </UiBadge>
+          </AdminDetailCell>
+          <AdminDetailCell label="Monto">
+            {{ formatPrice(gatewayTransaction.amount, gatewayTransaction.currencyCode) }}
+          </AdminDetailCell>
+          <AdminDetailCell label="Última actualización">
+            {{ formatAdminDateTime(gatewayTransaction.updatedAt) }}
+          </AdminDetailCell>
+        </div>
+        <p v-else class="text-admin-muted text-sm">
+          Aún no hay una transacción registrada para este pedido.
         </p>
       </AdminFormSection>
 

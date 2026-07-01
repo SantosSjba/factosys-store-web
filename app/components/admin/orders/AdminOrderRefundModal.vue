@@ -18,12 +18,16 @@ const refundType = ref<RefundType>('full')
 const refundAmount = ref('')
 const refundNote = ref('')
 const restockItems = ref(true)
+const submitError = ref('')
+
+const isGatewayOrder = computed(() => props.order?.paymentMethod === 'GATEWAY')
 
 watch(open, (isOpen) => {
   if (!isOpen) return
   refundType.value = 'full'
   refundAmount.value = ''
   refundNote.value = ''
+  submitError.value = ''
   restockItems.value = props.order?.fulfillmentStatus === 'FULFILLED'
 })
 
@@ -47,6 +51,8 @@ const canSubmit = computed(() => {
 async function submitRefund() {
   if (!props.order || !canSubmit.value) return
 
+  submitError.value = ''
+
   const payload =
     refundType.value === 'full'
       ? {
@@ -61,12 +67,17 @@ async function submitRefund() {
           restockItems: restockItems.value,
         }
 
-  await refundMutation.mutateAsync({ id: props.order.id, payload })
-  toast.success(
-    refundType.value === 'full' ? 'Reembolso total registrado' : 'Reembolso parcial registrado',
-  )
-  open.value = false
-  emit('refunded')
+  try {
+    await refundMutation.mutateAsync({ id: props.order.id, payload })
+    toast.success(
+      refundType.value === 'full' ? 'Reembolso total registrado' : 'Reembolso parcial registrado',
+    )
+    open.value = false
+    emit('refunded')
+  } catch (error) {
+    submitError.value = useApiErrorMessage(error)
+    toast.error(submitError.value)
+  }
 }
 </script>
 
@@ -83,6 +94,14 @@ async function submitRefund() {
         Total del pedido:
         <strong class="text-admin-fg">{{ formatPrice(order.total, order.currencyCode) }}</strong>
       </p>
+
+      <UiAlert v-if="isGatewayOrder" variant="info">
+        Este pedido se pagó con Mercado Pago. Al confirmar, se enviará automáticamente la
+        solicitud de reembolso a Mercado Pago antes de actualizar el estado del pedido. Si
+        Mercado Pago la rechaza, el pedido no se marcará como reembolsado.
+      </UiAlert>
+
+      <UiAlert v-if="submitError" variant="error">{{ submitError }}</UiAlert>
 
       <div class="space-y-2">
         <p class="text-sm font-medium">Tipo de reembolso</p>
