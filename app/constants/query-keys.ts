@@ -23,6 +23,15 @@ export const storeQueryKeys = {
     [...storeQueryKeys.all, 'payments', 'mercadopago', 'config'] as const,
   mercadoPagoPaymentMethods: () =>
     [...storeQueryKeys.all, 'payments', 'mercadopago', 'payment-methods'] as const,
+  mercadoPagoPaymentContext: (orderId: string, email?: string) =>
+    [
+      ...storeQueryKeys.all,
+      'payments',
+      'mercadopago',
+      'payment-context',
+      orderId,
+      email ?? '',
+    ] as const,
 }
 
 export const adminQueryKeys = {

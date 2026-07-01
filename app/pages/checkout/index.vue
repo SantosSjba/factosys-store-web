@@ -1,5 +1,9 @@
 <script setup lang="ts">
 import { PERU_DEPARTMENTS } from '~/constants/peru-departments'
+import {
+  getDeliveryGuide,
+  getPaymentGuide,
+} from '~/utils/store/checkout-payment-guides'
 import type { OrderDeliveryMethod, OrderPaymentMethod } from '~/types/admin-orders'
 import type { CustomerSavedAddress } from '~/types/admin-customers'
 import type { StoreCheckoutQuote } from '~/types/store-checkout'
@@ -76,7 +80,7 @@ const paymentOptions = computed(() => {
     options.push({ label: 'Plin', value: 'PLIN' })
   }
   if (payments.gateway?.mercadoPago) {
-    options.push({ label: 'Tarjeta / Mercado Pago', value: 'GATEWAY' })
+    options.push({ label: 'Mercado Pago', value: 'GATEWAY' })
   }
 
   return options
@@ -172,24 +176,25 @@ function applySavedAddress(address: CustomerSavedAddress) {
   lastName.value = address.lastName ?? lastName.value
 }
 
-const paymentInstructions = computed(() => {
+const deliveryGuide = computed(() =>
+  getDeliveryGuide(deliveryMethod.value, pickupPoint.value ?? undefined),
+)
+
+const paymentGuide = computed(() => {
   const payments = checkoutSettings.value?.payments
   if (!payments) return null
 
-  if (paymentMethod.value === 'BANK_TRANSFER') {
-    return payments.bankTransfer.instructions
-  }
-  if (paymentMethod.value === 'YAPE' && payments.yape.number) {
-    return `Número Yape: ${payments.yape.number}`
-  }
-  if (paymentMethod.value === 'PLIN' && payments.plin.number) {
-    return `Número Plin: ${payments.plin.number}`
-  }
-  if (paymentMethod.value === 'GATEWAY') {
-    return 'Serás redirigido al formulario seguro de Mercado Pago para completar el pago con tarjeta.'
-  }
-  return null
+  return getPaymentGuide({
+    paymentMethod: paymentMethod.value,
+    deliveryMethod: deliveryMethod.value,
+    payments,
+    pickup: pickupPoint.value ?? undefined,
+  })
 })
+
+const mercadoPagoAcceptedMethods = computed(
+  () => checkoutSettings.value?.payments.gateway.acceptedMethods ?? [],
+)
 
 const pickupPoint = computed(() => checkoutSettings.value?.pickup)
 
@@ -388,6 +393,13 @@ useStoreSeo({
             name="delivery-method"
           />
 
+          <p
+            v-if="deliveryGuide"
+            class="bg-theme-muted/50 text-theme-muted mt-4 rounded-xl px-4 py-3 text-sm leading-relaxed"
+          >
+            {{ deliveryGuide }}
+          </p>
+
           <div
             v-if="deliveryMethod === 'PICKUP' && pickupPoint?.name"
             class="bg-theme-muted/50 text-theme mt-4 rounded-xl px-4 py-3 text-sm"
@@ -516,18 +528,17 @@ useStoreSeo({
           </p>
 
           <p
-            v-if="paymentInstructions"
-            class="bg-theme-muted/50 text-theme-muted mt-4 rounded-xl px-4 py-3 text-sm whitespace-pre-line"
+            v-if="paymentGuide"
+            class="bg-theme-muted/50 text-theme-muted mt-4 rounded-xl px-4 py-3 text-sm leading-relaxed whitespace-pre-line"
           >
-            {{ paymentInstructions }}
+            {{ paymentGuide }}
           </p>
 
-      <p
-        v-if="paymentMethod !== 'CASH' && paymentMethod !== 'GATEWAY'"
-        class="text-theme-muted mt-3 text-xs"
-      >
-            Tu pedido quedará pendiente de pago hasta que confirmemos el abono.
-          </p>
+          <StoreMercadoPagoAcceptedBadges
+            v-if="paymentMethod === 'GATEWAY' && mercadoPagoAcceptedMethods.length"
+            class="mt-4"
+            :methods="mercadoPagoAcceptedMethods"
+          />
         </section>
 
         <section class="border-theme bg-theme-surface rounded-2xl border p-5 shadow-sm">

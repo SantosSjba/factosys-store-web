@@ -13,6 +13,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   success: [orderNumber: string]
+  pending: [orderNumber: string]
 }>()
 
 const activeChannel = ref(props.methods[0]?.channel ?? 'card')
@@ -48,13 +49,15 @@ watch(
       :tabs="tabs"
     />
 
-    <StoreMercadoPagoCardPaymentBrick
+    <StoreMercadoPagoCardForm
       v-if="activeChannel === 'card'"
       :order-id="orderId"
       :amount="amount"
       :payer-email="payerEmail"
       :public-key="publicKey"
+      :is-test-mode="isTestMode"
       @success="emit('success', $event)"
+      @pending="emit('pending', $event)"
     />
 
     <StoreMercadoPagoYapeForm
@@ -66,6 +69,7 @@ watch(
       :max-amount="yapeMethod?.maxAmount"
       :is-test-mode="isTestMode"
       @success="emit('success', $event)"
+      @pending="emit('pending', $event)"
     />
   </div>
 </template>

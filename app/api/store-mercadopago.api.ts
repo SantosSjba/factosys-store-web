@@ -1,4 +1,5 @@
 import type {
+  MercadoPagoPaymentContext,
   MercadoPagoPaymentMethods,
   MercadoPagoPaymentResult,
   MercadoPagoStoreConfig,
@@ -15,6 +16,7 @@ export type ProcessMercadoPagoPaymentPayload = {
     type?: string
     number?: string
   }
+  idempotencyKey?: string
 }
 
 export async function fetchMercadoPagoConfig(): Promise<MercadoPagoStoreConfig> {
@@ -29,6 +31,20 @@ export async function fetchMercadoPagoPaymentMethods(): Promise<MercadoPagoPayme
   const { data } = await useApi().get<MercadoPagoPaymentMethods>(
     '/store/payments/mercadopago/payment-methods',
     { withAuth: false },
+  )
+  return data
+}
+
+export async function fetchMercadoPagoPaymentContext(
+  orderId: string,
+  guestEmail?: string,
+): Promise<MercadoPagoPaymentContext> {
+  const { data } = await useApi().get<MercadoPagoPaymentContext>(
+    `/store/payments/mercadopago/orders/${orderId}/payment-context`,
+    {
+      withAuth: !guestEmail,
+      params: guestEmail ? { email: guestEmail } : undefined,
+    },
   )
   return data
 }

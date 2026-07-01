@@ -8,9 +8,9 @@ const SHELL_PREFETCH_ONCE_KEY = 'store-shell-prefetch'
 
 export function useStoreShellPrefetch() {
   const nuxtApp = useNuxtApp()
+  const queryClient = useQueryClient()
 
   return callOnce(SHELL_PREFETCH_ONCE_KEY, async () => {
-    const queryClient = useQueryClient()
     const withNuxtContext = <T>(fn: () => Promise<T>) =>
       nuxtApp.runWithContext(fn)
 

@@ -30,6 +30,12 @@ useStoreSeo({
           Tu pago fue procesado correctamente. Te enviamos un correo con los
           detalles.
         </template>
+        <template v-else-if="route.query.pending === '1'">
+          Recibimos tu solicitud de pago
+          <span v-if="orderNumber" class="text-theme font-semibold">{{ orderNumber }}</span>.
+          Estamos confirmando el pago con Mercado Pago. Te avisaremos por correo
+          cuando quede aprobado.
+        </template>
         <template v-else>
           Recibimos tu pedido
           <span v-if="orderNumber" class="text-theme font-semibold">{{ orderNumber }}</span>.

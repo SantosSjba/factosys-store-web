@@ -24,6 +24,16 @@ const caption = computed(() =>
   order.value ? formatOrderDeliveryCaption(order.value) : '',
 )
 
+const canPayOnline = computed(
+  () =>
+    order.value?.paymentMethod === 'GATEWAY' &&
+    order.value.paymentStatus === 'PENDING',
+)
+
+const payOrderLink = computed(() =>
+  order.value ? `/checkout/pagar/${order.value.id}` : '/checkout',
+)
+
 useStoreSeo(
   computed(() => ({
     title: order.value ? `Pedido ${order.value.orderNumber}` : 'Detalle de pedido',
@@ -154,6 +164,12 @@ useStoreSeo(
               <p class="text-theme mt-1">{{ formatPaymentMethod(order.paymentMethod) }}</p>
             </div>
           </div>
+
+          <NuxtLink v-if="canPayOnline" :to="payOrderLink" class="mt-5 block">
+            <UiButton icon="lucide:credit-card" class="w-full">
+              Pagar ahora con Mercado Pago
+            </UiButton>
+          </NuxtLink>
 
           <div
             v-if="order.trackingNumber || order.trackingUrl"

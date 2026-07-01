@@ -1,4 +1,4 @@
-import { useQueryClient } from '@tanstack/vue-query'
+import type { QueryClient } from '@tanstack/vue-query'
 import { defineStore } from 'pinia'
 import { storeQueryKeys } from '~/constants/query-keys'
 import {
@@ -139,7 +139,8 @@ export const useAuthStore = defineStore('auth', () => {
     clearSession()
 
     if (import.meta.client) {
-      const queryClient = useQueryClient()
+      const nuxtApp = useNuxtApp()
+      const queryClient = nuxtApp.$queryClient as QueryClient
       queryClient.removeQueries({ queryKey: storeQueryKeys.all })
     }
   }

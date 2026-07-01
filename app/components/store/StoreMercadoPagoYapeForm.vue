@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { processMercadoPagoPayment } from '~/api/store-mercadopago.api'
 import { getMercadoPagoClient } from '~/utils/mercadopago'
+import { resolveMercadoPagoPayerEmail } from '~/utils/mercadopago-sandbox'
 
 const props = defineProps<{
   orderId: string
@@ -13,6 +14,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   success: [orderNumber: string]
+  pending: [orderNumber: string]
   error: [message: string]
 }>()
 
@@ -50,7 +52,8 @@ async function onPay() {
       token: yapeToken.id,
       paymentMethodId: 'yape',
       installments: 1,
-      payerEmail: props.payerEmail,
+      payerEmail: resolveMercadoPagoPayerEmail(props.payerEmail, props.isTestMode),
+      idempotencyKey: crypto.randomUUID(),
     })
 
     if (result.approved) {
@@ -59,9 +62,15 @@ async function onPay() {
       return
     }
 
+    if (result.pending) {
+      toast.info('Tu pago está en proceso de confirmación.')
+      emit('pending', result.orderNumber)
+      return
+    }
+
     const message =
       result.statusDetail ??
-      'El pago quedó pendiente. Revisa tu correo o intenta de nuevo.'
+      'No pudimos procesar el pago. Verifica los datos e intenta de nuevo.'
     emit('error', message)
     toast.error(message)
   } catch (error) {
@@ -77,8 +86,7 @@ async function onPay() {
 <template>
   <div class="space-y-4">
     <p class="text-theme-muted text-sm">
-      Abre tu app Yape, genera el código de aprobación (OTP) e ingrésalo aquí
-      junto con tu número de celular.
+      Paga con Yape mediante Checkout API de Mercado Pago (sin salir de la tienda).
     </p>
 
     <p

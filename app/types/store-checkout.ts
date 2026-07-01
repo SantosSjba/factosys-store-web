@@ -27,6 +27,12 @@ export type StoreCheckoutPaymentSettings = {
   }
   gateway: {
     mercadoPago: boolean
+    isTestMode?: boolean
+    acceptedMethods: Array<{
+      id: string
+      name: string
+      thumbnail: string | null
+    }>
   }
 }
 
@@ -36,6 +42,7 @@ export type MercadoPagoStoreConfig =
       enabled: true
       publicKey: string
       isTestMode: boolean
+      sandboxPayerEmail: string | null
     }
 
 export type MercadoPagoCheckoutChannel = {
@@ -58,6 +65,20 @@ export type MercadoPagoPaymentResult = {
   statusDetail: string | null
   paymentStatus: string
   approved: boolean
+  pending: boolean
+  rejected: boolean
+  paymentVoucherUrl: string | null
+}
+
+export type MercadoPagoPaymentContext = {
+  orderId: string
+  orderNumber: string
+  total: number
+  currencyCode: string
+  payerEmail: string
+  paymentMethod: string | null
+  paymentStatus: string
+  canPay: boolean
 }
 
 export type StoreCheckoutSettings = {
