@@ -30,6 +30,35 @@ export type PaymentTransactionStatus =
   | 'REFUNDED'
   | 'CANCELLED'
 
+export type MercadoPagoCredentialDiagnostics =
+  | {
+      configured: false
+      healthy: false
+      issues: string[]
+    }
+  | {
+      configured: true
+      isTestMode: boolean
+      liveMode: boolean | null
+      siteId: string | null
+      userId: number | null
+      isTestUserAccount: boolean
+      publicKeyPreview: string
+      healthy: boolean
+      issues: string[]
+      sandboxPayerEmailMode: 'order' | 'testuser' | 'synthetic' | null
+      sandboxPayerEmail: string | null
+    }
+
+export type MercadoPagoWebhookSetup = {
+  webhookUrl: string
+  recommendedEvents: string[]
+  secretConfigured: boolean
+  signatureValidation: 'required' | 'optional'
+  documentationPath: string
+  credentials: MercadoPagoCredentialDiagnostics
+}
+
 export type PaymentTransaction = {
   id: string
   orderId: string

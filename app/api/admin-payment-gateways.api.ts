@@ -1,4 +1,5 @@
 import type {
+  MercadoPagoWebhookSetup,
   PaymentGateway,
   PaymentGatewayProvider,
   PaymentTransaction,
@@ -17,6 +18,13 @@ export async function updateAdminPaymentGateway(
   const { data } = await useAdminApi().patch<PaymentGateway>(
     `/admin/payment-gateways/${provider}`,
     payload,
+  )
+  return data
+}
+
+export async function fetchMercadoPagoWebhookSetup() {
+  const { data } = await useAdminApi().get<MercadoPagoWebhookSetup>(
+    '/admin/payment-gateways/MERCADO_PAGO/webhook-setup',
   )
   return data
 }

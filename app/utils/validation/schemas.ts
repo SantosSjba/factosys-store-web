@@ -277,6 +277,7 @@ export const paymentsShippingSchema = z.object({
   bankTransferInstructions: optionalText,
   yapeNumber: optionalText,
   plinNumber: optionalText,
+  abandonedGatewayOrderExpiryHours: z.coerce.number().int().min(0).max(720).optional().or(z.literal('')),
 })
 
 export const currencyFormSchema = z.object({

@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/vue-query'
 import {
   fetchAdminPaymentGateways,
   fetchAdminPaymentTransactions,
+  fetchMercadoPagoWebhookSetup,
 } from '~/api/admin-payment-gateways.api'
 import { adminQueryKeys } from '~/constants/query-keys'
 
@@ -13,6 +14,22 @@ export function useAdminPaymentGatewaysQuery() {
     queryKey: adminQueryKeys.paymentGateways(),
     queryFn: fetchAdminPaymentGateways,
     enabled: computed(() => {
+      if (!adminAuth.accessToken) return false
+      if (!adminAuth.profile) return true
+      return can('settings.read')
+    }),
+  })
+}
+
+export function useAdminMercadoPagoWebhookSetupQuery(enabled: MaybeRefOrGetter<boolean>) {
+  const adminAuth = useAdminAuthStore()
+  const { can } = useAdminPermissions()
+
+  return useQuery({
+    queryKey: adminQueryKeys.mercadoPagoWebhookSetup(),
+    queryFn: fetchMercadoPagoWebhookSetup,
+    enabled: computed(() => {
+      if (!toValue(enabled)) return false
       if (!adminAuth.accessToken) return false
       if (!adminAuth.profile) return true
       return can('settings.read')

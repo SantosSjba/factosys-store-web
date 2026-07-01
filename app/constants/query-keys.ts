@@ -78,6 +78,8 @@ export const adminQueryKeys = {
   return: (id: string) => [...adminQueryKeys.all, 'returns', id] as const,
   shippingZones: () => [...adminQueryKeys.all, 'shipping-zones'] as const,
   paymentGateways: () => [...adminQueryKeys.all, 'payment-gateways'] as const,
+  mercadoPagoWebhookSetup: () =>
+    [...adminQueryKeys.all, 'payment-gateways', 'mercadopago', 'webhook-setup'] as const,
   paymentTransactions: (orderId?: string) =>
     [...adminQueryKeys.all, 'payment-transactions', orderId ?? 'all'] as const,
   reports: () => [...adminQueryKeys.all, 'reports'] as const,

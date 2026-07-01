@@ -31,6 +31,7 @@ const { setValues, createSubmitHandler } = useApiForm({
     bankTransferInstructions: '',
     yapeNumber: '',
     plinNumber: '',
+    abandonedGatewayOrderExpiryHours: '',
   },
 })
 
@@ -55,6 +56,7 @@ watch(settings, (value) => {
     bankTransferInstructions: value.bankTransferInstructions ?? '',
     yapeNumber: value.yapeNumber ?? '',
     plinNumber: value.plinNumber ?? '',
+    abandonedGatewayOrderExpiryHours: value.abandonedGatewayOrderExpiryHours ?? '',
   })
 }, { immediate: true })
 
@@ -82,6 +84,10 @@ const onSubmit = createSubmitHandler(
       bankTransferInstructions: values.bankTransferInstructions || null,
       yapeNumber: values.yapeNumber || null,
       plinNumber: values.plinNumber || null,
+      abandonedGatewayOrderExpiryHours:
+        values.abandonedGatewayOrderExpiryHours === ''
+          ? null
+          : Number(values.abandonedGatewayOrderExpiryHours),
     })
   },
   { successMessage: 'Pagos y envíos guardados' },
@@ -148,6 +154,27 @@ const onSubmit = createSubmitHandler(
           <UiFormField name="yapeNumber" label="Número Yape" />
           <UiFormField name="plinNumber" label="Número Plin" />
         </div>
+      </AdminFormSection>
+
+      <AdminFormSection
+        title="Pasarela de pago (Mercado Pago)"
+        description="Reglas para pedidos que esperan pago en línea (tarjeta/Yape vía Mercado Pago)."
+        icon="lucide:credit-card"
+      >
+        <div class="grid gap-4 sm:grid-cols-2">
+          <UiFormField
+            name="abandonedGatewayOrderExpiryHours"
+            label="Cancelar pedido sin pagar después de (horas)"
+            type="number"
+            min="0"
+            max="720"
+            hint="0 o vacío desactiva la cancelación automática. Ej: 48 = 2 días."
+          />
+        </div>
+        <p class="text-admin-muted mt-2 text-xs">
+          Configura credenciales y modo de prueba de Mercado Pago en
+          <NuxtLink to="/intranet/configuracion" class="underline">Pasarelas de pago</NuxtLink>.
+        </p>
       </AdminFormSection>
 
       <div v-if="can('settings.write')" class="flex justify-end">

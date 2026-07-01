@@ -58,6 +58,7 @@ export type StoreSettings = {
   bankTransferInstructions: string | null
   yapeNumber: string | null
   plinNumber: string | null
+  abandonedGatewayOrderExpiryHours: number | null
   warrantyPolicyUrl: string | null
   returnsPolicyUrl: string | null
   privacyPolicyUrl: string | null
@@ -151,6 +152,7 @@ export type UpdateStoreSettingsPayload = {
   bankTransferInstructions?: string | null
   yapeNumber?: string | null
   plinNumber?: string | null
+  abandonedGatewayOrderExpiryHours?: number | null
   warrantyPolicyUrl?: string
   returnsPolicyUrl?: string
   privacyPolicyUrl?: string

@@ -9,6 +9,34 @@ const editing = ref<PaymentGateway | null>(null)
 const modalOpen = ref(false)
 const formError = ref('')
 
+const diagnosticsOpenFor = ref<PaymentGatewayProvider | null>(null)
+const {
+  data: webhookSetup,
+  isFetching: isFetchingWebhookSetup,
+  isError: isWebhookSetupError,
+  refetch: refetchWebhookSetup,
+} = useAdminMercadoPagoWebhookSetupQuery(
+  computed(() => diagnosticsOpenFor.value === 'MERCADO_PAGO'),
+)
+
+function toggleDiagnostics(provider: PaymentGatewayProvider) {
+  if (diagnosticsOpenFor.value === provider) {
+    diagnosticsOpenFor.value = null
+    return
+  }
+  diagnosticsOpenFor.value = provider
+  void refetchWebhookSetup()
+}
+
+async function copyWebhookUrl(url: string) {
+  try {
+    await navigator.clipboard.writeText(url)
+    useToast().success('URL de webhook copiada')
+  } catch {
+    useToast().error('No se pudo copiar la URL')
+  }
+}
+
 const displayName = ref('')
 const isEnabled = ref(false)
 const isTestMode = ref(true)
@@ -83,6 +111,14 @@ async function onSubmit() {
             </UiBadge>
             <UiBadge v-if="gateway.isTestMode" variant="warning">Prueba</UiBadge>
             <UiIconButton
+              v-if="gateway.provider === 'MERCADO_PAGO'"
+              icon="lucide:stethoscope"
+              ariaLabel="Diagnóstico y webhook"
+              size="sm"
+              tone="admin"
+              @click="toggleDiagnostics(gateway.provider)"
+            />
+            <UiIconButton
               v-if="can('settings.write')"
               icon="lucide:settings-2"
               ariaLabel="Configurar"
@@ -96,6 +132,63 @@ async function onSubmit() {
           <p v-if="gateway.publicKey">Clave pública: {{ gateway.publicKey }}</p>
           <p v-if="gateway.secretKey">Clave secreta: {{ gateway.secretKey }}</p>
           <p v-else class="text-xs">Sin clave secreta configurada</p>
+        </div>
+
+        <div
+          v-if="gateway.provider === 'MERCADO_PAGO' && diagnosticsOpenFor === 'MERCADO_PAGO'"
+          class="border-admin-line mt-3 space-y-3 border-t pt-3 text-sm"
+        >
+          <div v-if="isFetchingWebhookSetup" class="text-admin-muted flex items-center gap-2">
+            <UiSpinner size="sm" />
+            Consultando diagnóstico…
+          </div>
+          <UiAlert v-else-if="isWebhookSetupError" variant="error">
+            No se pudo obtener el diagnóstico de Mercado Pago.
+          </UiAlert>
+          <template v-else-if="webhookSetup">
+            <div>
+              <p class="font-medium">URL de webhook</p>
+              <div class="mt-1 flex items-center gap-2">
+                <code class="bg-admin-muted/10 flex-1 truncate rounded px-2 py-1 text-xs">
+                  {{ webhookSetup.webhookUrl }}
+                </code>
+                <UiIconButton
+                  icon="lucide:copy"
+                  ariaLabel="Copiar URL"
+                  size="sm"
+                  tone="admin"
+                  @click="copyWebhookUrl(webhookSetup.webhookUrl)"
+                />
+              </div>
+              <p class="text-admin-muted mt-1 text-xs">
+                Regístrala en el panel de Mercado Pago (Tu negocio → Webhooks) para los eventos:
+                {{ webhookSetup.recommendedEvents.join(', ') }}.
+              </p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2">
+              <UiBadge :variant="webhookSetup.secretConfigured ? 'success' : 'warning'">
+                {{ webhookSetup.secretConfigured ? 'Firma de webhook configurada' : 'Sin secreto de webhook' }}
+              </UiBadge>
+              <UiBadge :variant="webhookSetup.credentials.healthy ? 'success' : 'danger'">
+                {{ webhookSetup.credentials.healthy ? 'Credenciales OK' : 'Credenciales con problemas' }}
+              </UiBadge>
+              <UiBadge v-if="webhookSetup.credentials.configured && webhookSetup.credentials.isTestUserAccount" variant="warning">
+                Cuenta test_user
+              </UiBadge>
+            </div>
+
+            <ul v-if="webhookSetup.credentials.issues.length" class="list-disc space-y-1 pl-5 text-xs text-red-600 dark:text-red-400">
+              <li v-for="issue in webhookSetup.credentials.issues" :key="issue">{{ issue }}</li>
+            </ul>
+
+            <p
+              v-if="webhookSetup.credentials.configured && webhookSetup.credentials.sandboxPayerEmail"
+              class="text-admin-muted text-xs"
+            >
+              Correo de comprador para pruebas: <code>{{ webhookSetup.credentials.sandboxPayerEmail }}</code>
+            </p>
+          </template>
         </div>
       </AdminCard>
     </div>
