@@ -26,9 +26,15 @@ useStoreSeo({
 
       <h1 class="text-theme text-2xl font-bold">¡Gracias por tu compra!</h1>
       <p class="text-theme-muted mt-3 text-sm leading-relaxed">
-        Recibimos tu pedido
-        <span v-if="orderNumber" class="text-theme font-semibold">{{ orderNumber }}</span>.
-        Te enviamos un correo con los detalles y los pasos para completar el pago.
+        <template v-if="route.query.paid === '1'">
+          Tu pago fue procesado correctamente. Te enviamos un correo con los
+          detalles.
+        </template>
+        <template v-else>
+          Recibimos tu pedido
+          <span v-if="orderNumber" class="text-theme font-semibold">{{ orderNumber }}</span>.
+          Te enviamos un correo con los detalles y los pasos para completar el pago.
+        </template>
       </p>
 
       <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">

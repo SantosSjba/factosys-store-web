@@ -19,6 +19,10 @@ export const storeQueryKeys = {
   checkoutSettings: () => [...storeQueryKeys.all, 'checkout', 'settings'] as const,
   checkoutQuote: (params: unknown) =>
     [...storeQueryKeys.all, 'checkout', 'quote', params] as const,
+  mercadoPagoConfig: () =>
+    [...storeQueryKeys.all, 'payments', 'mercadopago', 'config'] as const,
+  mercadoPagoPaymentMethods: () =>
+    [...storeQueryKeys.all, 'payments', 'mercadopago', 'payment-methods'] as const,
 }
 
 export const adminQueryKeys = {

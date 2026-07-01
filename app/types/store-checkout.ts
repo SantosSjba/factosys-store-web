@@ -25,6 +25,39 @@ export type StoreCheckoutPaymentSettings = {
     enabled: boolean
     number: string | null
   }
+  gateway: {
+    mercadoPago: boolean
+  }
+}
+
+export type MercadoPagoStoreConfig =
+  | { enabled: false }
+  | {
+      enabled: true
+      publicKey: string
+      isTestMode: boolean
+    }
+
+export type MercadoPagoCheckoutChannel = {
+  channel: 'card' | 'yape'
+  label: string
+  paymentMethodId?: string
+  thumbnail?: string
+  maxAmount?: number
+}
+
+export type MercadoPagoPaymentMethods = {
+  methods: MercadoPagoCheckoutChannel[]
+}
+
+export type MercadoPagoPaymentResult = {
+  orderId: string
+  orderNumber: string
+  mercadoPagoOrderId: string | null
+  status: string
+  statusDetail: string | null
+  paymentStatus: string
+  approved: boolean
 }
 
 export type StoreCheckoutSettings = {

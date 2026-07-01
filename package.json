@@ -14,6 +14,7 @@
   "dependencies": {
     "@iconify/vue": "^5.0.1",
     "@iconscout/unicons": "^4.2.0",
+    "@mercadopago/sdk-js": "^0.0.3",
     "@nuxt/image": "^2.0.0",
     "@nuxtjs/tailwindcss": "^6.14.0",
     "@pinia/nuxt": "^0.11.3",

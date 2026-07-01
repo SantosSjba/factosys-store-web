@@ -75,6 +75,9 @@ const paymentOptions = computed(() => {
   if (payments.plin.enabled) {
     options.push({ label: 'Plin', value: 'PLIN' })
   }
+  if (payments.gateway?.mercadoPago) {
+    options.push({ label: 'Tarjeta / Mercado Pago', value: 'GATEWAY' })
+  }
 
   return options
 })
@@ -182,6 +185,9 @@ const paymentInstructions = computed(() => {
   if (paymentMethod.value === 'PLIN' && payments.plin.number) {
     return `Número Plin: ${payments.plin.number}`
   }
+  if (paymentMethod.value === 'GATEWAY') {
+    return 'Serás redirigido al formulario seguro de Mercado Pago para completar el pago con tarjeta.'
+  }
   return null
 })
 
@@ -265,6 +271,25 @@ async function onSubmit() {
     })
 
     toast.success(`Pedido ${order.orderNumber} registrado correctamente.`)
+
+    const payerEmail = isGuestCheckout.value
+      ? guestEmail.value.trim()
+      : profile.value?.email ?? ''
+
+    if (paymentMethod.value === 'GATEWAY') {
+      if (isGuestCheckout.value) {
+        guestCart.clear()
+      }
+      await router.push({
+        path: `/checkout/pagar/${order.id}`,
+        query: {
+          email: payerEmail,
+          total: String(order.total),
+          order: order.orderNumber,
+        },
+      })
+      return
+    }
 
     if (isGuestCheckout.value) {
       guestCart.clear()
@@ -497,10 +522,10 @@ useStoreSeo({
             {{ paymentInstructions }}
           </p>
 
-          <p
-            v-if="paymentMethod !== 'CASH'"
-            class="text-theme-muted mt-3 text-xs"
-          >
+      <p
+        v-if="paymentMethod !== 'CASH' && paymentMethod !== 'GATEWAY'"
+        class="text-theme-muted mt-3 text-xs"
+      >
             Tu pedido quedará pendiente de pago hasta que confirmemos el abono.
           </p>
         </section>
