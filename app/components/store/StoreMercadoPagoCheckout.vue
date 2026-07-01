@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import type { MercadoPagoCheckoutChannel } from '~/types/store-checkout'
+import type {
+  MercadoPagoCheckoutChannel,
+  MercadoPagoSandboxPayerEmailMode,
+} from '~/types/store-checkout'
 import type { UiTabItem } from '~/types/ui'
 
 const props = defineProps<{
@@ -8,6 +11,7 @@ const props = defineProps<{
   payerEmail: string
   publicKey: string
   isTestMode?: boolean
+  sandboxPayerEmailMode?: MercadoPagoSandboxPayerEmailMode
   methods: MercadoPagoCheckoutChannel[]
 }>()
 
@@ -56,6 +60,7 @@ watch(
       :payer-email="payerEmail"
       :public-key="publicKey"
       :is-test-mode="isTestMode"
+      :sandbox-payer-email-mode="sandboxPayerEmailMode"
       @success="emit('success', $event)"
       @pending="emit('pending', $event)"
     />
@@ -68,6 +73,7 @@ watch(
       :public-key="publicKey"
       :max-amount="yapeMethod?.maxAmount"
       :is-test-mode="isTestMode"
+      :sandbox-payer-email-mode="sandboxPayerEmailMode"
       @success="emit('success', $event)"
       @pending="emit('pending', $event)"
     />

@@ -36,12 +36,15 @@ export type StoreCheckoutPaymentSettings = {
   }
 }
 
+export type MercadoPagoSandboxPayerEmailMode = 'order' | 'testuser' | 'synthetic'
+
 export type MercadoPagoStoreConfig =
   | { enabled: false }
   | {
       enabled: true
       publicKey: string
       isTestMode: boolean
+      sandboxPayerEmailMode: 'order' | 'testuser'
       sandboxPayerEmail: string | null
     }
 

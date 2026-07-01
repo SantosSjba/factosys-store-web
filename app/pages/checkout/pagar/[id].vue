@@ -202,6 +202,7 @@ useStoreSeo({
         :payer-email="payerEmail"
         :public-key="mpConfig.publicKey"
         :is-test-mode="mpConfig.isTestMode"
+        :sandbox-payer-email-mode="mpConfig.sandboxPayerEmailMode"
         :methods="paymentMethods?.methods ?? []"
         @success="onPaymentSuccess"
         @pending="onPaymentPending"

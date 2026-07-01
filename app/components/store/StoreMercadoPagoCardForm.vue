@@ -5,6 +5,7 @@ import {
   type MercadoPagoCardPaymentBrickController,
 } from '~/utils/mercadopago'
 import { resolveMercadoPagoPayerEmail } from '~/utils/mercadopago-sandbox'
+import type { MercadoPagoSandboxPayerEmailMode } from '~/types/store-checkout'
 
 const props = defineProps<{
   orderId: string
@@ -12,6 +13,7 @@ const props = defineProps<{
   payerEmail: string
   publicKey: string
   isTestMode?: boolean
+  sandboxPayerEmailMode?: MercadoPagoSandboxPayerEmailMode
 }>()
 
 const emit = defineEmits<{
@@ -28,7 +30,12 @@ const containerId = `mpCardForm_${props.orderId}`
 let cardFormController: MercadoPagoCardPaymentBrickController | null = null
 
 const mpPayerEmail = computed(() =>
-  resolveMercadoPagoPayerEmail(props.payerEmail, props.isTestMode),
+  resolveMercadoPagoPayerEmail(
+    props.orderId,
+    props.payerEmail,
+    props.isTestMode,
+    props.sandboxPayerEmailMode ?? 'testuser',
+  ),
 )
 
 async function initCardForm() {
@@ -46,9 +53,6 @@ async function initCardForm() {
         amount: props.amount,
         payer: {
           email: mpPayerEmail.value,
-          ...(props.isTestMode
-            ? { identification: { type: 'DNI', number: '123456789' } }
-            : {}),
         },
       },
       customization: {
@@ -124,8 +128,10 @@ onBeforeUnmount(() => {
 <template>
   <div class="space-y-4">
     <StoreMercadoPagoPayerEmailNotice
+      :order-id="orderId"
       :payer-email="payerEmail"
       :is-test-mode="isTestMode"
+      :sandbox-payer-email-mode="sandboxPayerEmailMode"
     />
 
     <p class="text-theme-muted text-sm">

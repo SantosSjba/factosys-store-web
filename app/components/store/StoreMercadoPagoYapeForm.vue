@@ -2,6 +2,7 @@
 import { processMercadoPagoPayment } from '~/api/store-mercadopago.api'
 import { getMercadoPagoClient } from '~/utils/mercadopago'
 import { resolveMercadoPagoPayerEmail } from '~/utils/mercadopago-sandbox'
+import type { MercadoPagoSandboxPayerEmailMode } from '~/types/store-checkout'
 
 const props = defineProps<{
   orderId: string
@@ -10,6 +11,7 @@ const props = defineProps<{
   publicKey: string
   maxAmount?: number
   isTestMode?: boolean
+  sandboxPayerEmailMode?: MercadoPagoSandboxPayerEmailMode
 }>()
 
 const emit = defineEmits<{
@@ -52,7 +54,12 @@ async function onPay() {
       token: yapeToken.id,
       paymentMethodId: 'yape',
       installments: 1,
-      payerEmail: resolveMercadoPagoPayerEmail(props.payerEmail, props.isTestMode),
+      payerEmail: resolveMercadoPagoPayerEmail(
+        props.orderId,
+        props.payerEmail,
+        props.isTestMode,
+        props.sandboxPayerEmailMode ?? 'testuser',
+      ),
       idempotencyKey: crypto.randomUUID(),
     })
 
@@ -86,8 +93,10 @@ async function onPay() {
 <template>
   <div class="space-y-4">
     <StoreMercadoPagoPayerEmailNotice
+      :order-id="orderId"
       :payer-email="payerEmail"
       :is-test-mode="isTestMode"
+      :sandbox-payer-email-mode="sandboxPayerEmailMode"
     />
 
     <p class="text-theme-muted text-sm">
