@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { getStoreTaxBadgeLabel } from '~/utils/store/product'
+
 const props = defineProps<{
   title: string
   price: number
@@ -11,6 +13,9 @@ const props = defineProps<{
 }>()
 
 const hasLink = computed(() => Boolean(props.to && props.to !== '#'))
+
+const { data: settings } = useStoreSettingsQuery()
+const taxBadgeLabel = computed(() => getStoreTaxBadgeLabel(settings.value))
 </script>
 
 <template>
@@ -60,6 +65,9 @@ const hasLink = computed(() => Boolean(props.to && props.to !== '#'))
         <h3 class="text-theme line-clamp-2 text-sm font-medium leading-snug">{{ title }}</h3>
         <UiRating v-if="rating !== undefined" :value="rating" :show-value="false" />
         <UiPrice :price="price" :compare-at="compareAt" />
+        <UiBadge v-if="taxBadgeLabel" variant="default" class="normal-case">
+          {{ taxBadgeLabel }}
+        </UiBadge>
       </div>
     </NuxtLink>
 
@@ -100,6 +108,9 @@ const hasLink = computed(() => Boolean(props.to && props.to !== '#'))
         <h3 class="text-theme line-clamp-2 text-sm font-medium leading-snug">{{ title }}</h3>
         <UiRating v-if="rating !== undefined" :value="rating" :show-value="false" />
         <UiPrice :price="price" :compare-at="compareAt" />
+        <UiBadge v-if="taxBadgeLabel" variant="default" class="normal-case">
+          {{ taxBadgeLabel }}
+        </UiBadge>
       </div>
     </div>
   </article>

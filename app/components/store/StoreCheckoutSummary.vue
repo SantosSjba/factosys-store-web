@@ -27,7 +27,26 @@ const emit = defineEmits<{
     </div>
 
     <template v-else-if="quote">
-      <dl class="text-theme space-y-2 text-sm">
+      <ul class="divide-y divide-[var(--color-border)] text-sm">
+        <li
+          v-for="line in quote.lines"
+          :key="line.variantId"
+          class="flex items-start justify-between gap-3 py-3 first:pt-0"
+        >
+          <div class="min-w-0">
+            <p class="text-theme font-medium">{{ line.productName }}</p>
+            <p v-if="line.variantName" class="text-theme-muted text-xs">
+              {{ line.variantName }}
+            </p>
+            <p class="text-theme-muted mt-0.5 text-xs">Cantidad: {{ line.quantity }}</p>
+          </div>
+          <p class="text-theme shrink-0 font-medium">
+            <UiPrice :price="line.lineSubtotal" :currency="quote.currencyCode" />
+          </p>
+        </li>
+      </ul>
+
+      <dl class="text-theme border-theme space-y-2 border-t pt-4 text-sm">
         <div class="flex items-center justify-between gap-3">
           <dt class="text-theme-muted">Subtotal</dt>
           <dd>
@@ -131,5 +150,13 @@ const emit = defineEmits<{
         </NuxtLink>
       </div>
     </template>
+
+    <div
+      v-else-if="!quoting"
+      class="bg-theme-muted/50 text-theme-muted rounded-xl px-4 py-3 text-sm leading-relaxed"
+    >
+      Completa los datos de entrega (distrito, provincia y departamento) para
+      ver el resumen y el total de tu pedido.
+    </div>
   </aside>
 </template>

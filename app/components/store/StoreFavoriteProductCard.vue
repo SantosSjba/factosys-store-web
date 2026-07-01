@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import type { StoreProduct } from '~/types/store'
-import { getProductDisplayPrice } from '~/utils/store/product'
+import { getProductDisplayPrice, getStoreTaxBadgeLabel } from '~/utils/store/product'
 
 const props = defineProps<{
   product: StoreProduct
 }>()
 
 const display = computed(() => getProductDisplayPrice(props.product))
+const { data: settings } = useStoreSettingsQuery()
+const taxBadgeLabel = computed(() => getStoreTaxBadgeLabel(settings.value))
 </script>
 
 <template>
@@ -51,6 +53,9 @@ const display = computed(() => getProductDisplayPrice(props.product))
           :price="display.price"
           :compare-at="display.compareAt"
         />
+        <UiBadge v-if="taxBadgeLabel" variant="default" class="normal-case">
+          {{ taxBadgeLabel }}
+        </UiBadge>
       </div>
     </NuxtLink>
   </article>

@@ -1,5 +1,5 @@
 import type { CatalogProductImage, CatalogProductVariant } from '~/types/admin-catalog'
-import type { StoreCategoryNode, StoreProduct } from '~/types/store'
+import type { StoreCategoryNode, StorePublicSettings, StoreProduct } from '~/types/store'
 
 export function getDefaultVariant(product: StoreProduct) {
   return (
@@ -98,6 +98,18 @@ export function getProductImages(
   }
 
   return []
+}
+
+export function getStoreTaxBadgeLabel(
+  settings: StorePublicSettings | null | undefined,
+) {
+  const tax = settings?.tax
+  if (!tax) return null
+
+  const rate = Number.parseFloat(tax.rate)
+  if (!Number.isFinite(rate) || rate <= 0) return null
+
+  return tax.pricesIncludeTax ? 'Precio con IGV' : 'Precio sin IGV'
 }
 
 export function findCategorySlug(

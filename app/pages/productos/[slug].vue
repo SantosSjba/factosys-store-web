@@ -6,6 +6,7 @@ import {
   getDiscountPercent,
   getProductDisplayPrice,
   getProductImages,
+  getStoreTaxBadgeLabel,
   getVariantDisplayPrice,
 } from '~/utils/store/product'
 
@@ -67,6 +68,7 @@ const discountPercent = computed(() => {
 })
 
 const currencyCode = computed(() => settings.value?.currency.code ?? 'PEN')
+const taxBadgeLabel = computed(() => getStoreTaxBadgeLabel(settings.value))
 
 const categoryCatalogUrl = computed(() => {
   if (!product.value || !categories.value) return '/productos'
@@ -235,12 +237,17 @@ useHead({
             </NuxtLink>
           </div>
 
-          <UiPrice
-            v-if="displayPrice"
-            :price="displayPrice.price"
-            :compare-at="displayPrice.compareAt"
-            :currency="currencyCode"
-          />
+          <div class="flex flex-wrap items-center gap-2">
+            <UiPrice
+              v-if="displayPrice"
+              :price="displayPrice.price"
+              :compare-at="displayPrice.compareAt"
+              :currency="currencyCode"
+            />
+            <UiBadge v-if="taxBadgeLabel" variant="default" class="normal-case">
+              {{ taxBadgeLabel }}
+            </UiBadge>
+          </div>
 
           <p
             v-if="product.shortDescription"
