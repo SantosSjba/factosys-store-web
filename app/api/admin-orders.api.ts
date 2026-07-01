@@ -26,6 +26,16 @@ export async function fetchAdminOrder(id: string) {
   return data
 }
 
+export async function lookupAdminOrders(search: string, params: ListOrdersParams = {}) {
+  const response = await fetchAdminOrders({
+    search: search.trim(),
+    page: 1,
+    limit: 8,
+    ...params,
+  })
+  return response.items
+}
+
 export async function createAdminOrder(payload: CreateOrderPayload) {
   const { data } = await useAdminApi().post<OrderDetail>('/admin/orders', payload)
   return data

@@ -1,10 +1,13 @@
 <script setup lang="ts">
+import { lookupAdminOrders } from '~/api/admin-orders.api'
 import type {
   ReturnRequestReason,
   ReturnRequestStatus,
   ReturnRequestSummary,
 } from '~/types/admin-returns'
+import type { OrderItem, OrderSummary } from '~/types/admin-orders'
 import type { UiTableColumn } from '~/types/ui'
+import { formatOrderStatus, orderStatusVariant } from '~/utils/format-order'
 import {
   formatReturnReason,
   formatReturnStatus,
@@ -42,6 +45,10 @@ const detailOpen = ref(false)
 const selectedReturn = ref<ReturnRequestSummary | null>(null)
 
 const orderId = ref('')
+const selectedOrderSummary = ref<OrderSummary | null>(null)
+const orderSearch = ref('')
+const orderResults = ref<OrderSummary[]>([])
+const isOrderSearching = ref(false)
 const reason = ref<ReturnRequestReason>('DEFECTIVE')
 const reasonNote = ref('')
 const internalNotes = ref('')
@@ -50,11 +57,57 @@ const formError = ref('')
 const selectedItems = ref<Record<string, number>>({})
 
 const orderIdRef = computed(() => (createOpen.value ? orderId.value.trim() || null : null))
-const { data: orderForReturn, isPending: orderLoading } = useAdminOrderQuery(orderIdRef)
+const { data: orderForReturn, isFetching: orderLoading } = useAdminOrderQuery(orderIdRef)
+
+let orderSearchTimer: ReturnType<typeof setTimeout> | undefined
+
+function formatOrderLabel(order: OrderSummary) {
+  const customer = order.customerName || order.customerEmail || 'Sin cliente'
+  return `${order.orderNumber} · ${customer}`
+}
+
+function scheduleOrderSearch() {
+  clearTimeout(orderSearchTimer)
+  if (orderSearch.value.trim().length < 2) {
+    orderResults.value = []
+    isOrderSearching.value = false
+    return
+  }
+  orderSearchTimer = setTimeout(async () => {
+    isOrderSearching.value = true
+    try {
+      orderResults.value = await lookupAdminOrders(orderSearch.value, { status: 'DELIVERED' })
+    } catch {
+      orderResults.value = []
+    } finally {
+      isOrderSearching.value = false
+    }
+  }, 300)
+}
+
+function selectOrder(order: OrderSummary) {
+  orderId.value = order.id
+  selectedOrderSummary.value = order
+  orderSearch.value = ''
+  orderResults.value = []
+}
+
+function clearOrderSelection() {
+  orderId.value = ''
+  selectedOrderSummary.value = null
+  orderSearch.value = ''
+  orderResults.value = []
+  isOrderSearching.value = false
+}
 
 watch(createOpen, (open) => {
   if (!open) {
+    clearTimeout(orderSearchTimer)
     orderId.value = ''
+    selectedOrderSummary.value = null
+    orderSearch.value = ''
+    orderResults.value = []
+    isOrderSearching.value = false
     selectedItems.value = {}
     formError.value = ''
   }
@@ -75,6 +128,27 @@ watch(orderForReturn, (order) => {
 function setItemQuantity(itemId: string, quantity: number) {
   selectedItems.value = { ...selectedItems.value, [itemId]: quantity }
 }
+
+function isItemSelected(itemId: string) {
+  return (selectedItems.value[itemId] ?? 0) > 0
+}
+
+function toggleItem(item: OrderItem, checked: boolean) {
+  setItemQuantity(item.id, checked ? item.quantity : 0)
+}
+
+function onItemQuantityInput(item: OrderItem, value: string | number) {
+  const quantity = Math.min(Math.max(Number(value) || 0, 0), item.quantity)
+  setItemQuantity(item.id, quantity)
+}
+
+const selectedItemsTotal = computed(() => {
+  const items = orderForReturn.value?.items ?? []
+  return items.reduce((sum, item) => {
+    const qty = selectedItems.value[item.id] ?? 0
+    return sum + qty * Number(item.unitPrice)
+  }, 0)
+})
 
 const statusFormOpen = ref(false)
 const nextStatus = ref<ReturnRequestStatus | ''>('')
@@ -105,7 +179,7 @@ function openStatusUpdate(item: ReturnRequestSummary) {
 async function onCreate() {
   formError.value = ''
   if (!orderId.value.trim()) {
-    formError.value = 'El ID del pedido es obligatorio.'
+    formError.value = 'Selecciona un pedido.'
     return
   }
   const items = Object.entries(selectedItems.value)
@@ -231,7 +305,58 @@ async function onUpdateStatus() {
     >
       <form class="space-y-4" @submit.prevent="onCreate">
         <UiAlert v-if="formError" variant="error">{{ formError }}</UiAlert>
-        <UiInput v-model="orderId" label="ID del pedido" required />
+
+        <div class="space-y-2">
+          <div
+            v-if="selectedOrderSummary"
+            class="bg-admin-muted/40 flex items-start justify-between gap-3 rounded-md px-3 py-2 text-sm"
+          >
+            <span class="font-medium">{{ formatOrderLabel(selectedOrderSummary) }}</span>
+            <button
+              type="button"
+              class="text-brand-accent shrink-0 text-xs hover:underline"
+              @click="clearOrderSelection"
+            >
+              Cambiar pedido
+            </button>
+          </div>
+          <template v-else>
+            <UiInput
+              v-model="orderSearch"
+              label="Buscar pedido"
+              placeholder="Número de pedido, cliente o correo…"
+              autocomplete="off"
+              required
+              @update:model-value="scheduleOrderSearch"
+            />
+            <div v-if="isOrderSearching" class="text-admin-muted flex items-center gap-2 text-sm">
+              <UiSpinner size="sm" />
+              Buscando pedidos…
+            </div>
+            <div
+              v-else-if="orderResults.length"
+              class="border-admin-line max-h-40 overflow-auto rounded-lg border"
+            >
+              <button
+                v-for="order in orderResults"
+                :key="order.id"
+                type="button"
+                class="hover:bg-admin-surface block w-full px-3 py-2 text-left text-sm"
+                @click="selectOrder(order)"
+              >
+                <span class="font-medium">{{ order.orderNumber }}</span>
+                <span class="text-admin-muted block text-xs">
+                  {{ order.customerName || order.customerEmail || 'Sin cliente' }} ·
+                  {{ formatPrice(order.total, order.currencyCode) }}
+                </span>
+              </button>
+            </div>
+            <p v-else-if="orderSearch.trim().length >= 2" class="text-admin-muted text-sm">
+              Sin pedidos entregados que coincidan.
+            </p>
+          </template>
+        </div>
+
         <div v-if="orderLoading" class="text-admin-muted flex items-center gap-2 text-sm">
           <UiSpinner size="sm" />
           Cargando pedido…
@@ -239,26 +364,50 @@ async function onUpdateStatus() {
         <div v-else-if="orderForReturn" class="space-y-2">
           <p class="text-sm font-medium">
             Pedido {{ orderForReturn.orderNumber }}
-            <UiBadge class="ml-2" variant="default">{{ orderForReturn.status }}</UiBadge>
+            <UiBadge class="ml-2" :variant="orderStatusVariant(orderForReturn.status)">
+              {{ formatOrderStatus(orderForReturn.status) }}
+            </UiBadge>
+          </p>
+          <p class="text-admin-muted text-xs">
+            Selecciona los productos a devolver y, si aplica, la cantidad.
           </p>
           <div
             v-for="item in orderForReturn.items"
             :key="item.id"
             class="border-admin-line flex items-center justify-between gap-3 rounded-lg border px-3 py-2"
+            :class="isItemSelected(item.id) && 'border-brand-accent bg-brand-accent/5'"
           >
-            <div class="min-w-0 text-sm">
-              <p class="font-medium">{{ item.productName }}</p>
-              <p class="text-admin-muted text-xs">{{ item.sku }} · máx. {{ item.quantity }}</p>
-            </div>
+            <label class="flex min-w-0 flex-1 cursor-pointer items-start gap-3">
+              <input
+                type="checkbox"
+                class="border-store-line text-brand-accent mt-1 h-4 w-4 shrink-0 rounded focus:ring-[var(--brand-cyan)]"
+                :checked="isItemSelected(item.id)"
+                @change="toggleItem(item, ($event.target as HTMLInputElement).checked)"
+              />
+              <span class="min-w-0 text-sm">
+                <span class="block font-medium">{{ item.productName }}</span>
+                <span class="text-admin-muted block text-xs">
+                  {{ item.sku }} · {{ formatPrice(item.unitPrice, orderForReturn.currencyCode) }} c/u
+                  · máx. {{ item.quantity }}
+                </span>
+              </span>
+            </label>
             <UiInput
+              v-if="isItemSelected(item.id) && item.quantity > 1"
               :model-value="selectedItems[item.id] ?? 0"
               type="number"
-              :min="0"
+              :min="1"
               :max="item.quantity"
-              class="w-20"
-              @update:model-value="setItemQuantity(item.id, Number($event) || 0)"
+              class="w-20 shrink-0"
+              @update:model-value="onItemQuantityInput(item, $event)"
             />
           </div>
+          <p v-if="selectedItemsTotal > 0" class="text-right text-sm">
+            Total estimado a reembolsar:
+            <span class="font-medium">
+              {{ formatPrice(selectedItemsTotal, orderForReturn.currencyCode) }}
+            </span>
+          </p>
         </div>
         <UiSelect v-model="reason" label="Motivo" :options="RETURN_REASON_OPTIONS" />
         <UiInput v-model="reasonNote" label="Nota del motivo" />
