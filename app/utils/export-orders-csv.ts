@@ -6,6 +6,7 @@ export async function downloadOrdersExport(params: ListOrdersParams = {}) {
       search: params.search?.trim() || undefined,
       status: params.status || undefined,
       paymentStatus: params.paymentStatus || undefined,
+      paymentMethod: params.paymentMethod || undefined,
       deliveryMethod: params.deliveryMethod || undefined,
       dateFrom: params.dateFrom || undefined,
       dateTo: params.dateTo || undefined,

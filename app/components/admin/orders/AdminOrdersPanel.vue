@@ -1,5 +1,11 @@
 <script setup lang="ts">
-import type { OrderDeliveryMethod, OrderPaymentStatus, OrderStatus, OrderSummary } from '~/types/admin-orders'
+import type {
+  OrderDeliveryMethod,
+  OrderPaymentMethod,
+  OrderPaymentStatus,
+  OrderStatus,
+  OrderSummary,
+} from '~/types/admin-orders'
 import type { UiTableColumn } from '~/types/ui'
 import {
   formatDeliveryMethod,
@@ -12,6 +18,7 @@ import {
   orderStatusVariant,
   paymentStatusVariant,
 } from '~/utils/format-order'
+import { formatPaymentMethod, PAYMENT_METHOD_OPTIONS } from '~/utils/format-payment-method'
 import { downloadOrdersExport } from '~/utils/export-orders-csv'
 
 const route = useRoute()
@@ -19,6 +26,7 @@ const { can } = useAdminPermissions()
 
 const statusFilter = ref<OrderStatus | ''>('')
 const paymentFilter = ref<OrderPaymentStatus | ''>('')
+const paymentMethodFilter = ref<OrderPaymentMethod | ''>('')
 const deliveryFilter = ref<OrderDeliveryMethod | ''>('')
 const dateFrom = ref('')
 const dateTo = ref('')
@@ -27,6 +35,7 @@ const isExporting = ref(false)
 const listFilters = computed(() => ({
   status: statusFilter.value || undefined,
   paymentStatus: paymentFilter.value || undefined,
+  paymentMethod: paymentMethodFilter.value || undefined,
   deliveryMethod: deliveryFilter.value || undefined,
   dateFrom: dateFrom.value ? `${dateFrom.value}T00:00:00.000Z` : undefined,
   dateTo: dateTo.value ? `${dateTo.value}T23:59:59.999Z` : undefined,
@@ -54,6 +63,11 @@ const paymentOptions = [
   ...PAYMENT_STATUS_OPTIONS,
 ]
 
+const paymentMethodOptions = [
+  { label: 'Todo método de pago', value: '' },
+  ...PAYMENT_METHOD_OPTIONS,
+]
+
 const deliveryOptions = [
   { label: 'Toda entrega', value: '' },
   { label: 'Envío a domicilio', value: 'SHIPPING' },
@@ -67,6 +81,7 @@ const columns: UiTableColumn<OrderSummary>[] = [
   { key: 'status', label: 'Estado', width: '10rem' },
   { key: 'fulfillmentStatus', label: 'Despacho', width: '9rem' },
   { key: 'paymentStatus', label: 'Pago', width: '9rem' },
+  { key: 'paymentMethod', label: 'Método de pago', width: '10rem' },
   { key: 'total', label: 'Total', width: '8rem' },
   { key: 'createdAt', label: 'Fecha', width: '9rem' },
 ]
@@ -124,6 +139,12 @@ onMounted(() => {
         class="w-44"
       />
       <UiSelect
+        v-model="paymentMethodFilter"
+        :options="paymentMethodOptions"
+        aria-label="Filtrar por método de pago"
+        class="w-48"
+      />
+      <UiSelect
         v-model="deliveryFilter"
         :options="deliveryOptions"
         aria-label="Filtrar por entrega"
@@ -176,6 +197,9 @@ onMounted(() => {
           <UiBadge :variant="paymentStatusVariant(row.paymentStatus)">
             {{ formatPaymentStatus(row.paymentStatus) }}
           </UiBadge>
+        </template>
+        <template #cell-paymentMethod="{ row }">
+          <span class="text-sm">{{ formatPaymentMethod(row.paymentMethod) }}</span>
         </template>
         <template #cell-total="{ row }">
           {{ formatPrice(row.total, row.currencyCode) }}

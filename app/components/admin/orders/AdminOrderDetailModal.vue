@@ -13,6 +13,13 @@ import {
   paymentStatusVariant,
 } from '~/utils/format-order'
 
+function resolveOperationalDefault<T extends string>(
+  current: T,
+  options: Array<{ value: T; label: string }>,
+): T | '' {
+  return options.some((option) => option.value === current) ? current : ''
+}
+
 const open = defineModel<boolean>({ required: true })
 
 const props = defineProps<{
@@ -53,13 +60,24 @@ const internalNotes = ref('')
 const customerNotes = ref('')
 const evidenceFile = ref<File | null>(null)
 const evidenceMethod = ref<OrderPaymentMethod>('BANK_TRANSFER')
+const evidencePaymentMethodOptions = PAYMENT_METHOD_OPTIONS.filter(
+  (option) => option.value !== 'GATEWAY',
+)
 const evidenceAmount = ref<number | ''>('')
 const evidenceNote = ref('')
 
 watch(order, (value) => {
   if (!value) return
-  nextStatus.value = ''
-  nextPaymentStatus.value = ''
+  const allowedStatuses = OPERATIONAL_ORDER_STATUS_OPTIONS.filter((option) =>
+    value.deliveryMethod === 'PICKUP'
+      ? option.value !== 'SHIPPED'
+      : option.value !== 'READY_FOR_PICKUP',
+  )
+  nextStatus.value = resolveOperationalDefault(value.status, allowedStatuses)
+  nextPaymentStatus.value = resolveOperationalDefault(
+    value.paymentStatus,
+    OPERATIONAL_PAYMENT_STATUS_OPTIONS,
+  )
   statusNote.value = ''
   paymentNote.value = ''
   trackingNumber.value = value.trackingNumber ?? ''
@@ -402,7 +420,7 @@ function formatAddress(address: {
           <UiSelect
             v-model="evidenceMethod"
             label="Método de pago"
-            :options="PAYMENT_METHOD_OPTIONS"
+            :options="evidencePaymentMethodOptions"
             class="sm:col-span-2"
           />
           <UiInput v-model.number="evidenceAmount" label="Monto" type="number" min="0" step="0.01" />
@@ -581,7 +599,12 @@ function formatAddress(address: {
       >
         <div class="grid gap-4 lg:grid-cols-2">
           <div class="space-y-3">
-            <p class="text-sm font-medium">Cambiar estado</p>
+            <p class="text-sm font-medium">
+              Cambiar estado
+              <span class="text-admin-muted font-normal">
+                · Actual: {{ formatOrderStatus(order.status) }}
+              </span>
+            </p>
             <UiSelect
               v-model="nextStatus"
               :options="[{ label: 'Seleccionar…', value: '' }, ...statusOptions]"
@@ -590,7 +613,7 @@ function formatAddress(address: {
             <UiInput v-model="statusNote" placeholder="Nota opcional" />
             <UiButton
               size="sm"
-              :disabled="!nextStatus"
+              :disabled="!nextStatus || nextStatus === order.status"
               :loading="statusMutation.isPending.value"
               @click="applyStatus"
             >
@@ -598,7 +621,12 @@ function formatAddress(address: {
             </UiButton>
           </div>
           <div class="space-y-3">
-            <p class="text-sm font-medium">Cambiar pago</p>
+            <p class="text-sm font-medium">
+              Cambiar pago
+              <span class="text-admin-muted font-normal">
+                · Actual: {{ formatPaymentStatus(order.paymentStatus) }}
+              </span>
+            </p>
             <UiSelect
               v-model="nextPaymentStatus"
               :options="[
@@ -610,7 +638,7 @@ function formatAddress(address: {
             <UiInput v-model="paymentNote" placeholder="Nota opcional" />
             <UiButton
               size="sm"
-              :disabled="!nextPaymentStatus"
+              :disabled="!nextPaymentStatus || nextPaymentStatus === order.paymentStatus"
               :loading="paymentMutation.isPending.value"
               @click="applyPayment"
             >

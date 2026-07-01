@@ -96,6 +96,7 @@ export type OrderSummary = {
   orderNumber: string
   status: OrderStatus
   paymentStatus: OrderPaymentStatus
+  paymentMethod: OrderPaymentMethod | null
   fulfillmentStatus: OrderFulfillmentStatus
   source: OrderSource
   deliveryMethod: OrderDeliveryMethod
@@ -170,6 +171,7 @@ export type ListOrdersParams = {
   search?: string
   status?: OrderStatus
   paymentStatus?: OrderPaymentStatus
+  paymentMethod?: OrderPaymentMethod
   deliveryMethod?: OrderDeliveryMethod
   customerId?: string
   dateFrom?: string

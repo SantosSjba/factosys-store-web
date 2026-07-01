@@ -6,7 +6,7 @@ const PAYMENT_METHOD_LABELS: Record<OrderPaymentMethod, string> = {
   YAPE: 'Yape',
   PLIN: 'Plin',
   CARD: 'Tarjeta',
-  GATEWAY: 'Pasarela de pago',
+  GATEWAY: 'Mercado Pago',
 }
 
 export function formatPaymentMethod(method: OrderPaymentMethod | string | null): string {
