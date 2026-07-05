@@ -4,14 +4,17 @@ RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
 WORKDIR /app
 
 FROM base AS deps
+# Coolify puede inyectar NODE_ENV=production en build-time; eso omite devDependencies
+# (p. ej. @tailwindcss/typography) y rompe `nuxt build`.
+ENV NODE_ENV=development
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 
 FROM base AS build
+ENV NODE_ENV=development
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-ENV NODE_ENV=production
 RUN pnpm run build
 
 FROM base AS runner
