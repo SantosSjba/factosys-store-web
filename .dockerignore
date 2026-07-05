@@ -8,9 +8,11 @@ dist
 .env*
 !.env.example
 *.md
+README.md
 playwright-report
 test-results
 e2e
+playwright.config.ts
 terminals
 *.log
 npm-debug.log*
