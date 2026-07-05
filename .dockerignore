@@ -1,0 +1,17 @@
+node_modules
+.nuxt
+.output
+dist
+.git
+.github
+.cursor
+.env*
+!.env.example
+*.md
+playwright-report
+test-results
+e2e
+terminals
+*.log
+npm-debug.log*
+pnpm-debug.log*
