@@ -55,17 +55,19 @@ function noopVeeValidateDevtools() {
 const apiProxyTarget =
   process.env.NUXT_API_PROXY_TARGET || 'https://127.0.0.1:3000'
 
+const apiProxyOrigin = apiProxyTarget.replace(/\/$/, '')
+
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
 
   modules: ['@pinia/nuxt', '@nuxtjs/tailwindcss', '@nuxt/image', '@vueuse/nuxt'],
 
-  // SSR en dev: mismo proxy /api que el navegador (API suele ir con DEV_HTTPS=true).
+  // Dev: devProxy. Producción: server/routes/api/[...].ts reenvía /api/* al backend.
   nitro: {
     devProxy: {
       '/api': {
-        target: apiProxyTarget,
+        target: apiProxyOrigin,
         changeOrigin: true,
         secure: false,
         timeout: 120_000,
@@ -145,7 +147,7 @@ export default defineNuxtConfig({
       strictPort: true,
       proxy: {
         '/api': {
-          target: apiProxyTarget,
+          target: apiProxyOrigin,
           changeOrigin: true,
           secure: false,
           timeout: 120_000,
@@ -156,9 +158,11 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
+    /** URL del backend Nest (sin /api). Coolify: NUXT_API_PROXY_TARGET en runtime. */
+    apiProxyTarget: apiProxyOrigin,
     public: {
       apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || '/api',
-      apiOrigin: apiProxyTarget,
+      apiOrigin: apiProxyOrigin,
       apiTimeoutMs: Number(process.env.NUXT_PUBLIC_API_TIMEOUT_MS || 120_000),
       appName: process.env.NUXT_PUBLIC_APP_NAME || 'Factosys Store',
     },

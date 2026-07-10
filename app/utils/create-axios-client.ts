@@ -29,7 +29,9 @@ function resolveApiBaseUrl() {
       return `${proto}://${host}${apiPath.startsWith('/') ? apiPath : `/${apiPath}`}`
     }
 
-    const origin = String(config.public.apiOrigin || '').replace(/\/$/, '')
+    const origin = String(
+      config.apiProxyTarget || config.public.apiOrigin || '',
+    ).replace(/\/$/, '')
     if (origin) {
       return `${origin}${apiPath.startsWith('/') ? apiPath : `/${apiPath}`}`
     }
