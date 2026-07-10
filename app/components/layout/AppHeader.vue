@@ -175,11 +175,11 @@ watch(
         class="mx-auto flex max-w-7xl flex-col gap-3 px-3 py-3 sm:flex-row sm:items-center sm:gap-4 sm:px-4 sm:py-4 lg:gap-6"
       >
         <div class="flex w-full items-center gap-2 sm:contents">
-          <BrandLogo responsive />
+          <BrandLogo responsive class="sm:order-1" />
 
           <button
             type="button"
-            class="text-theme hover:bg-theme-muted hidden shrink-0 items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium lg:flex"
+            class="text-theme hover:bg-theme-muted hidden shrink-0 items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium sm:order-2 lg:flex"
             :aria-expanded="isMenuOpen"
             aria-controls="store-category-menu"
             @click="isMenuOpen = !isMenuOpen"
@@ -188,7 +188,7 @@ watch(
             Menú
           </button>
 
-          <div class="ml-auto flex shrink-0 items-center gap-0.5 sm:ml-0 sm:gap-1">
+          <div class="ml-auto flex shrink-0 items-center gap-0.5 sm:order-4 sm:ml-0 sm:gap-1">
             <ThemeToggle class="hidden sm:inline-flex" />
 
             <div ref="accountMenuRef" class="relative hidden sm:block">
@@ -306,7 +306,7 @@ watch(
         </div>
 
         <form
-          class="w-full sm:min-w-0 sm:flex-1"
+          class="w-full sm:order-3 sm:min-w-0 sm:flex-1"
           role="search"
           @submit.prevent="onSearchSubmit"
         >
