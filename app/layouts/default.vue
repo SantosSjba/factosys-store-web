@@ -13,6 +13,7 @@
     <StoreFooter />
     <ClientOnly>
       <StoreWhatsappFab />
+      <StorePwaInstallBanner />
       <StoreMobileDock />
     </ClientOnly>
   </div>
