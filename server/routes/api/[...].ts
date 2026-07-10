@@ -1,4 +1,4 @@
-import { createError, proxyRequest } from 'h3'
+import { createError, proxyRequest, sendRedirect } from 'h3'
 
 /**
  * Producción: reenvía /api/* (p. ej. /api/media/*) al backend Nest.
@@ -17,6 +17,11 @@ export default defineEventHandler(async (event) => {
   }
 
   const path = event.path.startsWith('/') ? event.path : `/${event.path}`
+
+  // OAuth: el proxy no debe seguir redirects de Google (rompe el login en /api/store/auth/google)
+  if (path.includes('/store/auth/google')) {
+    return sendRedirect(event, `${origin}${path}`, 302)
+  }
 
   return proxyRequest(event, `${origin}${path}`)
 })

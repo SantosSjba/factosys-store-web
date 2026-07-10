@@ -214,11 +214,18 @@ export const useAuthStore = defineStore('auth', () => {
 
   const googleAuthUrl = computed(() => {
     const config = useRuntimeConfig()
+    const apiOrigin = String(config.public.apiOrigin || '').replace(/\/$/, '')
+
+    // OAuth no puede pasar por el proxy Nitro/Vite: sigue redirects y sirve HTML de Google en /api/*
+    if (apiOrigin) {
+      return `${apiOrigin}/api/store/auth/google`
+    }
+
     const base = config.public.apiBaseUrl.replace(/\/$/, '')
     if (base.startsWith('http')) {
       return `${base}/store/auth/google`
     }
-    // Misma origen (Nuxt :3001): el proxy de Vite reenvía a la API
+
     return `${base}/store/auth/google`
   })
 

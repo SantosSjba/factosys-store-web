@@ -56,6 +56,8 @@ const apiProxyTarget =
   process.env.NUXT_API_PROXY_TARGET || 'https://127.0.0.1:3000'
 
 const apiProxyOrigin = apiProxyTarget.replace(/\/$/, '')
+const publicApiOrigin =
+  process.env.NUXT_PUBLIC_API_ORIGIN || apiProxyOrigin
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
@@ -162,7 +164,7 @@ export default defineNuxtConfig({
     apiProxyTarget: apiProxyOrigin,
     public: {
       apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || '/api',
-      apiOrigin: apiProxyOrigin,
+      apiOrigin: publicApiOrigin,
       apiTimeoutMs: Number(process.env.NUXT_PUBLIC_API_TIMEOUT_MS || 120_000),
       appName: process.env.NUXT_PUBLIC_APP_NAME || 'Factosys Store',
     },
