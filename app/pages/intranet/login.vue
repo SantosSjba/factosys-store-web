@@ -41,11 +41,6 @@ const { onSubmit, isSubmitting } = useAuthLoginSubmit({
       </UiButton>
     </form>
 
-    <p class="mt-4 rounded-lg bg-violet-50 px-3 py-2 text-xs text-violet-900">
-      Staff (dev): <strong>admin@factosys.store</strong> / Admin123! o
-      <strong>super@factosys.store</strong> / Super123!
-    </p>
-
     <p class="mt-6 text-center text-sm text-slate-600">
       ¿Eres cliente?
       <NuxtLink to="/login" class="font-semibold text-indigo-600 hover:underline">

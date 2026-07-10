@@ -35,8 +35,6 @@ useStoreSeo({
   noindex: true,
 })
 
-const isDev = import.meta.dev
-
 onMounted(() => {
   if (pendingEmail.value) {
     setValues({ email: pendingEmail.value, password: '' })
@@ -96,13 +94,6 @@ onMounted(() => {
       >
         Ingresar código de verificación
       </NuxtLink>
-    </p>
-
-    <p
-      v-if="isDev"
-      class="text-theme-muted bg-theme-muted mt-4 rounded-lg px-3 py-2 text-xs"
-    >
-      Tienda (dev): <strong>cliente@factosys.store</strong> / Cliente123!
     </p>
 
     <div class="border-theme mt-6 space-y-3 border-t pt-6 text-center text-sm">
