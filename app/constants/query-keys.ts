@@ -9,6 +9,8 @@ export const storeQueryKeys = {
   product: (slug: string) => [...storeQueryKeys.all, 'products', slug] as const,
   categories: () => [...storeQueryKeys.all, 'categories'] as const,
   brands: () => [...storeQueryKeys.all, 'brands'] as const,
+  catalogFilters: (params: unknown) =>
+    [...storeQueryKeys.all, 'catalog-filters', params] as const,
   orders: () => [...storeQueryKeys.all, 'orders'] as const,
   order: (id: string) => [...storeQueryKeys.all, 'orders', id] as const,
   favorites: () => [...storeQueryKeys.all, 'favorites'] as const,

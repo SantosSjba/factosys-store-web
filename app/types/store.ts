@@ -53,12 +53,37 @@ export type StoreBanner = {
   sortOrder: number
 }
 
+export type StoreCatalogFilterOption = {
+  value: string
+  label: string
+  count?: number
+}
+
+export type StoreCatalogFilterGroup = {
+  key: string
+  label: string
+  type: 'category' | 'brand' | 'attribute'
+  options: StoreCatalogFilterOption[]
+}
+
+export type StoreCatalogFiltersResponse = {
+  groups: StoreCatalogFilterGroup[]
+}
+
+export type ListStoreCatalogFiltersParams = {
+  categoryId?: string
+  brandId?: string
+  search?: string
+  attrs?: string
+}
+
 export type ListStoreProductsParams = {
   page?: number
   limit?: number
   search?: string
   categoryId?: string
   brandId?: string
+  attrs?: string
 }
 
 export type StoreProduct = CatalogProduct

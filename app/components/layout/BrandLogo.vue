@@ -3,8 +3,10 @@ const props = withDefaults(
   defineProps<{
     to?: string
     size?: 'sm' | 'md'
+    /** Tamaño vía CSS (sin JS) para evitar hydration mismatch en el header. */
+    responsive?: boolean
   }>(),
-  { to: '/', size: 'md' },
+  { to: '/', size: 'md', responsive: false },
 )
 
 const { data: settings } = useStoreSettingsQuery()
@@ -15,17 +17,20 @@ const storeName = computed(
 
 const logoUrl = computed(() => settings.value?.logoUrl)
 
-const textSize = computed(() =>
-  props.size === 'sm' ? 'text-base sm:text-lg' : 'text-lg sm:text-xl',
-)
+const textSize = computed(() => {
+  if (props.responsive) return 'text-base sm:text-lg'
+  return props.size === 'sm' ? 'text-base sm:text-lg' : 'text-lg sm:text-xl'
+})
 
-const storeSize = computed(() =>
-  props.size === 'sm' ? 'text-xs sm:text-sm' : 'text-sm sm:text-base',
-)
+const storeSize = computed(() => {
+  if (props.responsive) return 'text-xs sm:text-sm'
+  return props.size === 'sm' ? 'text-xs sm:text-sm' : 'text-sm sm:text-base'
+})
 
-const imageHeight = computed(() =>
-  props.size === 'sm' ? 'h-8 sm:h-9' : 'h-9 sm:h-10',
-)
+const imageHeight = computed(() => {
+  if (props.responsive) return 'h-8 sm:h-10'
+  return props.size === 'sm' ? 'h-8 sm:h-9' : 'h-9 sm:h-10'
+})
 </script>
 
 <template>

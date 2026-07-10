@@ -172,149 +172,151 @@ watch(
 
     <div class="border-theme border-b">
       <div
-        class="mx-auto flex max-w-7xl items-center gap-2 px-3 py-3 sm:gap-4 sm:px-4 sm:py-4 lg:gap-6"
+        class="mx-auto flex max-w-7xl flex-col gap-3 px-3 py-3 sm:flex-row sm:items-center sm:gap-4 sm:px-4 sm:py-4 lg:gap-6"
       >
-        <BrandLogo />
+        <div class="flex w-full items-center gap-2 sm:contents">
+          <BrandLogo responsive />
 
-        <button
-          type="button"
-          class="text-theme hover:bg-theme-muted hidden shrink-0 items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium lg:flex"
-          :aria-expanded="isMenuOpen"
-          aria-controls="store-category-menu"
-          @click="isMenuOpen = !isMenuOpen"
-        >
-          <UiIcon name="lucide:menu" :size="20" />
-          Menú
-        </button>
+          <button
+            type="button"
+            class="text-theme hover:bg-theme-muted hidden shrink-0 items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium lg:flex"
+            :aria-expanded="isMenuOpen"
+            aria-controls="store-category-menu"
+            @click="isMenuOpen = !isMenuOpen"
+          >
+            <UiIcon name="lucide:menu" :size="20" />
+            Menú
+          </button>
+
+          <div class="ml-auto flex shrink-0 items-center gap-0.5 sm:ml-0 sm:gap-1">
+            <ThemeToggle class="hidden sm:inline-flex" />
+
+            <div ref="accountMenuRef" class="relative hidden sm:block">
+              <button
+                type="button"
+                class="text-theme hover:bg-theme-muted flex max-w-[10rem] items-center gap-1 rounded-lg px-2 py-1.5 text-left text-sm lg:max-w-[11rem]"
+                :aria-expanded="isAccountOpen"
+                aria-haspopup="true"
+                @click="isAccountOpen = !isAccountOpen"
+              >
+                <span class="truncate font-medium">{{ accountLabel }}</span>
+                <UiIcon name="lucide:chevron-down" :size="16" class="text-theme-muted shrink-0" />
+              </button>
+
+              <div
+                v-if="isAccountOpen"
+                class="border-theme bg-theme-dropdown absolute right-0 top-full z-50 mt-1 w-48 rounded-lg border py-1 shadow-lg"
+                role="menu"
+              >
+                <template v-if="authStore.isAuthenticated">
+                  <NuxtLink
+                    to="/cuenta"
+                    class="text-theme hover:bg-theme-muted flex items-center gap-2 px-4 py-2 text-sm"
+                    role="menuitem"
+                    @click="isAccountOpen = false"
+                  >
+                    <UiIcon name="lucide:user" :size="16" class="text-theme-muted shrink-0" />
+                    Mi cuenta
+                  </NuxtLink>
+                  <NuxtLink
+                    to="/carrito"
+                    class="text-theme hover:bg-theme-muted flex items-center gap-2 px-4 py-2 text-sm"
+                    role="menuitem"
+                    @click="isAccountOpen = false"
+                  >
+                    <UiIcon name="lucide:shopping-cart" :size="16" class="text-theme-muted shrink-0" />
+                    Mi carrito
+                  </NuxtLink>
+                  <NuxtLink
+                    to="/favoritos"
+                    class="text-theme hover:bg-theme-muted flex items-center gap-2 px-4 py-2 text-sm"
+                    role="menuitem"
+                    @click="isAccountOpen = false"
+                  >
+                    <UiIcon name="lucide:heart" :size="16" class="text-theme-muted shrink-0" />
+                    Mis favoritos
+                  </NuxtLink>
+                  <button
+                    type="button"
+                    class="text-theme hover:bg-theme-muted flex w-full items-center gap-2 px-4 py-2 text-left text-sm"
+                    role="menuitem"
+                    @click="handleLogout"
+                  >
+                    <UiIcon name="lucide:log-out" :size="16" class="text-theme-muted shrink-0" />
+                    Cerrar sesión
+                  </button>
+                </template>
+                <template v-else>
+                  <NuxtLink
+                    to="/login"
+                    class="text-theme hover:bg-theme-muted flex items-center gap-2 px-4 py-2 text-sm"
+                    role="menuitem"
+                    @click="isAccountOpen = false"
+                  >
+                    <UiIcon name="lucide:log-in" :size="16" class="text-theme-muted shrink-0" />
+                    Iniciar sesión
+                  </NuxtLink>
+                  <NuxtLink
+                    to="/registro"
+                    class="text-theme hover:bg-theme-muted flex items-center gap-2 px-4 py-2 text-sm"
+                    role="menuitem"
+                    @click="isAccountOpen = false"
+                  >
+                    <UiIcon name="lucide:user-plus" :size="16" class="text-theme-muted shrink-0" />
+                    Crear cuenta
+                  </NuxtLink>
+                </template>
+              </div>
+            </div>
+
+            <NuxtLink
+              to="/cuenta"
+              class="text-theme hover:bg-theme-muted hidden items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium md:inline-flex"
+            >
+              <UiIcon name="lucide:user" :size="16" class="text-theme-muted" />
+              Mi cuenta
+            </NuxtLink>
+
+            <UiIconButton
+              icon="lucide:heart"
+              ariaLabel="Mis favoritos"
+              size="lg"
+              :badge="favoritesBadge"
+              @click="onFavoritesClick"
+            />
+
+            <UiIconButton
+              icon="lucide:shopping-cart"
+              ariaLabel="Carrito de compras"
+              size="lg"
+              :badge="cartBadge"
+              @click="onCartClick"
+            />
+
+            <UiIconButton
+              icon="lucide:menu"
+              ariaLabel="Abrir menú de categorías"
+              size="lg"
+              class="lg:hidden"
+              :aria-expanded="isMenuOpen"
+              aria-controls="store-category-menu"
+              @click="isMenuOpen = !isMenuOpen"
+            />
+          </div>
+        </div>
 
         <form
-          class="flex min-w-0 flex-1 items-center"
+          class="w-full sm:min-w-0 sm:flex-1"
           role="search"
           @submit.prevent="onSearchSubmit"
         >
           <UiSearchInput
             v-model="searchQuery"
-            :placeholder="`Buscar en ${storeName}`"
+            placeholder="Buscar productos…"
             :aria-label="`Buscar productos en ${storeName}`"
             @submit="onSearchSubmit"
           />
         </form>
-
-        <div class="flex shrink-0 items-center gap-0.5 sm:gap-1">
-          <ThemeToggle class="hidden sm:inline-flex" />
-
-          <div ref="accountMenuRef" class="relative hidden sm:block">
-            <button
-              type="button"
-              class="text-theme hover:bg-theme-muted flex max-w-[10rem] items-center gap-1 rounded-lg px-2 py-1.5 text-left text-sm lg:max-w-[11rem]"
-              :aria-expanded="isAccountOpen"
-              aria-haspopup="true"
-              @click="isAccountOpen = !isAccountOpen"
-            >
-              <span class="truncate font-medium">{{ accountLabel }}</span>
-              <UiIcon name="lucide:chevron-down" :size="16" class="text-theme-muted shrink-0" />
-            </button>
-
-            <div
-              v-if="isAccountOpen"
-              class="border-theme bg-theme-dropdown absolute right-0 top-full z-50 mt-1 w-48 rounded-lg border py-1 shadow-lg"
-              role="menu"
-            >
-              <template v-if="authStore.isAuthenticated">
-                <NuxtLink
-                  to="/cuenta"
-                  class="text-theme hover:bg-theme-muted flex items-center gap-2 px-4 py-2 text-sm"
-                  role="menuitem"
-                  @click="isAccountOpen = false"
-                >
-                  <UiIcon name="lucide:user" :size="16" class="text-theme-muted shrink-0" />
-                  Mi cuenta
-                </NuxtLink>
-                <NuxtLink
-                  to="/carrito"
-                  class="text-theme hover:bg-theme-muted flex items-center gap-2 px-4 py-2 text-sm"
-                  role="menuitem"
-                  @click="isAccountOpen = false"
-                >
-                  <UiIcon name="lucide:shopping-cart" :size="16" class="text-theme-muted shrink-0" />
-                  Mi carrito
-                </NuxtLink>
-                <NuxtLink
-                  to="/favoritos"
-                  class="text-theme hover:bg-theme-muted flex items-center gap-2 px-4 py-2 text-sm"
-                  role="menuitem"
-                  @click="isAccountOpen = false"
-                >
-                  <UiIcon name="lucide:heart" :size="16" class="text-theme-muted shrink-0" />
-                  Mis favoritos
-                </NuxtLink>
-                <button
-                  type="button"
-                  class="text-theme hover:bg-theme-muted flex w-full items-center gap-2 px-4 py-2 text-left text-sm"
-                  role="menuitem"
-                  @click="handleLogout"
-                >
-                  <UiIcon name="lucide:log-out" :size="16" class="text-theme-muted shrink-0" />
-                  Cerrar sesión
-                </button>
-              </template>
-              <template v-else>
-                <NuxtLink
-                  to="/login"
-                  class="text-theme hover:bg-theme-muted flex items-center gap-2 px-4 py-2 text-sm"
-                  role="menuitem"
-                  @click="isAccountOpen = false"
-                >
-                  <UiIcon name="lucide:log-in" :size="16" class="text-theme-muted shrink-0" />
-                  Iniciar sesión
-                </NuxtLink>
-                <NuxtLink
-                  to="/registro"
-                  class="text-theme hover:bg-theme-muted flex items-center gap-2 px-4 py-2 text-sm"
-                  role="menuitem"
-                  @click="isAccountOpen = false"
-                >
-                  <UiIcon name="lucide:user-plus" :size="16" class="text-theme-muted shrink-0" />
-                  Crear cuenta
-                </NuxtLink>
-              </template>
-            </div>
-          </div>
-
-          <NuxtLink
-            to="/cuenta"
-            class="text-theme hover:bg-theme-muted hidden items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium md:inline-flex"
-          >
-            <UiIcon name="lucide:user" :size="16" class="text-theme-muted" />
-            Mi cuenta
-          </NuxtLink>
-
-          <UiIconButton
-            icon="lucide:heart"
-            ariaLabel="Mis favoritos"
-            size="lg"
-            :badge="favoritesBadge"
-            @click="onFavoritesClick"
-          />
-
-          <UiIconButton
-            icon="lucide:shopping-cart"
-            ariaLabel="Carrito de compras"
-            size="lg"
-            :badge="cartBadge"
-            @click="onCartClick"
-          />
-
-          <UiIconButton
-            icon="lucide:menu"
-            ariaLabel="Abrir menú de categorías"
-            size="lg"
-            class="lg:hidden"
-            :aria-expanded="isMenuOpen"
-            aria-controls="store-category-menu"
-            @click="isMenuOpen = !isMenuOpen"
-          />
-        </div>
       </div>
     </div>
 

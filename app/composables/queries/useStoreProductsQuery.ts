@@ -19,6 +19,7 @@ export function useStoreProductsQuery(
       search: raw.search?.trim() || undefined,
       categoryId: raw.categoryId,
       brandId: raw.brandId,
+      attrs: raw.attrs,
     }
   })
 

@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import type { BreadcrumbItem } from '~/types/ui'
+import type { StoreCatalogFilterGroup } from '~/types/store'
 import { findCategoryBySlug } from '~/utils/store/category-tree'
+import {
+  parseCatalogAttributeFilters,
+  serializeCatalogAttributeFilters,
+} from '~/utils/store/catalog-filters'
 
 const route = useRoute()
 const router = useRouter()
@@ -9,9 +14,14 @@ const page = computed(() => Number(route.query.page) || 1)
 const search = computed(() => String(route.query.q ?? '').trim())
 const categorySlug = computed(() => String(route.query.categoria ?? '').trim())
 const brandId = computed(() => String(route.query.marca ?? '').trim())
+const attributeFilters = computed(() =>
+  parseCatalogAttributeFilters(route.query.attrs),
+)
+const serializedAttrs = computed(() =>
+  serializeCatalogAttributeFilters(attributeFilters.value),
+)
 
 const { data: categories, isPending: categoriesLoading } = useStoreCategoriesQuery()
-const { data: brands } = useStoreBrandsQuery()
 
 const selectedCategory = computed(() => {
   if (!categorySlug.value || !categories.value) return undefined
@@ -32,6 +42,20 @@ const unknownCategorySlug = computed(
     !selectedCategory.value,
 )
 
+const catalogQuery = computed(() => ({
+  categoryId: selectedCategoryId.value,
+  brandId: brandId.value || undefined,
+  search: search.value || undefined,
+  attrs: serializedAttrs.value,
+}))
+
+const {
+  data: filtersData,
+  isPending: filtersLoading,
+} = useStoreCatalogFiltersQuery(catalogQuery, {
+  enabled: productsQueryEnabled,
+})
+
 const {
   data: productsPage,
   isPending,
@@ -41,9 +65,7 @@ const {
   computed(() => ({
     page: page.value,
     limit: 12,
-    search: search.value || undefined,
-    categoryId: selectedCategoryId.value,
-    brandId: brandId.value || undefined,
+    ...catalogQuery.value,
   })),
   { enabled: productsQueryEnabled },
 )
@@ -55,11 +77,10 @@ const selectedCategoryName = computed(
   () => selectedCategory.value?.name ?? null,
 )
 
-const subcategoryFilters = computed(() => selectedCategory.value?.children ?? [])
-
 const selectedBrandName = computed(() => {
-  if (!brandId.value || !brands.value) return null
-  return brands.value.find((brand) => brand.id === brandId.value)?.name ?? null
+  const brandGroup = filtersData.value?.groups.find((group) => group.type === 'brand')
+  if (!brandId.value || !brandGroup) return null
+  return brandGroup.options.find((option) => option.value === brandId.value)?.label ?? null
 })
 
 const pageTitle = computed(() => {
@@ -68,10 +89,6 @@ const pageTitle = computed(() => {
   if (selectedBrandName.value) return selectedBrandName.value
   return 'Catálogo'
 })
-
-const hasActiveFilters = computed(
-  () => Boolean(search.value || categorySlug.value || brandId.value),
-)
 
 const breadcrumbs = computed<BreadcrumbItem[]>(() => {
   const items: BreadcrumbItem[] = [
@@ -98,6 +115,48 @@ const pageDescription = computed(() => {
   return 'Explora nuestro catálogo de productos con envíos a todo el Perú.'
 })
 
+const activeChips = computed(() => {
+  const chips: Array<{
+    key: string
+    label: string
+    type: 'search' | 'category' | 'brand' | 'attribute'
+    attributeSlug?: string
+  }> = []
+
+  if (search.value) {
+    chips.push({ key: 'search', label: `"${search.value}"`, type: 'search' })
+  }
+  if (categorySlug.value && selectedCategoryName.value) {
+    chips.push({
+      key: 'category',
+      label: selectedCategoryName.value,
+      type: 'category',
+    })
+  }
+  if (brandId.value && selectedBrandName.value) {
+    chips.push({
+      key: 'brand',
+      label: selectedBrandName.value,
+      type: 'brand',
+    })
+  }
+
+  for (const group of filtersData.value?.groups ?? []) {
+    if (group.type !== 'attribute') continue
+    const value = attributeFilters.value[group.key]
+    if (!value) continue
+    const option = group.options.find((entry) => entry.value === value)
+    chips.push({
+      key: `attr-${group.key}`,
+      label: option?.label ?? `${group.label}: ${value}`,
+      type: 'attribute',
+      attributeSlug: group.key,
+    })
+  }
+
+  return chips
+})
+
 useStoreSeo(
   computed(() => ({
     title: pageTitle.value,
@@ -105,28 +164,66 @@ useStoreSeo(
   })),
 )
 
-function clearFilters() {
-  router.push({ path: '/productos' })
-}
-
-function setBrandFilter(id: string) {
-  const query = {
-    ...route.query,
-    marca: brandId.value === id ? undefined : id,
-    page: undefined,
-  }
-  router.push({ path: '/productos', query })
-}
-
-function setCategoryFilter(slug: string) {
+function pushCatalogQuery(
+  query: Record<string, string | undefined>,
+) {
   router.push({
     path: '/productos',
     query: {
       ...route.query,
-      categoria: slug,
+      ...query,
       page: undefined,
     },
   })
+}
+
+function clearFilters() {
+  router.push({ path: '/productos' })
+}
+
+function onFilterSelect(group: StoreCatalogFilterGroup, value: string) {
+  if (group.type === 'category') {
+    pushCatalogQuery({ categoria: categorySlug.value === value ? undefined : value })
+    return
+  }
+
+  if (group.type === 'brand') {
+    pushCatalogQuery({ marca: brandId.value === value ? undefined : value })
+    return
+  }
+
+  const nextAttrs = { ...attributeFilters.value }
+  if (nextAttrs[group.key] === value) {
+    delete nextAttrs[group.key]
+  } else {
+    nextAttrs[group.key] = value
+  }
+
+  pushCatalogQuery({
+    attrs: serializeCatalogAttributeFilters(nextAttrs),
+  })
+}
+
+function removeFilter(chip: (typeof activeChips.value)[number]) {
+  if (chip.type === 'search') {
+    pushCatalogQuery({ q: undefined })
+    return
+  }
+  if (chip.type === 'category') {
+    pushCatalogQuery({ categoria: undefined })
+    return
+  }
+  if (chip.type === 'brand') {
+    pushCatalogQuery({ marca: undefined })
+    return
+  }
+  if (chip.type === 'attribute' && chip.attributeSlug) {
+    const nextAttrs = { ...attributeFilters.value }
+    delete nextAttrs[chip.attributeSlug]
+    pushCatalogQuery({
+      attrs: serializeCatalogAttributeFilters(nextAttrs),
+    })
+  }
 }
 
 function onPageChange(nextPage: number) {
@@ -164,59 +261,18 @@ function onPageChange(nextPage: number) {
       La categoría seleccionada no existe o ya no está disponible.
     </p>
 
-    <div
-      v-if="subcategoryFilters.length > 0"
-      class="mb-4 flex flex-wrap gap-2"
-    >
-      <button
-        v-for="subcategory in subcategoryFilters"
-        :key="subcategory.id"
-        type="button"
-        class="shrink-0 rounded-full border px-3 py-1.5 text-sm font-medium transition"
-        :class="
-          categorySlug === subcategory.slug
-            ? 'border-brand-accent bg-brand-accent-soft text-brand-accent'
-            : 'border-theme bg-theme-surface text-theme hover:border-brand-accent'
-        "
-        @click="setCategoryFilter(subcategory.slug)"
-      >
-        {{ subcategory.name }}
-      </button>
-    </div>
-
-    <div
-      v-if="brands?.length || hasActiveFilters"
-      class="mb-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center"
-    >
-      <div
-        v-if="brands?.length"
-        class="scrollbar-thin flex gap-2 overflow-x-auto pb-1"
-      >
-        <button
-          v-for="brand in brands"
-          :key="brand.id"
-          type="button"
-          class="shrink-0 rounded-full border px-3 py-1.5 text-sm font-medium transition"
-          :class="
-            brandId === brand.id
-              ? 'border-brand-accent bg-brand-accent-soft text-brand-accent'
-              : 'border-theme bg-theme-surface text-theme hover:border-brand-accent'
-          "
-          @click="setBrandFilter(brand.id)"
-        >
-          {{ brand.name }}
-        </button>
-      </div>
-
-      <button
-        v-if="hasActiveFilters"
-        type="button"
-        class="text-brand-accent-deep text-sm font-semibold hover:underline"
-        @click="clearFilters"
-      >
-        Limpiar filtros
-      </button>
-    </div>
+    <StoreCatalogFilters
+      :groups="filtersData?.groups ?? []"
+      :loading="filtersLoading && productsQueryEnabled"
+      :category-slug="categorySlug"
+      :brand-id="brandId"
+      :search="search"
+      :attribute-filters="attributeFilters"
+      :active-chips="activeChips"
+      @select="onFilterSelect"
+      @remove="removeFilter"
+      @clear="clearFilters"
+    />
 
     <UiErrorState
       v-if="isError"
