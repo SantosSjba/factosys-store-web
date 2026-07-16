@@ -1,4 +1,5 @@
 node_modules
+.pnpm-store
 .nuxt
 .output
 dist
@@ -9,6 +10,7 @@ dist
 !.env.example
 *.md
 README.md
+docs
 playwright-report
 test-results
 e2e

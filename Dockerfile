@@ -4,8 +4,8 @@ RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
 WORKDIR /app
 
 FROM base AS deps
-# Coolify puede inyectar NODE_ENV=production en build-time; eso omite devDependencies
-# (p. ej. @tailwindcss/typography) y rompe `nuxt build`.
+# Build siempre en development para instalar devDependencies (Tailwind, etc.).
+# El build ocurre en tu Mac; Coolify solo hace pull de la imagen.
 ENV NODE_ENV=development
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile

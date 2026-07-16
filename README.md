@@ -95,10 +95,30 @@ app/
 ## Scripts
 
 ```bash
-pnpm dev       # Desarrollo (puerto 3001)
-pnpm build     # Build producción
-pnpm preview   # Vista previa del build
+pnpm dev            # Desarrollo (puerto 3001)
+pnpm build          # Build producción
+pnpm preview        # Vista previa del build
+pnpm publish:image  # Docker buildx linux/amd64 → Docker Hub :latest
 ```
+
+## Despliegue en Coolify (producción)
+
+> Playbook: [`docs/COOLIFY-DOCKER-DEPLOY.md`](./docs/COOLIFY-DOCKER-DEPLOY.md)
+
+**No se compila en el VPS.** Build en tu Mac → Docker Hub → Coolify solo hace `pull`.
+
+| Recurso | Valor |
+|---------|--------|
+| Imagen | `santossjba/factosys-store-web:latest` |
+| URL | https://store.factosysperu.com |
+| Puerto | `3000` (Nitro SSR) |
+
+```bash
+docker login
+pnpm run publish:image
+```
+
+En Coolify: pack **Docker Image**, imagen `santossjba/factosys-store-web`, tag `latest`, luego **Deploy**.
 
 ## Prueba rápida de auth
 
